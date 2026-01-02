@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Starstrider</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #0c1445 0%, #1a237e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #1a237e; font-size: 28px; margin-bottom: 10px; }
+        .app-name { color: #5c6bc0; font-size: 16px; margin-bottom: 30px; }
+        h2 {
+            color: #303f9f;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8eaf6;
+        }
+        p, li { color: #555; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 20px; }
+        .highlight { background: #e8eaf6; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .contact { background: #f5f5f5; padding: 20px; border-radius: 10px; margin-top: 30px; }
+        .date { color: #999; font-size: 14px; margin-top: 30px; text-align: center; }
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch button {
+            color: #5c6bc0;
+            background: white;
+            padding: 8px 20px;
+            border: 1px solid #5c6bc0;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .lang-switch button:hover, .lang-switch button.active {
+            background: #5c6bc0;
+            color: white;
+        }
+        .english { display: none; }
+        .btn-area { text-align: center; margin-top: 30px; }
+        .close-btn {
+            display: inline-block;
+            padding: 12px 40px;
+            background: #5c6bc0;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close-btn:hover {
+            background: #3f51b5;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <button onclick="showKorean()" id="btn-ko" class="active">한국어</button>
+            <button onclick="showEnglish()" id="btn-en">English</button>
+        </div>
+
+        <!-- 한국어 버전 -->
+        <div class="korean" id="ko-content">
+            <h1>📜 이용약관</h1>
+            <p class="app-name">Starstrider - 우주 탐험 시뮬레이터</p>
+
+            <div class="highlight">
+                본 약관은 Starstrider(이하 "게임")의 이용에 관한 조건 및 절차, 기타 필요한 사항을 규정합니다.
+            </div>
+
+            <h2>제1조 (목적)</h2>
+            <p>이 약관은 게임 서비스의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+
+            <h2>제2조 (용어의 정의)</h2>
+            <ul>
+                <li><strong>"게임"</strong>이란 Starstrider 및 관련 서비스를 의미합니다.</li>
+                <li><strong>"이용자"</strong>란 본 약관에 따라 게임을 이용하는 자를 의미합니다.</li>
+                <li><strong>"계정"</strong>이란 이용자가 게임에 접속하기 위해 생성한 고유 식별 정보를 의미합니다.</li>
+                <li><strong>"콘텐츠"</strong>란 게임 내에서 제공되는 모든 정보, 텍스트, 이미지, 사운드 등을 의미합니다.</li>
+            </ul>
+
+            <h2>제3조 (약관의 효력 및 변경)</h2>
+            <ul>
+                <li>본 약관은 게임 내 또는 웹사이트에 게시함으로써 효력이 발생합니다.</li>
+                <li>회사는 필요한 경우 약관을 변경할 수 있으며, 변경된 약관은 게시 후 효력이 발생합니다.</li>
+                <li>이용자는 변경된 약관에 동의하지 않을 경우 서비스 이용을 중단할 수 있습니다.</li>
+            </ul>
+
+            <h2>제4조 (서비스의 제공)</h2>
+            <ul>
+                <li>게임은 무료로 제공되며, 일부 유료 콘텐츠가 포함될 수 있습니다.</li>
+                <li>서비스는 연중무휴 24시간 제공을 원칙으로 하나, 시스템 점검 등의 사유로 일시 중단될 수 있습니다.</li>
+                <li>회사는 서비스의 내용, 품질, 조건 등을 변경할 수 있습니다.</li>
+            </ul>
+
+            <h2>제5조 (이용자의 의무)</h2>
+            <p>이용자는 다음 행위를 해서는 안 됩니다:</p>
+            <ul>
+                <li>타인의 계정을 도용하거나 개인정보를 침해하는 행위</li>
+                <li>게임의 운영을 방해하거나 비정상적인 방법으로 서비스를 이용하는 행위</li>
+                <li>버그, 오류 등을 악용하는 행위</li>
+                <li>해킹, 치팅 프로그램 사용 등 부정한 방법으로 게임을 이용하는 행위</li>
+                <li>다른 이용자에게 불쾌감을 주거나 피해를 주는 행위</li>
+                <li>음란, 폭력적, 혐오적인 내용을 게시하는 행위</li>
+                <li>기타 법령 및 본 약관을 위반하는 행위</li>
+            </ul>
+
+            <h2>제6조 (계정 관리)</h2>
+            <ul>
+                <li>이용자는 자신의 계정 정보를 안전하게 관리해야 합니다.</li>
+                <li>계정의 부정 사용으로 인한 피해는 이용자 본인에게 책임이 있습니다.</li>
+                <li>회사는 약관 위반 시 사전 통보 없이 계정을 제한하거나 삭제할 수 있습니다.</li>
+            </ul>
+
+            <h2>제7조 (지적재산권)</h2>
+            <ul>
+                <li>게임 내 모든 콘텐츠(이미지, 사운드, 텍스트, 코드 등)의 저작권은 회사에 있습니다.</li>
+                <li>이용자는 회사의 사전 승인 없이 콘텐츠를 복제, 배포, 수정할 수 없습니다.</li>
+            </ul>
+
+            <h2>제8조 (면책조항)</h2>
+            <ul>
+                <li>회사는 천재지변, 전쟁, 기간통신사업자의 서비스 중지 등 불가항력으로 인한 서비스 중단에 대해 책임지지 않습니다.</li>
+                <li>회사는 이용자의 귀책사유로 인한 서비스 이용 장애에 대해 책임지지 않습니다.</li>
+                <li>회사는 무료로 제공하는 서비스와 관련하여 발생한 손해에 대해 책임지지 않습니다.</li>
+            </ul>
+
+            <h2>제9조 (분쟁 해결)</h2>
+            <ul>
+                <li>서비스 이용과 관련하여 분쟁이 발생한 경우, 회사와 이용자는 상호 협의하여 해결합니다.</li>
+                <li>협의가 이루어지지 않을 경우, 관할 법원에 소를 제기할 수 있습니다.</li>
+            </ul>
+
+            <h2>제10조 (기타)</h2>
+            <ul>
+                <li>본 약관에 명시되지 않은 사항은 관계 법령 및 상관례에 따릅니다.</li>
+                <li>본 약관은 대한민국 법률에 따라 해석됩니다.</li>
+            </ul>
+
+            <div class="contact">
+                <h3>📧 문의</h3>
+                <p>질문이나 의견이 있으시면 연락해 주세요:</p>
+                <p><strong>이메일:</strong> sinnaru@naver.com</p>
+            </div>
+
+            <div class="btn-area">
+                <button class="close-btn" onclick="window.close(); history.back();">✕ 닫기</button>
+            </div>
+
+            <p class="date">최종 업데이트: 2025년 1월</p>
+        </div>
+
+        <!-- English Version -->
+        <div class="english" id="en-content">
+            <h1>📜 Terms of Service</h1>
+            <p class="app-name">Starstrider - Space Exploration Simulator</p>
+
+            <div class="highlight">
+                These terms govern your use of Starstrider (the "Game"), including conditions, procedures, and other necessary matters.
+            </div>
+
+            <h2>Article 1 (Purpose)</h2>
+            <p>These terms aim to define the rights, obligations, and responsibilities between the company and users regarding the use of game services.</p>
+
+            <h2>Article 2 (Definitions)</h2>
+            <ul>
+                <li><strong>"Game"</strong> refers to Starstrider and related services.</li>
+                <li><strong>"User"</strong> refers to anyone who uses the game under these terms.</li>
+                <li><strong>"Account"</strong> refers to unique identification information created by users to access the game.</li>
+                <li><strong>"Content"</strong> refers to all information, text, images, sounds, etc. provided within the game.</li>
+            </ul>
+
+            <h2>Article 3 (Effectiveness and Changes)</h2>
+            <ul>
+                <li>These terms become effective when posted in the game or on the website.</li>
+                <li>The company may change these terms when necessary, and changes become effective after posting.</li>
+                <li>Users who do not agree to changed terms may discontinue use of the service.</li>
+            </ul>
+
+            <h2>Article 4 (Service Provision)</h2>
+            <ul>
+                <li>The game is provided free of charge, but may include some paid content.</li>
+                <li>Service is provided 24/7 year-round in principle, but may be temporarily suspended for system maintenance.</li>
+                <li>The company may change service content, quality, and conditions.</li>
+            </ul>
+
+            <h2>Article 5 (User Obligations)</h2>
+            <p>Users must not:</p>
+            <ul>
+                <li>Steal others' accounts or violate personal information</li>
+                <li>Interfere with game operations or use services abnormally</li>
+                <li>Exploit bugs or errors</li>
+                <li>Use hacking or cheating programs</li>
+                <li>Cause discomfort or harm to other users</li>
+                <li>Post obscene, violent, or hateful content</li>
+                <li>Violate laws or these terms</li>
+            </ul>
+
+            <h2>Article 6 (Account Management)</h2>
+            <ul>
+                <li>Users must safely manage their account information.</li>
+                <li>Users are responsible for damages from unauthorized account use.</li>
+                <li>The company may restrict or delete accounts without notice for terms violations.</li>
+            </ul>
+
+            <h2>Article 7 (Intellectual Property)</h2>
+            <ul>
+                <li>Copyright of all game content (images, sounds, text, code, etc.) belongs to the company.</li>
+                <li>Users may not copy, distribute, or modify content without prior approval.</li>
+            </ul>
+
+            <h2>Article 8 (Disclaimer)</h2>
+            <ul>
+                <li>The company is not responsible for service interruptions due to force majeure such as natural disasters or wars.</li>
+                <li>The company is not responsible for service failures caused by user negligence.</li>
+                <li>The company is not responsible for damages related to free services.</li>
+            </ul>
+
+            <h2>Article 9 (Dispute Resolution)</h2>
+            <ul>
+                <li>Disputes regarding service use shall be resolved through mutual consultation.</li>
+                <li>If consultation fails, legal action may be taken in competent courts.</li>
+            </ul>
+
+            <h2>Article 10 (Others)</h2>
+            <ul>
+                <li>Matters not specified in these terms follow relevant laws and customs.</li>
+                <li>These terms are interpreted under the laws of the Republic of Korea.</li>
+            </ul>
+
+            <div class="contact">
+                <h3>📧 Contact</h3>
+                <p>If you have questions or comments:</p>
+                <p><strong>Email:</strong> sinnaru@naver.com</p>
+            </div>
+
+            <div class="btn-area">
+                <button class="close-btn" onclick="window.close(); history.back();">✕ Close</button>
+            </div>
+
+            <p class="date">Last Updated: January 2025</p>
+        </div>
+    </div>
+
+    <script>
+        function showKorean() {
+            document.getElementById('ko-content').style.display = 'block';
+            document.getElementById('en-content').style.display = 'none';
+            document.getElementById('btn-ko').classList.add('active');
+            document.getElementById('btn-en').classList.remove('active');
+        }
+        function showEnglish() {
+            document.getElementById('ko-content').style.display = 'none';
+            document.getElementById('en-content').style.display = 'block';
+            document.getElementById('btn-ko').classList.remove('active');
+            document.getElementById('btn-en').classList.add('active');
+        }
+    </script>
+</body>
+</html>

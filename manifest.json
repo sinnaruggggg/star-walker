@@ -1,0 +1,70 @@
+{
+  "name": "Starstrider - 태양계 탐험",
+  "short_name": "Starstrider",
+  "description": "3D 우주 시뮬레이션 게임. 태양계를 탐험하고 우주선을 조종하세요!",
+  "start_url": "/solar/",
+  "scope": "/solar/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#000011",
+  "theme_color": "#0a1628",
+  "lang": "ko",
+  "categories": ["games", "entertainment", "education"],
+  "icons": [
+    {
+      "src": "icons/icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Starstrider"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "빠른 시작",
+      "short_name": "시작",
+      "description": "게임 바로 시작",
+      "url": "/solar/?quick=true",
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

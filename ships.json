@@ -1,0 +1,320 @@
+[
+    {
+        "id": "shuttle",
+        "name": "셔틀",
+        "nameEn": "Shuttle",
+        "tier": 1,
+        "maxSpeed": 75,
+        "acceleration": 1,
+        "turnSpeed": 0.1,
+        "maxFuel": 300,
+        "size": "small",
+        "color": "4fc3f7",
+        "special": "",
+        "description": "기본 우주선. 안정적인 성능.",
+        "unlocked": true,
+        "price": 0,
+        "image": "https:\/\/raw.githubusercontent.com\/sinnaruggggg\/star-walker\/main\/shuttle_1766687228.png",
+        "model": "https:\/\/raw.githubusercontent.com\/sinnaruggggg\/star-walker\/main\/shuttle_model_1766687230.glb",
+        "engineConfig": {
+            "thrust": [
+                {
+                    "x": -0.168,
+                    "y": 0.038,
+                    "z": -0.45,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                },
+                {
+                    "x": 0.166,
+                    "y": 0.041,
+                    "z": -0.453,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                }
+            ],
+            "reverse": [
+                {
+                    "x": 0.168,
+                    "y": 0.039,
+                    "z": -0.247,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": -1
+                },
+                {
+                    "x": -0.166,
+                    "y": 0.039,
+                    "z": -0.247,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": -1
+                }
+            ],
+            "size": 0.5,
+            "length": 1.8,
+            "thrustColor": "#00aaff",
+            "reverseColor": "#ffaa00",
+            "modelForward": "-Z"
+        }
+    },
+    {
+        "id": "scout",
+        "name": "탐사정",
+        "nameEn": "Scout",
+        "tier": 1,
+        "maxSpeed": 90,
+        "acceleration": 1.25,
+        "turnSpeed": 0.125,
+        "maxFuel": 350,
+        "size": "small",
+        "color": "2ecc71",
+        "special": "scanner",
+        "description": "장거리 탐사용. 넓은 센서 범위.",
+        "unlocked": true,
+        "price": 500,
+        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/explorer_1766457854.png",
+        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/explorer_model_1766457987.glb",
+        "engineConfig": {
+            "thrust": [
+                {
+                    "x": -0.187,
+                    "y": 0.017,
+                    "z": -0.457,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": -1
+                },
+                {
+                    "x": 0.191,
+                    "y": 0.018,
+                    "z": -0.458,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": -1
+                }
+            ],
+            "reverse": [
+                {
+                    "x": 0.23,
+                    "y": -0.089,
+                    "z": 0.072,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                },
+                {
+                    "x": -0.228,
+                    "y": -0.087,
+                    "z": 0.072,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                },
+                {
+                    "x": 0.211,
+                    "y": 0.032,
+                    "z": -0.242,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                },
+                {
+                    "x": -0.207,
+                    "y": 0.033,
+                    "z": -0.245,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                }
+            ],
+            "size": 0.7,
+            "length": 1,
+            "thrustColor": "#00aaff",
+            "reverseColor": "#ffaa00"
+        }
+    },
+    {
+        "id": "interceptor",
+        "name": "인터셉터",
+        "nameEn": "Interceptor",
+        "tier": 2,
+        "maxSpeed": 175,
+        "acceleration": 2.5,
+        "turnSpeed": 0.2,
+        "maxFuel": 200,
+        "size": "small",
+        "color": "e74c3c",
+        "special": "boost",
+        "description": "고속 요격기. 빠른 가속과 선회.",
+        "unlocked": true,
+        "price": 1500,
+        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/interceptor_1765905786.png",
+        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/interceptor_model_1765905786.glb",
+        "engineConfig": {
+            "thrust": [
+                {
+                    "x": 0.087,
+                    "y": -0.05,
+                    "z": -0.394,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": -1
+                },
+                {
+                    "x": -0.089,
+                    "y": -0.05,
+                    "z": -0.394,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": -1
+                }
+            ],
+            "reverse": [
+                {
+                    "x": 0.149,
+                    "y": -0.067,
+                    "z": -0.003,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                },
+                {
+                    "x": -0.149,
+                    "y": -0.066,
+                    "z": -0.004,
+                    "dirX": 0,
+                    "dirY": 0,
+                    "dirZ": 1
+                }
+            ],
+            "size": 0.9,
+            "length": 1.6,
+            "thrustColor": "#00aaff",
+            "reverseColor": "#ffaa00"
+        }
+    },
+    {
+        "id": "freighter",
+        "name": "화물선",
+        "nameEn": "Freighter",
+        "tier": 2,
+        "maxSpeed": 60,
+        "acceleration": 0.75,
+        "turnSpeed": 0.075,
+        "maxFuel": 750,
+        "size": "large",
+        "color": "8b4513",
+        "special": "fuelEfficiency",
+        "description": "대형 화물선. 느리지만 연료가 풍부.",
+        "unlocked": true,
+        "price": 2000,
+        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/freighter_1765288722.png",
+        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/freighter_model_1765906618.glb"
+    },
+    {
+        "id": "corvette",
+        "name": "코르벳",
+        "nameEn": "Corvette",
+        "tier": 3,
+        "maxSpeed": 140,
+        "acceleration": 1.75,
+        "turnSpeed": 0.15,
+        "maxFuel": 400,
+        "size": "medium",
+        "color": "2ecc71",
+        "special": "shield",
+        "description": "다목적 호위함. 균형 잡힌 성능.",
+        "unlocked": false,
+        "price": 5000,
+        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/corvette_1766596560.png",
+        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/corvette_model_1766592781.glb"
+    },
+    {
+        "id": "racer",
+        "name": "레이서",
+        "nameEn": "Racer",
+        "tier": 3,
+        "maxSpeed": 225,
+        "acceleration": 3,
+        "turnSpeed": 0.25,
+        "maxFuel": 150,
+        "size": "small",
+        "color": "f39c12",
+        "special": "afterburner",
+        "description": "극한의 속도. 연료 관리 필수.",
+        "unlocked": false,
+        "price": 7500,
+        "image": ""
+    },
+    {
+        "id": "frigate",
+        "name": "프리깃",
+        "nameEn": "Frigate",
+        "tier": 4,
+        "maxSpeed": 160,
+        "acceleration": 2,
+        "turnSpeed": 0.125,
+        "maxFuel": 600,
+        "size": "medium",
+        "color": "9b59b6",
+        "special": "autoRepair",
+        "description": "중형 호위함. 장거리 임무에 적합.",
+        "unlocked": false,
+        "price": 15000,
+        "image": ""
+    },
+    {
+        "id": "cruiser",
+        "name": "크루저",
+        "nameEn": "Cruiser",
+        "tier": 4,
+        "maxSpeed": 125,
+        "acceleration": 1.5,
+        "turnSpeed": 0.1,
+        "maxFuel": 1000,
+        "size": "large",
+        "color": "3498db",
+        "special": "warp",
+        "description": "대형 순양함. 워프 기능 탑재.",
+        "unlocked": false,
+        "price": 25000,
+        "image": ""
+    },
+    {
+        "id": "battleship",
+        "name": "배틀십",
+        "nameEn": "Battleship",
+        "tier": 5,
+        "maxSpeed": 110,
+        "acceleration": 1.25,
+        "turnSpeed": 0.075,
+        "maxFuel": 1500,
+        "size": "huge",
+        "color": "1a5276",
+        "special": "gravityResist",
+        "description": "초대형 전함. 중력에 강하다.",
+        "unlocked": false,
+        "price": 50000,
+        "image": ""
+    },
+    {
+        "id": "flagship",
+        "name": "플래그십",
+        "nameEn": "Flagship",
+        "tier": 5,
+        "maxSpeed": 200,
+        "acceleration": 2.25,
+        "turnSpeed": 0.15,
+        "maxFuel": 2500,
+        "size": "huge",
+        "color": "d4af37",
+        "special": "allInOne",
+        "description": "최고급 기함. 모든 능력 보유.",
+        "unlocked": false,
+        "price": 100000,
+        "image": ""
+    }
+]

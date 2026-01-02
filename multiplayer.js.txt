@@ -1,0 +1,670 @@
+// ============================================================
+// Solar Explorer 멀티플레이어 코드
+// 이 코드를 index.html의 </body> 바로 위에 추가하세요
+// ============================================================
+
+<script>
+// ============ 멀티플레이어 설정 ============
+const MP_API_URL = 'https://sinnarugg.dothome.co.kr/solar/api.php';
+const MP_UPDATE_INTERVAL = 1000;  // 1초마다 위치 전송
+const MP_SYNC_INTERVAL = 1000;    // 1초마다 다른 유저 위치 받기
+
+// 유저 정보
+let mpUser = null;  // 로그인한 유저 정보
+let mpToken = null;
+let mpUserId = null;
+let mpNickname = '익명';
+let mpOtherPlayers = {};
+let mpChatLastId = 0;
+let mpIntervals = [];
+
+// 로컬스토리지에서 로그인 정보 복원
+function loadSavedLogin() {
+    const saved = localStorage.getItem('solar_user');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            mpUser = data.user;
+            mpToken = data.token;
+            mpUserId = 'user_' + mpUser.id;
+            mpNickname = mpUser.nickname;
+            return true;
+        } catch(e) {}
+    }
+    return false;
+}
+
+// ============ 로그인/회원가입 UI ============
+function createAuthUI() {
+    const authUI = document.createElement('div');
+    authUI.id = 'auth-ui';
+    authUI.innerHTML = `
+        <style>
+            #auth-overlay {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 10, 30, 0.95);
+                z-index: 99999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            #auth-box {
+                background: linear-gradient(180deg, #0a1628 0%, #162a4a 100%);
+                border: 2px solid #0ff;
+                border-radius: 20px;
+                padding: 40px;
+                width: 350px;
+                box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+            }
+            #auth-box h2 {
+                color: #0ff;
+                text-align: center;
+                margin-bottom: 30px;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 24px;
+            }
+            #auth-box h2::before {
+                content: "🚀 ";
+            }
+            .auth-input {
+                width: 100%;
+                padding: 12px 15px;
+                margin-bottom: 15px;
+                background: rgba(0, 50, 80, 0.6);
+                border: 1px solid #0ff;
+                border-radius: 8px;
+                color: #fff;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            .auth-input:focus {
+                outline: none;
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+            .auth-input::placeholder {
+                color: #68a;
+            }
+            .auth-btn {
+                width: 100%;
+                padding: 12px;
+                margin-top: 10px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                font-family: 'Orbitron', sans-serif;
+                transition: all 0.3s;
+            }
+            .auth-btn-primary {
+                background: linear-gradient(90deg, #0ff, #00f);
+                color: #000;
+            }
+            .auth-btn-primary:hover {
+                transform: scale(1.02);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            .auth-btn-secondary {
+                background: transparent;
+                color: #0ff;
+                border: 1px solid #0ff;
+            }
+            .auth-btn-secondary:hover {
+                background: rgba(0, 255, 255, 0.1);
+            }
+            .auth-btn-guest {
+                background: transparent;
+                color: #888;
+                border: 1px solid #444;
+                margin-top: 20px;
+            }
+            .auth-switch {
+                text-align: center;
+                margin-top: 20px;
+                color: #68a;
+                font-size: 13px;
+            }
+            .auth-switch a {
+                color: #0ff;
+                cursor: pointer;
+                text-decoration: underline;
+            }
+            .auth-error {
+                color: #f55;
+                text-align: center;
+                margin-bottom: 15px;
+                font-size: 13px;
+            }
+            .auth-tabs {
+                display: flex;
+                margin-bottom: 25px;
+            }
+            .auth-tab {
+                flex: 1;
+                padding: 10px;
+                text-align: center;
+                color: #68a;
+                cursor: pointer;
+                border-bottom: 2px solid #234;
+                transition: all 0.3s;
+            }
+            .auth-tab.active {
+                color: #0ff;
+                border-bottom-color: #0ff;
+            }
+            #register-fields { display: none; }
+            .auth-agree {
+                margin: 10px 0;
+                font-size: 12px;
+                color: #8ab;
+            }
+            .auth-agree label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+            }
+            .auth-agree input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                accent-color: #0ff;
+                cursor: pointer;
+            }
+            .auth-agree a {
+                color: #0ff;
+                text-decoration: underline;
+            }
+            .auth-agree a:hover {
+                color: #fff;
+            }
+        </style>
+        <div id="auth-overlay">
+            <div id="auth-box">
+                <h2>Solar Explorer</h2>
+                <div class="auth-tabs">
+                    <div class="auth-tab active" onclick="showLoginTab()">로그인</div>
+                    <div class="auth-tab" onclick="showRegisterTab()">회원가입</div>
+                </div>
+                <div id="auth-error" class="auth-error"></div>
+                
+                <input type="text" id="auth-username" class="auth-input" placeholder="아이디" maxlength="20">
+                <input type="password" id="auth-password" class="auth-input" placeholder="비밀번호" maxlength="30">
+                
+                <div id="register-fields">
+                    <input type="password" id="auth-password2" class="auth-input" placeholder="비밀번호 확인" maxlength="30">
+                    <input type="text" id="auth-nickname" class="auth-input" placeholder="닉네임 (게임에서 표시)" maxlength="15">
+                    <input type="email" id="auth-email" class="auth-input" placeholder="이메일 (선택)" maxlength="100">
+                    <div class="auth-agree">
+                        <label>
+                            <input type="checkbox" id="auth-privacy-agree">
+                            <span><a href="https://sinnarugg.dothome.co.kr/solar/privacy.html" target="_blank">개인정보 처리방침</a>에 동의합니다</span>
+                        </label>
+                    </div>
+                    <div class="auth-agree">
+                        <label>
+                            <input type="checkbox" id="auth-terms-agree">
+                            <span><a href="https://sinnarugg.dothome.co.kr/solar/terms.html" target="_blank">이용약관</a>에 동의합니다</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="auth-submit-btn" class="auth-btn auth-btn-primary" onclick="submitAuth()">로그인</button>
+                <button class="auth-btn auth-btn-guest" onclick="guestLogin()">게스트로 시작 (저장 안됨)</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(authUI);
+    
+    // 엔터키 로그인
+    document.getElementById('auth-password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isRegisterMode) submitAuth();
+    });
+}
+
+let isRegisterMode = false;
+
+function showLoginTab() {
+    isRegisterMode = false;
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+    document.querySelectorAll('.auth-tab')[1].classList.remove('active');
+    document.getElementById('register-fields').style.display = 'none';
+    document.getElementById('auth-submit-btn').textContent = '로그인';
+    document.getElementById('auth-error').textContent = '';
+}
+
+function showRegisterTab() {
+    isRegisterMode = true;
+    document.querySelectorAll('.auth-tab')[0].classList.remove('active');
+    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+    document.getElementById('register-fields').style.display = 'block';
+    document.getElementById('auth-submit-btn').textContent = '회원가입';
+    document.getElementById('auth-error').textContent = '';
+}
+
+async function submitAuth() {
+    const username = document.getElementById('auth-username').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errorEl = document.getElementById('auth-error');
+    
+    if (!username || !password) {
+        errorEl.textContent = '아이디와 비밀번호를 입력하세요';
+        return;
+    }
+    
+    if (isRegisterMode) {
+        // 회원가입
+        const password2 = document.getElementById('auth-password2').value;
+        const nickname = document.getElementById('auth-nickname').value.trim();
+        const email = document.getElementById('auth-email').value.trim();
+        const privacyAgree = document.getElementById('auth-privacy-agree').checked;
+        const termsAgree = document.getElementById('auth-terms-agree').checked;
+        
+        if (password !== password2) {
+            errorEl.textContent = '비밀번호가 일치하지 않습니다';
+            return;
+        }
+        if (!nickname) {
+            errorEl.textContent = '닉네임을 입력하세요';
+            return;
+        }
+        if (!privacyAgree) {
+            errorEl.textContent = '개인정보 처리방침에 동의해주세요';
+            return;
+        }
+        if (!termsAgree) {
+            errorEl.textContent = '이용약관에 동의해주세요';
+            return;
+        }
+        
+        try {
+            const res = await fetch(MP_API_URL + '?action=register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, nickname, email })
+            });
+            const result = await res.json();
+            
+            if (result.error) {
+                errorEl.textContent = result.error;
+            } else {
+                errorEl.style.color = '#0f0';
+                errorEl.textContent = '회원가입 완료! 로그인하세요';
+                showLoginTab();
+                document.getElementById('auth-username').value = username;
+                document.getElementById('auth-password').value = '';
+            }
+        } catch(e) {
+            errorEl.textContent = '서버 연결 실패';
+        }
+    } else {
+        // 로그인
+        try {
+            const res = await fetch(MP_API_URL + '?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const result = await res.json();
+            
+            if (result.error) {
+                errorEl.textContent = result.error;
+            } else {
+                // 로그인 성공
+                mpUser = result.user;
+                mpToken = result.token;
+                mpUserId = 'user_' + mpUser.id;
+                mpNickname = mpUser.nickname;
+                
+                // 저장
+                localStorage.setItem('solar_user', JSON.stringify({
+                    user: mpUser,
+                    token: mpToken
+                }));
+                
+                // 로그인 UI 닫기
+                document.getElementById('auth-overlay').style.display = 'none';
+                
+                // 멀티플레이어 시작
+                startMultiplayer();
+            }
+        } catch(e) {
+            errorEl.textContent = '서버 연결 실패';
+        }
+    }
+}
+
+function guestLogin() {
+    mpUserId = 'guest_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    mpNickname = '탐험가' + Math.floor(Math.random() * 9999);
+    mpUser = null;
+    
+    document.getElementById('auth-overlay').style.display = 'none';
+    startMultiplayer();
+}
+
+function logout() {
+    localStorage.removeItem('solar_user');
+    mpUser = null;
+    mpToken = null;
+    location.reload();
+}
+
+// ============ 멀티플레이어 UI ============
+function createMultiplayerUI() {
+    const mpUI = document.createElement('div');
+    mpUI.id = 'multiplayer-ui';
+    mpUI.innerHTML = `
+        <style>
+            #multiplayer-ui {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 10000;
+                font-family: 'Orbitron', sans-serif;
+            }
+            #mp-panel {
+                background: rgba(0, 20, 40, 0.9);
+                border: 1px solid #0ff;
+                border-radius: 10px;
+                padding: 15px;
+                color: #0ff;
+                min-width: 220px;
+            }
+            #mp-user-info {
+                font-size: 14px;
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #234;
+            }
+            #mp-online {
+                font-size: 12px;
+                margin-bottom: 10px;
+                color: #0f0;
+            }
+            #mp-chat-container {
+                max-height: 150px;
+                overflow-y: auto;
+                font-size: 11px;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 5px;
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+            #mp-chat-container::-webkit-scrollbar { width: 5px; }
+            #mp-chat-container::-webkit-scrollbar-thumb { background: #0ff; border-radius: 5px; }
+            .mp-chat-msg { margin: 3px 0; word-break: break-word; }
+            .mp-chat-msg .nick { color: #ff0; }
+            #mp-chat-input {
+                width: calc(100% - 50px);
+                padding: 5px;
+                background: rgba(0, 50, 80, 0.8);
+                border: 1px solid #0ff;
+                border-radius: 3px;
+                color: #fff;
+                font-size: 11px;
+            }
+            #mp-chat-send {
+                width: 45px;
+                padding: 5px;
+                background: #0ff;
+                border: none;
+                border-radius: 3px;
+                color: #000;
+                cursor: pointer;
+                font-size: 11px;
+            }
+            #mp-toggle {
+                position: absolute;
+                top: -30px;
+                right: 0;
+                background: rgba(0, 20, 40, 0.9);
+                border: 1px solid #0ff;
+                color: #0ff;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+            }
+            #mp-logout {
+                font-size: 10px;
+                color: #f88;
+                cursor: pointer;
+                margin-left: 10px;
+            }
+            .mp-player-label {
+                color: #0ff;
+                font-size: 10px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 2px 5px;
+                border-radius: 3px;
+            }
+        </style>
+        <button id="mp-toggle" onclick="toggleMpPanel()">👥 멀티</button>
+        <div id="mp-panel">
+            <div id="mp-user-info">
+                👤 <span id="mp-nickname-display">${mpNickname}</span>
+                ${mpUser ? '<span id="mp-logout" onclick="logout()">[로그아웃]</span>' : ' (게스트)'}
+            </div>
+            <div id="mp-online">🟢 접속자: 1명</div>
+            <div id="mp-chat-container"></div>
+            <div>
+                <input type="text" id="mp-chat-input" placeholder="채팅..." maxlength="100">
+                <button id="mp-chat-send" onclick="sendChat()">전송</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(mpUI);
+    
+    document.getElementById('mp-chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChat();
+    });
+}
+
+let mpPanelVisible = true;
+function toggleMpPanel() {
+    mpPanelVisible = !mpPanelVisible;
+    document.getElementById('mp-panel').style.display = mpPanelVisible ? 'block' : 'none';
+}
+
+// ============ 서버 통신 ============
+
+async function mpSendMyPosition() {
+    if (!spacecraft) return;
+    
+    try {
+        const data = {
+            user_id: mpUserId,
+            nickname: mpNickname,
+            x: spacecraft.position.x,
+            y: spacecraft.position.y,
+            z: spacecraft.position.z,
+            rx: spacecraft.rotation.x,
+            ry: spacecraft.rotation.y,
+            rz: spacecraft.rotation.z,
+            ship_type: currentShipIndex || 0,
+            current_location: currentTarget ? currentTarget.name : ''
+        };
+        
+        await fetch(MP_API_URL + '?action=update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (e) {
+        console.log('MP 위치 전송 실패:', e);
+    }
+}
+
+async function mpGetOtherPlayers() {
+    try {
+        const response = await fetch(MP_API_URL + '?action=get_players&user_id=' + mpUserId);
+        const result = await response.json();
+        
+        if (result.success) {
+            updateOtherPlayers(result.players);
+            document.getElementById('mp-online').textContent = 
+                `🟢 접속자: ${result.count + 1}명`;
+        }
+    } catch (e) {
+        console.log('MP 플레이어 조회 실패:', e);
+    }
+}
+
+function updateOtherPlayers(players) {
+    const activeIds = new Set();
+    
+    players.forEach(player => {
+        activeIds.add(player.user_id);
+        
+        if (!mpOtherPlayers[player.user_id]) {
+            createOtherPlayerShip(player);
+        } else {
+            const ship = mpOtherPlayers[player.user_id];
+            ship.mesh.position.lerp(
+                new THREE.Vector3(
+                    parseFloat(player.pos_x),
+                    parseFloat(player.pos_y),
+                    parseFloat(player.pos_z)
+                ), 0.3
+            );
+            ship.mesh.rotation.set(
+                parseFloat(player.rot_x),
+                parseFloat(player.rot_y),
+                parseFloat(player.rot_z)
+            );
+            if (ship.label) {
+                ship.label.element.textContent = player.nickname;
+            }
+        }
+    });
+    
+    Object.keys(mpOtherPlayers).forEach(id => {
+        if (!activeIds.has(id)) {
+            removeOtherPlayer(id);
+        }
+    });
+}
+
+function createOtherPlayerShip(player) {
+    const geometry = new THREE.ConeGeometry(0.3, 1, 8);
+    geometry.rotateX(Math.PI / 2);
+    
+    const material = new THREE.MeshBasicMaterial({ 
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.8
+    });
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(
+        parseFloat(player.pos_x),
+        parseFloat(player.pos_y),
+        parseFloat(player.pos_z)
+    );
+    
+    const glowGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.3
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    mesh.add(glow);
+    
+    scene.add(mesh);
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'mp-player-label';
+    labelDiv.textContent = player.nickname;
+    const label = new CSS2DObject(labelDiv);
+    label.position.set(0, 1, 0);
+    mesh.add(label);
+    
+    mpOtherPlayers[player.user_id] = { mesh, label };
+}
+
+function removeOtherPlayer(userId) {
+    const player = mpOtherPlayers[userId];
+    if (player) {
+        scene.remove(player.mesh);
+        delete mpOtherPlayers[userId];
+    }
+}
+
+// ============ 채팅 ============
+
+async function sendChat() {
+    const input = document.getElementById('mp-chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    try {
+        await fetch(MP_API_URL + '?action=send_chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: mpUserId,
+                nickname: mpNickname,
+                message: message
+            })
+        });
+        input.value = '';
+    } catch (e) {
+        console.log('채팅 전송 실패:', e);
+    }
+}
+
+async function getChat() {
+    try {
+        const response = await fetch(MP_API_URL + '?action=get_chat&last_id=' + mpChatLastId);
+        const result = await response.json();
+        
+        if (result.success && result.messages.length > 0) {
+            const container = document.getElementById('mp-chat-container');
+            
+            result.messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'mp-chat-msg';
+                div.innerHTML = `<span class="nick">${msg.nickname}:</span> ${msg.message}`;
+                container.appendChild(div);
+                mpChatLastId = Math.max(mpChatLastId, parseInt(msg.id));
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+    } catch (e) {
+        console.log('채팅 조회 실패:', e);
+    }
+}
+
+// ============ 초기화 ============
+
+function startMultiplayer() {
+    createMultiplayerUI();
+    
+    mpIntervals.push(setInterval(mpSendMyPosition, MP_UPDATE_INTERVAL));
+    mpIntervals.push(setInterval(mpGetOtherPlayers, MP_SYNC_INTERVAL));
+    mpIntervals.push(setInterval(getChat, 2000));
+    
+    console.log('🚀 멀티플레이어 시작! ID:', mpUserId);
+}
+
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        // 저장된 로그인 있으면 자동 로그인
+        if (loadSavedLogin()) {
+            startMultiplayer();
+        } else {
+            createAuthUI();
+        }
+    }, 2000);
+});
+
+window.addEventListener('beforeunload', () => {
+    navigator.sendBeacon(
+        MP_API_URL + '?action=disconnect',
+        JSON.stringify({ user_id: mpUserId })
+    );
+});
+</script>

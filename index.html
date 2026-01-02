@@ -10512,9 +10512,9 @@ window.MissionSystem = MissionSystem;
         };
 
         const STAR_THRESHOLD = 100;
-        const DOTHOME_API = 'https://sinnarugg.dothome.co.kr/solar/api.php';  // 닷홈 API
+        const API_BASE = '/api';  // Vercel API
         const API_URL = 'data.json';  // fallback
-        const ASSET_PATH = 'uploads/';  // Dothome 로컬 경로 (fallback)
+        const ASSET_PATH = 'uploads/';  // fallback
         const GITHUB_CDN = 'https://raw.githubusercontent.com/sinnaruggggg/star-walker/main/';  // GitHub Raw (jsdelivr 50MB 제한 우회)
         
         const TEXTURES = {
@@ -15537,8 +15537,8 @@ window.MissionSystem = MissionSystem;
         }
         
         function loadShipsData() {
-            // ★ 닷홈 API에서 ships 데이터 로드 (admin.php에서 수정한 최신 데이터)
-            const shipsUrl = DOTHOME_API + '?action=get_ships';
+            // ★ Vercel API에서 ships 데이터 로드 (Supabase)
+            const shipsUrl = API_BASE + '/ships';
 
             return fetch(shipsUrl)
                 .then(res => {
@@ -15547,7 +15547,7 @@ window.MissionSystem = MissionSystem;
                 })
                 .catch(err => {
                     // API 실패 시 로컬 ships.json fallback
-                    console.log('⚠️ 닷홈 API 실패, 로컬 fallback 시도:', err);
+                    console.log('⚠️ Vercel API 실패, 로컬 fallback 시도:', err);
                     return fetch('ships.json').then(res => res.json());
                 })
                 .then(shipsData => {

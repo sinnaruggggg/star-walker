@@ -1,0 +1,41 @@
+# 환경변수 (API 키 보호)
+.env
+.env.local
+.env.production
+
+# 백업 폴더
+백업/
+
+# PHP 백엔드 (Vercel 미지원)
+*.php
+
+# 민감한 인증 정보
+admin_auth.json
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# Node modules (있는 경우)
+node_modules/
+
+# Vercel
+.vercel
+
+# 로그
+*.log
+
+# 압축 파일
+*.zip
+
+# 스크린샷 폴더
+스크린샷/
+
+# Claude 설정
+.claude/
+
+# 백업 파일
+*.bak
+
+# 업로드 폴더 (대용량)
+uploads/

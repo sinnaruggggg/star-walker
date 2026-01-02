@@ -1,0 +1,233 @@
+{
+    "SUN": {
+        "r": 50,
+        "m": 50000,
+        "color": "0xffaa00",
+        "emissive": "0xff4400",
+        "texType": "star",
+        "type": "star",
+        "rotSpeed": 0.04
+    },
+    "MERCURY": {
+        "r": 0.38,
+        "m": 0.05,
+        "color": "0xaaaaaa",
+        "texType": "rock",
+        "texKey": "",
+        "type": "planet",
+        "rotSpeed": 0.017
+    },
+    "VENUS": {
+        "r": 0.95,
+        "m": 0.4,
+        "color": "0xe3bb76",
+        "texType": "gas",
+        "texKey": "",
+        "type": "planet",
+        "rotSpeed": -0.004
+    },
+    "EARTH": {
+        "r": 1,
+        "m": 0.5,
+        "color": "0x2233ff",
+        "texType": "earth",
+        "texKey": "",
+        "type": "planet",
+        "rotSpeed": 1
+    },
+    "MARS": {
+        "r": 0.53,
+        "m": 0.06,
+        "color": "0xff4500",
+        "texType": "rock",
+        "texKey": "",
+        "type": "planet",
+        "rotSpeed": 0.97
+    },
+    "JUPITER": {
+        "r": 11.2,
+        "m": 50,
+        "color": "0xd8ca9d",
+        "texType": "gas",
+        "texKey": "",
+        "type": "gas",
+        "rotSpeed": 2.4
+    },
+    "SATURN": {
+        "r": 9.4,
+        "m": 15,
+        "color": "0xf4d03f",
+        "texType": "gas",
+        "texKey": "",
+        "type": "gas",
+        "rotSpeed": 2.2,
+        "ring": true
+    },
+    "URANUS": {
+        "r": 4,
+        "m": 3,
+        "color": "0x40e0d0",
+        "texType": "gas",
+        "texKey": "",
+        "type": "gas",
+        "rotSpeed": -1.4
+    },
+    "NEPTUNE": {
+        "r": 3.9,
+        "m": 3,
+        "color": "0x4169e1",
+        "texType": "gas",
+        "texKey": "",
+        "type": "gas",
+        "rotSpeed": 1.5
+    },
+    "MOON": {
+        "r": 0.27,
+        "m": 0.006,
+        "color": "0xdddddd",
+        "texType": "rock",
+        "texKey": "",
+        "type": "moon",
+        "rotSpeed": 0.03
+    },
+    "PHOBOS": {
+        "r": 0.15,
+        "m": 0.0001,
+        "color": "0x887766",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "DEIMOS": {
+        "r": 0.1,
+        "m": 0.0001,
+        "color": "0x776655",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "IO": {
+        "r": 0.28,
+        "m": 0.007,
+        "color": "0xffffaa",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "EUROPA": {
+        "r": 0.24,
+        "m": 0.005,
+        "color": "0xccddff",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "GANYMEDE": {
+        "r": 0.41,
+        "m": 0.012,
+        "color": "0xddccaa",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "CALLISTO": {
+        "r": 0.37,
+        "m": 0.009,
+        "color": "0x554433",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "TITAN": {
+        "r": 0.4,
+        "m": 0.011,
+        "color": "0xffaa00",
+        "texType": "gas",
+        "type": "moon"
+    },
+    "ENCELADUS": {
+        "r": 0.04,
+        "m": 0.001,
+        "color": "0xffffff",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "TITANIA": {
+        "r": 0.12,
+        "m": 0.003,
+        "color": "0xeeeeee",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "OBERON": {
+        "r": 0.11,
+        "m": 0.003,
+        "color": "0xcccccc",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "TRITON": {
+        "r": 0.21,
+        "m": 0.008,
+        "color": "0xffcccc",
+        "texType": "rock",
+        "type": "moon"
+    },
+    "PLUTO": {
+        "r": 0.18,
+        "m": 0.002,
+        "color": "0xddccbb",
+        "texType": "rock",
+        "type": "planet"
+    },
+    "CERES": {
+        "r": 0.07,
+        "m": 0.001,
+        "color": "0x999999",
+        "texType": "rock",
+        "type": "planet"
+    },
+    "ERIS": {
+        "r": 0.18,
+        "m": 0.002,
+        "color": "0xffffff",
+        "texType": "rock",
+        "type": "planet"
+    },
+    "HAUMEA": {
+        "r": 0.14,
+        "m": 0.001,
+        "color": "0xaaaaaa",
+        "texType": "rock",
+        "type": "planet"
+    },
+    "MAKEMAKE": {
+        "r": 0.14,
+        "m": 0.001,
+        "color": "0xaa5555",
+        "texType": "rock",
+        "type": "planet"
+    },
+    "SIRIUS": {
+        "r": 85,
+        "m": 100000,
+        "color": "0xaaddff",
+        "texType": "star",
+        "type": "star"
+    },
+    "BETELGEUSE": {
+        "r": 500,
+        "m": 300000,
+        "color": "0xff3300",
+        "texType": "star",
+        "type": "star"
+    },
+    "PROXIMA": {
+        "r": 7,
+        "m": 6000,
+        "color": "0xff6666",
+        "texType": "star",
+        "type": "star"
+    },
+    "BLACKHOLE": {
+        "r": 3,
+        "m": 500000,
+        "color": "0x000000",
+        "type": "blackhole",
+        "rotSpeed": 0
+    }
+}

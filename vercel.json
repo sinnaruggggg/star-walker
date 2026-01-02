@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": null,
+  "rewrites": [
+    { "source": "/api/gemini", "destination": "/api/gemini.js" },
+    { "source": "/api/ships", "destination": "/api/ships.js" },
+    { "source": "/api/celestial", "destination": "/api/celestial.js" },
+    { "source": "/api/upload", "destination": "/api/upload.js" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    }
+  ]
+}

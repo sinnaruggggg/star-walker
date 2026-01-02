@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Explorer - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* 헤더 */
+        .header {
+            background: rgba(0, 20, 40, 0.9);
+            border-bottom: 2px solid #0ff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #0ff;
+            font-size: 24px;
+            text-shadow: 0 0 20px rgba(0,255,255,0.5);
+        }
+        .header-btns { display: flex; gap: 10px; }
+        .header-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #1a3a5c, #0a1a2c);
+            border: 1px solid #0ff;
+            color: #0ff;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .header-btn:hover { background: #0ff; color: #000; }
+
+        /* 탭 네비게이션 */
+        .tabs {
+            display: flex;
+            background: rgba(0, 30, 60, 0.5);
+            border-bottom: 1px solid #0ff;
+        }
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        .tab:hover { color: #0ff; }
+        .tab.active {
+            color: #0ff;
+            border-bottom-color: #0ff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        /* 컨텐츠 영역 */
+        .content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* 카드 그리드 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: linear-gradient(135deg, rgba(0,30,60,0.8), rgba(0,15,30,0.9));
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            border-color: #0ff;
+            box-shadow: 0 0 20px rgba(0,255,255,0.2);
+        }
+
+        /* 우주선 카드 */
+        .ship-card {
+            display: flex;
+            gap: 15px;
+        }
+        .ship-preview {
+            width: 80px;
+            height: 80px;
+            background: #0a1628;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .ship-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .ship-info { flex: 1; }
+        .ship-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: #0ff;
+            margin-bottom: 5px;
+        }
+        .ship-tier {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .ship-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* 폼 스타일 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            color: #0ff;
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,20,40,0.8);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 5px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #0ff;
+        }
+
+        /* 버튼 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0066ff, #00aaff);
+            color: #fff;
+        }
+        .btn-primary:hover { transform: scale(1.05); }
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: #fff;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #00cc66, #00aa44);
+            color: #fff;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(135deg, #0a1628, #1a2a3e);
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,255,255,0.3);
+        }
+        .modal-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #0ff;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* 알림 메시지 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(0,255,255,0.9);
+            color: #000;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.error { background: rgba(255,100,100,0.9); color: #fff; }
+        .toast.success { background: rgba(100,255,150,0.9); }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 로딩 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0,255,255,0.3);
+            border-top-color: #0ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 파일 업로드 */
+        .file-upload {
+            border: 2px dashed rgba(0,255,255,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload:hover {
+            border-color: #0ff;
+            background: rgba(0,255,255,0.05);
+        }
+        .file-upload input { display: none; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🚀 Solar Explorer Admin</h1>
+        <div class="header-btns">
+            <button class="header-btn" onclick="location.href='index.html'">🎮 게임으로</button>
+            <button class="header-btn" id="btn-sync">🔄 동기화</button>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="ships">🚀 우주선</button>
+        <button class="tab" data-tab="celestial">🌍 천체</button>
+        <button class="tab" data-tab="config">⚙️ 설정</button>
+        <button class="tab" data-tab="files">📁 파일</button>
+    </nav>
+
+    <main class="content">
+        <!-- 우주선 탭 -->
+        <div id="ships-tab" class="tab-content active">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="color:#0ff; font-family:'Orbitron',sans-serif;">우주선 관리</h2>
+                <button class="btn btn-primary" onclick="openShipModal()">+ 새 우주선</button>
+            </div>
+            <div id="ships-grid" class="card-grid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- 천체 탭 -->
+        <div id="celestial-tab" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="color:#0ff; font-family:'Orbitron',sans-serif;">천체 데이터</h2>
+                <button class="btn btn-primary" onclick="openCelestialModal()">+ 새 천체</button>
+            </div>
+            <div id="celestial-grid" class="card-grid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- 설정 탭 -->
+        <div id="config-tab" class="tab-content">
+            <h2 style="color:#0ff; font-family:'Orbitron',sans-serif; margin-bottom:20px;">게임 설정</h2>
+            <div class="card">
+                <h3 style="color:#0ff; margin-bottom:15px;">BGM 설정</h3>
+                <div class="form-group">
+                    <label>메뉴 BGM</label>
+                    <input type="text" id="bgm-menu" placeholder="BGM ID">
+                </div>
+                <div class="form-group">
+                    <label>탐험 BGM</label>
+                    <input type="text" id="bgm-explore" placeholder="BGM ID">
+                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">저장</button>
+            </div>
+        </div>
+
+        <!-- 파일 탭 -->
+        <div id="files-tab" class="tab-content">
+            <h2 style="color:#0ff; font-family:'Orbitron',sans-serif; margin-bottom:20px;">파일 관리</h2>
+            <div class="card">
+                <div class="file-upload" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" accept="image/*,.glb,.gltf" onchange="uploadFile(this)">
+                    <p>📤 클릭하여 파일 업로드</p>
+                    <p style="font-size:12px; color:#888;">이미지, GLB, GLTF 파일 지원</p>
+                </div>
+                <div id="upload-result" style="margin-top:15px;"></div>
+            </div>
+            <div id="files-list" style="margin-top:20px;">
+                <!-- 업로드된 파일 목록 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 우주선 편집 모달 -->
+    <div id="ship-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="ship-modal-title">우주선 편집</h2>
+                <button class="modal-close" onclick="closeShipModal()">×</button>
+            </div>
+            <form id="ship-form">
+                <input type="hidden" id="ship-id">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group">
+                        <label>ID (영문)</label>
+                        <input type="text" id="ship-id-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>티어</label>
+                        <select id="ship-tier">
+                            <option value="1">Tier 1</option>
+                            <option value="2">Tier 2</option>
+                            <option value="3">Tier 3</option>
+                            <option value="4">Tier 4</option>
+                            <option value="5">Tier 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>한글 이름</label>
+                        <input type="text" id="ship-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>영문 이름</label>
+                        <input type="text" id="ship-name-en" required>
+                    </div>
+                    <div class="form-group">
+                        <label>최대 속도</label>
+                        <input type="number" id="ship-max-speed" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>가속력</label>
+                        <input type="number" id="ship-acceleration" step="0.1" value="1.0">
+                    </div>
+                    <div class="form-group">
+                        <label>선회력</label>
+                        <input type="number" id="ship-turn-speed" step="0.01" value="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>최대 연료</label>
+                        <input type="number" id="ship-max-fuel" value="300">
+                    </div>
+                    <div class="form-group">
+                        <label>크기</label>
+                        <select id="ship-size">
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                            <option value="huge">Huge</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>가격</label>
+                        <input type="number" id="ship-price" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea id="ship-description" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>특수 능력</label>
+                    <select id="ship-special">
+                        <option value="">없음</option>
+                        <option value="scanner">스캐너</option>
+                        <option value="boost">부스터</option>
+                        <option value="shield">쉴드</option>
+                        <option value="warp">워프</option>
+                        <option value="autoRepair">자동수리</option>
+                        <option value="fuelEfficiency">연비</option>
+                        <option value="afterburner">애프터버너</option>
+                        <option value="gravityResist">중력저항</option>
+                        <option value="allInOne">올인원</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>이미지 URL</label>
+                    <input type="text" id="ship-image">
+                </div>
+                <div class="form-group">
+                    <label>3D 모델 URL</label>
+                    <input type="text" id="ship-model">
+                </div>
+                <div class="form-group">
+                    <label>엔진 설정 (JSON)</label>
+                    <textarea id="ship-engine-config" rows="4" placeholder='{"thrust":[], "reverse":[], "size":1, "length":1}'></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ship-unlocked"> 기본 해금
+                    </label>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-success">💾 저장</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteShip()">🗑️ 삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Supabase 초기화
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';  // ← 여기에 Supabase URL 입력
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // ← 여기에 Supabase Anon Key 입력
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let shipsData = [];
+        let celestialData = {};
+        let currentEditShip = null;
+
+        // 탭 전환
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+            });
+        });
+
+        // 우주선 목록 로드
+        async function loadShips() {
+            try {
+                const { data, error } = await supabase
+                    .from('ships')
+                    .select('*')
+                    .order('tier');
+
+                if (error) throw error;
+
+                shipsData = data;
+                renderShips();
+            } catch (err) {
+                showToast('우주선 로드 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 우주선 목록 렌더링
+        function renderShips() {
+            const grid = document.getElementById('ships-grid');
+            grid.innerHTML = shipsData.map(ship => `
+                <div class="card ship-card" onclick="editShip('${ship.id}')">
+                    <div class="ship-preview">
+                        ${ship.image ? `<img src="${ship.image}" alt="${ship.name}">` : '🚀'}
+                    </div>
+                    <div class="ship-info">
+                        <div class="ship-name">${ship.name}</div>
+                        <div class="ship-tier">Tier ${ship.tier} • ${ship.size}</div>
+                        <div class="ship-stats">
+                            <span>⚡ ${ship.max_speed}</span>
+                            <span>🚀 ${ship.acceleration}</span>
+                            <span>🔄 ${ship.turn_speed}</span>
+                            <span>⛽ ${ship.max_fuel}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 우주선 편집 모달 열기
+        function openShipModal(shipId = null) {
+            currentEditShip = shipId;
+            const modal = document.getElementById('ship-modal');
+            const title = document.getElementById('ship-modal-title');
+
+            if (shipId) {
+                const ship = shipsData.find(s => s.id === shipId);
+                if (ship) {
+                    title.textContent = '우주선 편집';
+                    document.getElementById('ship-id').value = ship.id;
+                    document.getElementById('ship-id-input').value = ship.id;
+                    document.getElementById('ship-id-input').disabled = true;
+                    document.getElementById('ship-name').value = ship.name;
+                    document.getElementById('ship-name-en').value = ship.name_en;
+                    document.getElementById('ship-tier').value = ship.tier;
+                    document.getElementById('ship-max-speed').value = ship.max_speed;
+                    document.getElementById('ship-acceleration').value = ship.acceleration;
+                    document.getElementById('ship-turn-speed').value = ship.turn_speed;
+                    document.getElementById('ship-max-fuel').value = ship.max_fuel;
+                    document.getElementById('ship-size').value = ship.size;
+                    document.getElementById('ship-price').value = ship.price;
+                    document.getElementById('ship-description').value = ship.description || '';
+                    document.getElementById('ship-special').value = ship.special || '';
+                    document.getElementById('ship-image').value = ship.image || '';
+                    document.getElementById('ship-model').value = ship.model || '';
+                    document.getElementById('ship-engine-config').value = ship.engine_config ? JSON.stringify(ship.engine_config, null, 2) : '';
+                    document.getElementById('ship-unlocked').checked = ship.unlocked;
+                }
+            } else {
+                title.textContent = '새 우주선';
+                document.getElementById('ship-form').reset();
+                document.getElementById('ship-id-input').disabled = false;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function editShip(shipId) {
+            openShipModal(shipId);
+        }
+
+        function closeShipModal() {
+            document.getElementById('ship-modal').classList.remove('active');
+            currentEditShip = null;
+        }
+
+        // 우주선 저장
+        document.getElementById('ship-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let engineConfig = null;
+            const engineConfigStr = document.getElementById('ship-engine-config').value;
+            if (engineConfigStr) {
+                try {
+                    engineConfig = JSON.parse(engineConfigStr);
+                } catch (err) {
+                    showToast('엔진 설정 JSON 오류', 'error');
+                    return;
+                }
+            }
+
+            const shipData = {
+                id: document.getElementById('ship-id-input').value,
+                name: document.getElementById('ship-name').value,
+                name_en: document.getElementById('ship-name-en').value,
+                tier: parseInt(document.getElementById('ship-tier').value),
+                max_speed: parseInt(document.getElementById('ship-max-speed').value),
+                acceleration: parseFloat(document.getElementById('ship-acceleration').value),
+                turn_speed: parseFloat(document.getElementById('ship-turn-speed').value),
+                max_fuel: parseInt(document.getElementById('ship-max-fuel').value),
+                size: document.getElementById('ship-size').value,
+                price: parseInt(document.getElementById('ship-price').value),
+                description: document.getElementById('ship-description').value,
+                special: document.getElementById('ship-special').value,
+                image: document.getElementById('ship-image').value,
+                model: document.getElementById('ship-model').value,
+                engine_config: engineConfig,
+                unlocked: document.getElementById('ship-unlocked').checked
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('ships')
+                    .upsert(shipData, { onConflict: 'id' });
+
+                if (error) throw error;
+
+                showToast('저장 완료!', 'success');
+                closeShipModal();
+                loadShips();
+            } catch (err) {
+                showToast('저장 실패: ' + err.message, 'error');
+            }
+        });
+
+        // 우주선 삭제
+        async function deleteShip() {
+            if (!currentEditShip) return;
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('ships')
+                    .delete()
+                    .eq('id', currentEditShip);
+
+                if (error) throw error;
+
+                showToast('삭제 완료', 'success');
+                closeShipModal();
+                loadShips();
+            } catch (err) {
+                showToast('삭제 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 파일 업로드
+        async function uploadFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const resultDiv = document.getElementById('upload-result');
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const timestamp = Date.now();
+                const ext = file.name.split('.').pop();
+                const fileName = `${file.name.replace(/\.[^/.]+$/, '')}_${timestamp}.${ext}`;
+                const folder = file.type.includes('model') || ext === 'glb' || ext === 'gltf' ? 'models' : 'images';
+
+                const { data, error } = await supabase.storage
+                    .from('game-assets')
+                    .upload(`${folder}/${fileName}`, file);
+
+                if (error) throw error;
+
+                const { data: urlData } = supabase.storage
+                    .from('game-assets')
+                    .getPublicUrl(`${folder}/${fileName}`);
+
+                resultDiv.innerHTML = `
+                    <p style="color:#0f0;">✅ 업로드 완료!</p>
+                    <p style="font-size:12px; word-break:break-all;">
+                        <strong>URL:</strong>
+                        <input type="text" value="${urlData.publicUrl}" readonly style="width:100%; margin-top:5px;" onclick="this.select()">
+                    </p>
+                `;
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color:#f00;">❌ 업로드 실패: ${err.message}</p>`;
+            }
+
+            input.value = '';
+        }
+
+        // 토스트 메시지
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // 초기 로드
+        loadShips();
+    </script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Mars Global Explorer - Final</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; user-select: none; }
+        
+        /* UI 레이어 */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; transition: opacity 0.5s; }
+        
+        /* HUD 정보 */
+        #hud-top {
+            position: absolute; top: 20px; left: 20px;
+            color: #00ff00; font-family: 'Courier New', monospace;
+            text-shadow: 1px 1px 2px black;
+            font-size: 14px;
+        }
+        .hud-line { margin: 5px 0; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; display: inline-block; }
+
+        /* 맵 버튼 */
+        #map-btn {
+            position: absolute; top: 20px; right: 20px;
+            width: 70px; height: 70px;
+            background: radial-gradient(circle, rgba(255,69,0,1) 0%, rgba(139,0,0,1) 100%);
+            border: 2px solid #fff; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-weight: bold; cursor: pointer; pointer-events: auto;
+            box-shadow: 0 0 15px #ff4500; font-size: 14px;
+            animation: pulse-btn 2s infinite;
+            z-index: 20;
+        }
+        @keyframes pulse-btn { 0% {box-shadow: 0 0 0 0 rgba(255,69,0,0.7);} 70% {box-shadow: 0 0 0 10px rgba(255,69,0,0);} 100% {box-shadow: 0 0 0 0 rgba(255,69,0,0);} }
+
+        /* 컨트롤러 힌트 */
+        #controls-hint {
+            position: absolute; bottom: 30px; width: 100%;
+            display: flex; justify-content: space-around;
+            color: rgba(255,255,255,0.7); font-size: 12px;
+            pointer-events: none;
+        }
+        .hint-circle {
+            width: 80px; height: 80px; border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            text-align: center; background: rgba(0,0,0,0.2);
+        }
+
+        /* 맵 오버레이 (3D 지구본) */
+        #map-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 100; display: none;
+            pointer-events: auto;
+        }
+        #map-ui {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 101;
+        }
+        #close-map-btn {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            padding: 12px 40px; background: rgba(0,0,0,0.5); border: 2px solid #fff;
+            color: white; font-size: 16px; border-radius: 30px; cursor: pointer;
+            pointer-events: auto;
+        }
+        #map-instruction {
+            position: absolute; top: 100px; width: 100%; text-align: center;
+            color: #aaa; font-size: 14px;
+        }
+
+        /* 워프 효과 */
+        #warp-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 200;
+            transition: opacity 0.5s;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+</head>
+<body>
+
+    <!-- 탐험 모드 UI -->
+    <div id="ui-layer">
+        <div id="hud-top">
+            <div class="hud-line">LOCATION: <span id="loc-name">Gale Crater</span></div><br>
+            <div class="hud-line">COORDS: <span id="loc-coords">4.5°S, 137.4°E</span></div>
+        </div>
+        <div id="map-btn">MAP</div>
+        <div id="controls-hint">
+            <div class="hint-circle">운전<br>(전후/좌우)</div>
+            <div class="hint-circle">시선<br>(드래그)</div>
+        </div>
+    </div>
+
+    <!-- 맵 모드 UI -->
+    <div id="map-container">
+        <div id="map-ui">
+            <h1 style="text-align:center; color:white; margin-top:40px; text-shadow:0 0 10px #ff4500;">SELECT DESTINATION</h1>
+            <div id="map-instruction">드래그하여 회전 / 핀을 클릭하여 이동</div>
+            <button id="close-map-btn">탐험 계속하기</button>
+        </div>
+    </div>
+
+    <div id="warp-overlay"></div>
+
+    <script>
+        // --- 데이터 ---
+        const MARS_LOCATIONS = [
+            { name: "Gale Crater (Curiosity)", lat: -4.5, lon: 137.4, type: "Landing" },
+            { name: "Jezero Crater (Perseverance)", lat: 18.4, lon: 77.5, type: "Landing" },
+            { name: "Olympus Mons", lat: 18.65, lon: 226.2, type: "Volcano" },
+            { name: "Valles Marineris", lat: -14.0, lon: 280.8, type: "Canyon" },
+            { name: "Chryse Planitia", lat: 22.4, lon: 312.0, type: "Landing" },
+            { name: "Utopia Planitia", lat: 48.3, lon: 225.7, type: "Landing" },
+            { name: "Gusev Crater", lat: -14.6, lon: 175.4, type: "Landing" },
+            { name: "Elysium Mons", lat: 24.8, lon: 147.1, type: "Volcano" },
+            { name: "Hellas Planitia", lat: -42.7, lon: 70.0, type: "Basin" },
+            { name: "Cydonia (Face)", lat: 40.7, lon: 350.5, type: "Feature" }
+        ];
+
+        let appMode = 'EXPLORE'; 
+        let currentLoc = MARS_LOCATIONS[0];
+        
+        let sceneEx, cameraEx, renderer;
+        let groundMesh, rockGroup;
+        const clock = new THREE.Clock();
+        
+        let sceneMap, cameraMap;
+        let marsGlobe, markersGroup;
+        let isDraggingMap = false;
+        let prevMouseMap = { x: 0, y: 0 };
+        let mapRotationVelocity = { x: 0, y: 0 };
+
+        let input = { throttle: 0, steering: 0, lookX: 0, lookY: 0 };
+        let touchIdx = { drive: -1, look: -1 };
+        let touchStart = { x:0, y:0, lx:0, ly:0 };
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        init();
+        animate();
+
+        function init() {
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            // --- Scene 1: Explore ---
+            sceneEx = new THREE.Scene();
+            sceneEx.background = new THREE.Color(0x110505);
+            sceneEx.fog = new THREE.FogExp2(0xcc5533, 0.012);
+
+            cameraEx = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            cameraEx.position.set(0, 2, 0);
+            cameraEx.rotation.order = 'YXZ'; 
+
+            const hemiEx = new THREE.HemisphereLight(0xffaa88, 0x444444, 0.6);
+            sceneEx.add(hemiEx);
+            const dirEx = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirEx.position.set(50, 100, 50);
+            dirEx.castShadow = true;
+            sceneEx.add(dirEx);
+
+            rockGroup = new THREE.Group();
+            sceneEx.add(rockGroup);
+            
+            createTerrain(currentLoc);
+            
+            // --- Scene 2: Map (지구본) ---
+            sceneMap = new THREE.Scene();
+            sceneMap.background = new THREE.Color(0x020202); 
+
+            cameraMap = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            cameraMap.position.z = 18; 
+
+            // 맵 조명 밝게 설정
+            const ambMap = new THREE.AmbientLight(0x888888); // 밝은 앰비언트
+            sceneMap.add(ambMap);
+            const dirMap = new THREE.DirectionalLight(0xffffff, 1.5); // 강한 직사광
+            dirMap.position.set(10, 10, 20);
+            sceneMap.add(dirMap);
+            
+            createStars(sceneMap);
+            createMarsGlobe();
+
+            // --- 이벤트 ---
+            window.addEventListener('resize', onResize);
+            
+            document.getElementById('map-btn').addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                openMap();
+            });
+            document.getElementById('close-map-btn').addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                closeMap();
+            });
+
+            // Map Events
+            const mapContainer = document.getElementById('map-container');
+            mapContainer.addEventListener('mousedown', onMapDragStart);
+            window.addEventListener('mousemove', onMapDragMove);
+            window.addEventListener('mouseup', onMapDragEnd);
+            mapContainer.addEventListener('click', onMapClick);
+
+            mapContainer.addEventListener('touchstart', onMapTouchStart, {passive:false});
+            mapContainer.addEventListener('touchmove', onMapTouchMove, {passive:false});
+            mapContainer.addEventListener('touchend', onMapDragEnd);
+
+            // Explore Controls
+            setupExploreInputs();
+        }
+
+        // --- 지형 & 돌 (높이 공식 통일) ---
+        function getTerrainHeight(x, z, type) {
+            let y = Math.sin(x * 0.05) * Math.cos(z * 0.05) * 2; 
+            y += Math.sin(x * 0.2 + z * 0.1) * 0.5; 
+            if(type === 'Volcano') {
+                const dist = Math.sqrt(x*x + z*z);
+                if (dist < 50) y += (50 - dist) * 0.3;
+            }
+            if(type === 'Canyon') y -= Math.abs(x) * 0.1;
+            return y;
+        }
+
+        function createTerrain(locData) {
+            if(groundMesh) {
+                sceneEx.remove(groundMesh);
+                groundMesh.geometry.dispose();
+            }
+            const width = 200;
+            const segments = 120;
+            const geo = new THREE.PlaneGeometry(width, width, segments, segments);
+            const pos = geo.attributes.position;
+            
+            for(let i=0; i<pos.count; i++){
+                const x = pos.getX(i);
+                const z = pos.getY(i);
+                pos.setZ(i, getTerrainHeight(x, z, locData.type));
+            }
+            geo.computeVertexNormals();
+
+            let tColor = 0x8B4513;
+            if(locData.type === 'Volcano') tColor = 0x804040;
+            if(locData.type === 'Landing') tColor = 0xA0522D;
+            if(locData.type === 'Canyon') tColor = 0x5D4037;
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: tColor, roughness: 0.9, side: THREE.DoubleSide
+            });
+
+            const loader = new THREE.TextureLoader();
+            loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/terrain/backgrounddetailed64.jpg', (tex) => {
+                tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+                tex.repeat.set(10, 10);
+                mat.map = tex;
+                mat.needsUpdate = true;
+            });
+
+            groundMesh = new THREE.Mesh(geo, mat);
+            groundMesh.rotation.x = -Math.PI/2;
+            groundMesh.userData = { isGround: true };
+            sceneEx.add(groundMesh);
+
+            updateRocks(locData.type);
+        }
+
+        function updateRocks(type) {
+            rockGroup.clear();
+            const rockGeo = new THREE.DodecahedronGeometry(0.3, 0); 
+            const rockMat = new THREE.MeshStandardMaterial({ color: 0x5a4d41 });
+            
+            for(let i=0; i<80; i++) {
+                const mesh = new THREE.Mesh(rockGeo, rockMat);
+                const r = Math.random() * 90;
+                const theta = Math.random() * Math.PI * 2;
+                const x = r * Math.cos(theta);
+                const z = r * Math.sin(theta);
+                
+                const h = getTerrainHeight(x, z, type);
+                mesh.position.set(x, h + 0.2, z); 
+                mesh.scale.setScalar(0.5 + Math.random());
+                rockGroup.add(mesh);
+            }
+        }
+
+        // --- 맵 (지구본) 생성 [수정됨: 기본 색상 추가] ---
+        function createMarsGlobe() {
+            const loader = new THREE.TextureLoader();
+            
+            // 재질 생성 시 색상을 먼저 지정하여 로딩 전에도 보이게 함
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xaa4422, // 화성색 (로딩 실패 대비)
+                roughness: 0.7,
+                metalness: 0.1
+            });
+
+            // 텍스처 로드 시도
+            loader.load(
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/OSIRIS_Mars_true_color.jpg/1024px-OSIRIS_Mars_true_color.jpg',
+                (tex) => {
+                    material.map = tex;
+                    material.color.setHex(0xffffff); // 텍스처 로드되면 원래 색 제거 (흰색 베이스)
+                    material.needsUpdate = true;
+                },
+                undefined,
+                (err) => {
+                    console.log("Texture load failed, using base color.");
+                }
+            );
+            
+            const geometry = new THREE.SphereGeometry(5, 64, 64);
+            marsGlobe = new THREE.Mesh(geometry, material);
+            sceneMap.add(marsGlobe);
+
+            markersGroup = new THREE.Group();
+            marsGlobe.add(markersGroup);
+
+            const pinGeo = new THREE.SphereGeometry(0.15, 16, 16);
+            const pinMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+            MARS_LOCATIONS.forEach(loc => {
+                const latRad = loc.lat * (Math.PI / 180);
+                const lonRad = -loc.lon * (Math.PI / 180);
+                const r = 5.05;
+                const x = r * Math.cos(latRad) * Math.cos(lonRad);
+                const y = r * Math.sin(latRad);
+                const z = r * Math.cos(latRad) * Math.sin(lonRad);
+
+                const pin = new THREE.Mesh(pinGeo, pinMat.clone());
+                pin.position.set(x, y, z);
+                pin.userData = { locData: loc };
+                
+                if(loc.type === 'Landing') pin.material.color.setHex(0x00ff00);
+                else if(loc.type === 'Volcano') pin.material.color.setHex(0xff4500);
+                else pin.material.color.setHex(0xaaaaff);
+
+                markersGroup.add(pin);
+            });
+        }
+
+        function createStars(scene) {
+            const geo = new THREE.BufferGeometry();
+            const pos = [];
+            for(let i=0; i<2000; i++) pos.push((Math.random()-0.5)*200, (Math.random()-0.5)*200, (Math.random()-0.5)*200);
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.15 })));
+        }
+
+        // --- 맵 제어 ---
+        function openMap() {
+            appMode = 'MAP';
+            document.getElementById('map-container').style.display = 'block';
+            document.getElementById('ui-layer').style.opacity = 0;
+            marsGlobe.rotation.set(0,0,0);
+        }
+
+        function closeMap() {
+            appMode = 'EXPLORE';
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('ui-layer').style.opacity = 1;
+        }
+
+        function onMapDragStart(e) { isDraggingMap = true; prevMouseMap.x = e.clientX; prevMouseMap.y = e.clientY; mapRotationVelocity = {x:0, y:0}; }
+        function onMapTouchStart(e) { if(e.touches.length === 1) { isDraggingMap = true; prevMouseMap.x = e.touches[0].clientX; prevMouseMap.y = e.touches[0].clientY; mapRotationVelocity = {x:0, y:0}; }}
+        
+        function onMapDragMove(e) {
+            if(!isDraggingMap) return;
+            const dx = e.clientX - prevMouseMap.x; const dy = e.clientY - prevMouseMap.y;
+            rotateGlobe(dx, dy); prevMouseMap.x = e.clientX; prevMouseMap.y = e.clientY;
+        }
+        function onMapTouchMove(e) {
+            if(!isDraggingMap) return;
+            const dx = e.touches[0].clientX - prevMouseMap.x; const dy = e.touches[0].clientY - prevMouseMap.y;
+            rotateGlobe(dx, dy); prevMouseMap.x = e.touches[0].clientX; prevMouseMap.y = e.touches[0].clientY;
+        }
+        function onMapDragEnd() { isDraggingMap = false; }
+        
+        function rotateGlobe(dx, dy) {
+            marsGlobe.rotation.y += dx * 0.005;
+            marsGlobe.rotation.x += dy * 0.005;
+            mapRotationVelocity.x = dy * 0.005; mapRotationVelocity.y = dx * 0.005;
+        }
+
+        function onMapClick(e) {
+            if(isDraggingMap) return; 
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, cameraMap);
+            const intersects = raycaster.intersectObjects(markersGroup.children);
+            if(intersects.length > 0) {
+                teleportTo(intersects[0].object.userData.locData);
+            }
+        }
+
+        function teleportTo(targetLoc) {
+            const warpDiv = document.getElementById('warp-overlay');
+            warpDiv.style.opacity = 1;
+            setTimeout(() => {
+                currentLoc = targetLoc;
+                document.getElementById('loc-name').innerText = targetLoc.name;
+                document.getElementById('loc-coords').innerText = `${targetLoc.lat}, ${targetLoc.lon}`;
+                createTerrain(targetLoc);
+                closeMap();
+                setTimeout(() => { warpDiv.style.opacity = 0; }, 500);
+            }, 500);
+        }
+
+        // --- 탐험 컨트롤 ---
+        function setupExploreInputs() {
+            document.addEventListener('touchstart', e => {
+                // 맵 모드이거나, 버튼 클릭 시에는 게임 조작 무시
+                if(appMode !== 'EXPLORE') return;
+                if(e.target.closest('#map-btn')) return; // 버튼 누를 땐 이동 X
+
+                const w = window.innerWidth;
+                for(let t of e.changedTouches) {
+                    if(t.clientX < w/2 && touchIdx.drive === -1) { 
+                        touchIdx.drive = t.identifier;
+                        touchStart.x = t.clientX; touchStart.y = t.clientY;
+                    } else if(t.clientX >= w/2 && touchIdx.look === -1) { 
+                        touchIdx.look = t.identifier;
+                        touchStart.lx = t.clientX; touchStart.ly = t.clientY;
+                    }
+                }
+            }, {passive:false});
+
+            document.addEventListener('touchmove', e => {
+                if(appMode !== 'EXPLORE') return;
+                e.preventDefault();
+                for(let t of e.changedTouches) {
+                    if(t.identifier === touchIdx.drive) {
+                        const dx = t.clientX - touchStart.x;
+                        const dy = t.clientY - touchStart.y;
+                        input.throttle = -dy * 0.05; 
+                        input.steering = -dx * 0.02; 
+                    }
+                    if(t.identifier === touchIdx.look) {
+                        const dx = t.clientX - touchStart.lx;
+                        const dy = t.clientY - touchStart.ly;
+                        input.lookY = -dx * 0.005; 
+                        input.lookX = -dy * 0.005; 
+                        touchStart.lx = t.clientX; touchStart.ly = t.clientY;
+                    }
+                }
+            }, {passive:false});
+
+            const endTouch = e => {
+                for(let t of e.changedTouches) {
+                    if(t.identifier === touchIdx.drive) { touchIdx.drive = -1; input.throttle=0; input.steering=0; }
+                    if(t.identifier === touchIdx.look) { touchIdx.look = -1; input.lookX=0; input.lookY=0; }
+                }
+            };
+            document.addEventListener('touchend', endTouch);
+            
+            document.addEventListener('keydown', e => {
+                if(e.key === 'w' || e.key === 'W') input.throttle = 1;
+                if(e.key === 's' || e.key === 'S') input.throttle = -1;
+                if(e.key === 'a' || e.key === 'A') input.steering = 1; 
+                if(e.key === 'd' || e.key === 'D') input.steering = -1;
+            });
+            document.addEventListener('keyup', e => {
+                if(['w','s','W','S'].includes(e.key)) input.throttle = 0;
+                if(['a','d','A','D'].includes(e.key)) input.steering = 0;
+            });
+
+            document.addEventListener('mousedown', () => { 
+                if(appMode === 'EXPLORE' && document.pointerLockElement !== document.body) {
+                    document.body.requestPointerLock().catch(e=>{});
+                }
+            });
+            document.addEventListener('mousemove', e => {
+                if(document.pointerLockElement === document.body && appMode === 'EXPLORE') {
+                    cameraEx.rotation.y -= e.movementX * 0.002;
+                    cameraEx.rotation.x -= e.movementY * 0.002; 
+                    cameraEx.rotation.x = Math.max(-1.5, Math.min(1.5, cameraEx.rotation.x));
+                }
+            });
+        }
+
+        function onResize() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            renderer.setSize(w, h);
+            cameraEx.aspect = w/h; cameraEx.updateProjectionMatrix();
+            cameraMap.aspect = w/h; cameraMap.updateProjectionMatrix();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if(appMode === 'MAP') {
+                if(!isDraggingMap) {
+                    marsGlobe.rotation.y += mapRotationVelocity.y;
+                    marsGlobe.rotation.x += mapRotationVelocity.x;
+                    mapRotationVelocity.x *= 0.95; mapRotationVelocity.y *= 0.95;
+                }
+                renderer.render(sceneMap, cameraMap);
+            } 
+            else {
+                const dt = clock.getDelta();
+                if (input.steering !== 0) cameraEx.rotation.y += input.steering * 2.0 * dt;
+                if(input.lookY !== 0 || input.lookX !== 0) {
+                    cameraEx.rotation.y += input.lookY;
+                    cameraEx.rotation.x += input.lookX;
+                    cameraEx.rotation.x = Math.max(-1.0, Math.min(1.0, cameraEx.rotation.x));
+                    input.lookY = 0; input.lookX = 0;
+                }
+
+                const dir = new THREE.Vector3();
+                cameraEx.getWorldDirection(dir);
+                dir.y = 0; dir.normalize(); 
+                if(input.throttle !== 0) cameraEx.position.addScaledVector(dir, input.throttle * 10 * dt);
+
+                // 지형 높이 추적
+                const terrainH = getTerrainHeight(cameraEx.position.x, cameraEx.position.z, currentLoc.type);
+                cameraEx.position.y = THREE.MathUtils.lerp(cameraEx.position.y, terrainH + 1.7, 0.1);
+
+                renderer.render(sceneEx, cameraEx);
+            }
+        }
+    </script>
+</body>
+</html>

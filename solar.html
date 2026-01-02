@@ -1,0 +1,2108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solar System v62 (1인칭 조종석 + 내부이동)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Noto Sans KR', sans-serif; user-select: none; touch-action: none; }
+        
+        /* --- 상단 바 --- */
+        #top-bar {
+            position: absolute; top: 0; left: 0; width: 100%; height: 70px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; box-sizing: border-box; z-index: 100; pointer-events: none;
+        }
+        h1 { margin: 0; font-size: 20px; color: white; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+
+        .control-group { pointer-events: auto; display: flex; align-items: center; gap: 15px; color: white; }
+        
+        .slider-container { display: flex; flex-direction: column; gap: 2px; }
+        .slider-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #aaa; }
+        .slider-label { width: 60px; text-align: right; }
+        input[type=range] { width: 100px; cursor: pointer; accent-color: #e74c3c; height: 4px; }
+        #time-val { font-size: 14px; font-weight: bold; color: #e74c3c; width: 40px; text-align: right; }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; padding: 6px 12px; border-radius: 20px; cursor: pointer;
+            font-size: 12px; transition: 0.2s; white-space: nowrap; pointer-events: auto;
+        }
+        .mode-btn:hover { background: #e74c3c; border-color: #e74c3c; }
+        .mode-btn.active { background: #e74c3c; border-color: #e74c3c; font-weight: bold; }
+
+        #btn-station { background: rgba(79, 195, 247, 0.2); border-color: rgba(79, 195, 247, 0.5); color: #4fc3f7; }
+        #btn-station:hover { background: #4fc3f7; color: #000; }
+
+        /* --- 파일럿 모드 HUD (1인칭 조종석) --- */
+        #pilot-hud {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 95;
+        }
+        #pilot-hud.active { display: block; }
+
+        /* 조종석 프레임 - 리얼 SF 스타일 */
+        #cockpit-frame { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 96; 
+        }
+        
+        /* 유리 반사 효과 */
+        #glass-reflection {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(160deg, rgba(80,150,200,0.04) 0%, transparent 25%),
+                linear-gradient(200deg, transparent 60%, rgba(100,180,255,0.03) 100%);
+            pointer-events: none; z-index: 97;
+        }
+        
+        /* 조종석 내부 조명 효과 */
+        #cockpit-ambient {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 50% 120%, rgba(0,80,120,0.15) 0%, transparent 50%);
+            pointer-events: none; z-index: 94;
+        }
+
+        /* 중앙 계기판 콘솔 */
+        #center-console {
+            position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
+            width: 45%; max-width: 500px; height: 120px;
+            background: linear-gradient(180deg, rgba(20,25,35,0.95) 0%, rgba(10,15,20,0.98) 100%);
+            border: 2px solid rgba(60,70,90,0.6);
+            border-radius: 8px 8px 0 0;
+            box-shadow: 
+                inset 0 2px 10px rgba(0,0,0,0.8),
+                0 -5px 20px rgba(0,100,150,0.1);
+            z-index: 98;
+        }
+        
+        /* 메인 디스플레이 (중앙) */
+        #main-display {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            width: 200px; height: 70px;
+            background: rgba(0,20,30,0.9);
+            border: 1px solid rgba(0,150,200,0.4);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #main-display::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,200,255,0.5), transparent);
+        }
+        .display-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            height: 100%; padding: 5px;
+        }
+        .display-cell {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-right: 1px solid rgba(0,100,150,0.2);
+            font-size: 8px; color: rgba(0,200,255,0.7);
+        }
+        .display-cell:last-child { border-right: none; }
+        .display-value { font-size: 14px; color: #00d4ff; font-weight: bold; margin-top: 2px; }
+
+        /* 좌우 서브 디스플레이 */
+        .sub-display {
+            position: absolute; top: 15px; width: 80px; height: 55px;
+            background: rgba(0,15,25,0.9);
+            border: 1px solid rgba(0,120,160,0.3);
+            border-radius: 3px;
+        }
+        .sub-display.left { left: 15px; }
+        .sub-display.right { right: 15px; }
+        .sub-display-content {
+            padding: 5px; font-size: 7px; color: rgba(0,180,220,0.8);
+        }
+        .sub-display-bar {
+            height: 4px; background: rgba(0,50,80,0.5); margin: 3px 0; border-radius: 2px;
+            overflow: hidden;
+        }
+        .sub-display-bar-fill {
+            height: 100%; background: linear-gradient(90deg, #00aaff, #00ffcc);
+            transition: width 0.3s;
+        }
+
+        /* LED 표시등 행 */
+        #led-row {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 6px;
+        }
+        .led {
+            width: 6px; height: 6px; border-radius: 50%;
+            box-shadow: 0 0 4px currentColor;
+        }
+        .led.green { background: #00ff44; color: #00ff44; }
+        .led.yellow { background: #ffcc00; color: #ffcc00; }
+        .led.red { background: #ff3344; color: #ff3344; animation: blink 1s infinite; }
+        .led.blue { background: #0088ff; color: #0088ff; }
+        .led.off { background: #333; color: transparent; box-shadow: none; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* 좌측 패널 */
+        #left-panel {
+            position: absolute; left: 0; top: 20%; bottom: 25%;
+            width: 12%; max-width: 140px;
+            background: linear-gradient(90deg, rgba(15,20,30,0.98) 0%, rgba(25,30,40,0.9) 100%);
+            border-right: 2px solid rgba(50,60,80,0.5);
+            clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 100%);
+            z-index: 98;
+        }
+        
+        /* 우측 패널 */
+        #right-panel {
+            position: absolute; right: 0; top: 20%; bottom: 25%;
+            width: 12%; max-width: 140px;
+            background: linear-gradient(-90deg, rgba(15,20,30,0.98) 0%, rgba(25,30,40,0.9) 100%);
+            border-left: 2px solid rgba(50,60,80,0.5);
+            clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 95%);
+            z-index: 98;
+        }
+        
+        /* 사이드 패널 내부 디스플레이 */
+        .side-display {
+            margin: 15px 8px; padding: 8px;
+            background: rgba(0,20,35,0.8);
+            border: 1px solid rgba(0,100,140,0.4);
+            border-radius: 3px;
+        }
+        .side-display-title {
+            font-size: 7px; color: rgba(0,180,220,0.6);
+            text-transform: uppercase; margin-bottom: 5px;
+        }
+        .side-gauge {
+            height: 30px; background: rgba(0,30,50,0.5);
+            border-radius: 2px; overflow: hidden;
+            display: flex; align-items: flex-end;
+        }
+        .side-gauge-bar {
+            width: 100%; background: linear-gradient(0deg, #00aaff 0%, #00ffcc 100%);
+            transition: height 0.5s;
+        }
+        
+        /* 사이드 LED 그룹 */
+        .side-leds {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+            margin-top: 10px; padding: 5px;
+        }
+        .side-led {
+            width: 8px; height: 8px; border-radius: 2px;
+            background: #333;
+        }
+        .side-led.on { background: #ffcc00; box-shadow: 0 0 6px #ffcc00; }
+
+        /* 상단 프레임 */
+        #top-frame {
+            position: absolute; top: 0; left: 0; right: 0; height: 8%;
+            background: linear-gradient(180deg, rgba(10,15,20,0.98) 0%, rgba(20,25,35,0.95) 70%, transparent 100%);
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+            z-index: 98;
+        }
+        
+        /* 상단 표시등 */
+        #top-indicators {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px;
+        }
+        .top-indicator {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 8px; color: rgba(200,220,255,0.6);
+        }
+        .top-indicator .led { width: 5px; height: 5px; }
+
+        /* 프레임 모서리 */
+        .frame-corner {
+            position: absolute; width: 80px; height: 80px;
+            border: 3px solid rgba(50,60,80,0.6);
+            z-index: 99;
+        }
+        .frame-corner.tl { top: 8%; left: 12%; border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
+        .frame-corner.tr { top: 8%; right: 12%; border-left: none; border-bottom: none; border-radius: 0 10px 0 0; }
+        .frame-corner.bl { bottom: 22%; left: 12%; border-right: none; border-top: none; border-radius: 0 0 0 10px; }
+        .frame-corner.br { bottom: 22%; right: 12%; border-left: none; border-top: none; border-radius: 0 0 10px 0; }
+
+        /* 홀로그램 네비게이션 디스플레이 */
+        #holo-display {
+            position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+            width: 220px; padding: 12px; 
+            background: rgba(0, 25, 40, 0.85);
+            border: 1px solid rgba(0,180,220,0.5); 
+            border-radius: 6px;
+            color: #00ffff; font-size: 10px; 
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 20px rgba(0,150,200,0.2), inset 0 0 30px rgba(0,100,150,0.1);
+        }
+        #holo-display::before {
+            content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 2px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+        }
+        #holo-display h3 { margin: 0 0 8px 0; font-size: 10px; color: #00d4ff; text-align: center; letter-spacing: 2px; }
+        .holo-row { display: flex; justify-content: space-between; margin: 4px 0; }
+        .holo-label { color: #6699aa; font-size: 9px; }
+        .holo-value { color: #00ffcc; font-weight: bold; }
+
+        /* 십자선 (1인칭) */
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
+            transform: translate(-50%, -50%); pointer-events: none;
+        }
+        #crosshair::before {
+            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(0,255,255,0.4) 30%, transparent 45%, transparent 55%, rgba(0,255,255,0.4) 70%, transparent 100%);
+        }
+        #crosshair::after {
+            content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,255,255,0.4) 30%, transparent 45%, transparent 55%, rgba(0,255,255,0.4) 70%, transparent 100%);
+        }
+        #crosshair-center {
+            position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+            border: 1px solid rgba(0,255,255,0.5); border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 속도계 (좌측 하단) */
+        #speed-gauge {
+            position: absolute; bottom: 15%; left: 3%;
+            width: 100px; height: 100px; pointer-events: none;
+        }
+        #speed-gauge-bg {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: rgba(10,20,35,0.9); 
+            border: 2px solid rgba(0,150,200,0.4);
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            box-shadow: inset 0 0 20px rgba(0,100,150,0.3), 0 0 15px rgba(0,100,150,0.2);
+        }
+        #speed-display { font-size: 28px; color: #00ffcc; font-weight: bold; text-shadow: 0 0 15px rgba(0,255,200,0.5); }
+        #speed-label { font-size: 9px; color: #5588aa; }
+        #control-hint { 
+            position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);
+            font-size: 7px; color: rgba(100,150,180,0.6); white-space: nowrap;
+        }
+
+        /* 레이더 (우측 하단) */
+        #radar {
+            position: absolute; bottom: 15%; right: 3%;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(0,30,50,0.95) 0%, rgba(0,20,35,0.95) 100%);
+            border: 2px solid rgba(0,150,200,0.4); border-radius: 50%;
+            pointer-events: auto; overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,100,150,0.3), 0 0 15px rgba(0,100,150,0.2);
+        }
+        #radar::before, #radar::after {
+            content: ''; position: absolute; top: 50%; left: 50%; background: rgba(0,200,255,0.1);
+        }
+        #radar::before { width: 100%; height: 1px; transform: translate(-50%, -50%); }
+        #radar::after { width: 1px; height: 100%; transform: translate(-50%, -50%); }
+        #radar-sweep {
+            position: absolute; top: 50%; left: 50%; width: 50%; height: 2px;
+            background: linear-gradient(to right, rgba(0,255,200,0.8), transparent);
+            transform-origin: left center; animation: sweep 3s linear infinite;
+        }
+        @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #radar-center {
+            position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+            background: #00ffcc; border-radius: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px #00ffcc;
+        }
+        .radar-blip {
+            position: absolute; width: 5px; height: 5px; border-radius: 50%;
+            transform: translate(-50%, -50%); box-shadow: 0 0 4px currentColor;
+        }
+
+        /* 우주선 내부 이동 버튼 */
+        #ship-interior-nav {
+            position: absolute; bottom: 3%; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 6px; pointer-events: auto;
+        }
+        .interior-btn {
+            background: rgba(0,40,60,0.85); border: 1px solid rgba(0,200,255,0.4);
+            color: #00d4ff; padding: 8px 10px; border-radius: 8px;
+            font-size: 9px; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            min-width: 50px;
+        }
+        .interior-btn:hover, .interior-btn.active {
+            background: rgba(0,100,150,0.7); box-shadow: 0 0 10px rgba(0,200,255,0.5);
+        }
+        .interior-btn .icon { font-size: 16px; }
+        .interior-btn .label { font-size: 8px; }
+
+        /* 내부 이동 WASD 컨트롤 표시 */
+        #interior-walk-hint {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.3); font-size: 10px; text-align: center;
+            pointer-events: none; display: none;
+        }
+        #interior-walk-hint.active { display: block; }
+
+        /* 핸드레일 이동 오버레이 */
+        #handrail-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            align-items: center; justify-content: center; flex-direction: column;
+        }
+        #handrail-overlay.active { display: flex; }
+        .handrail-anim { width: 120px; height: 50px; position: relative; }
+        .handrail-line {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(to right, #333, #ffcc00, #333);
+            transform: translateY(-50%); border-radius: 2px;
+        }
+        .hand-icon {
+            position: absolute; top: 50%; font-size: 18px;
+            transform: translate(-50%, -50%);
+            animation: moveHand 1s ease-in-out forwards;
+        }
+        @keyframes moveHand { 0% { left: 10%; } 100% { left: 90%; } }
+        #handrail-text { color: #00ffff; margin-top: 12px; font-size: 11px; }
+
+        /* 우주선 선택 패널 */
+        #ship-select-panel {
+            display: none; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(10,20,35,0.95); border: 1px solid rgba(0,200,255,0.4);
+            border-radius: 12px; padding: 12px 15px; z-index: 150;
+            backdrop-filter: blur(10px); min-width: 200px;
+        }
+        #ship-select-panel.active { display: block; }
+        #ship-select-title {
+            color: #00d4ff; font-size: 13px; font-weight: bold;
+            text-align: center; margin-bottom: 10px; padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0,200,255,0.2);
+        }
+        #ship-select-list { display: flex; flex-direction: column; gap: 6px; }
+        .ship-select-item {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(0,50,80,0.5); border: 1px solid rgba(0,200,255,0.3);
+            border-radius: 8px; padding: 8px 12px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ship-select-item:hover {
+            background: rgba(0,100,150,0.6); border-color: #00d4ff;
+            transform: translateX(3px);
+        }
+        .ship-color-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .ship-select-name { color: #fff; font-size: 11px; flex: 1; }
+        .ship-select-btn {
+            background: rgba(0,200,255,0.2); border: 1px solid #00d4ff;
+            color: #00d4ff; padding: 3px 8px; border-radius: 10px;
+            font-size: 9px; cursor: pointer;
+        }
+        .ship-select-btn:hover { background: #00d4ff; color: #000; }
+        #ship-select-hint {
+            color: rgba(255,255,255,0.4); font-size: 9px;
+            text-align: center; margin-top: 8px;
+        }
+
+        /* 내비게이션 컨트롤 (상단) */
+        #nav-controls {
+            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; pointer-events: auto;
+        }
+        #target-select {
+            background: rgba(0,20,40,0.9); color: #00ffff; border: 1px solid rgba(0,200,255,0.4);
+            padding: 5px 10px; border-radius: 12px; outline: none; font-size: 10px;
+        }
+        #btn-autopilot {
+            background: rgba(100, 50, 50, 0.6); border: 1px solid #ff5555; color: #ff8888;
+            padding: 5px 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 10px;
+        }
+        #btn-autopilot.engaged { background: #ff5555; color: white; }
+        #btn-exit-pilot { background: rgba(255,80,80,0.8); border: none; font-size: 10px; padding: 5px 10px; }
+
+        /* 모바일 컨트롤 (조이스틱 & 버튼) */
+        #mobile-controls {
+            display: none;
+            position: absolute; bottom: 25%; width: 100%; padding: 0 15px; box-sizing: border-box;
+            pointer-events: none; justify-content: space-between;
+        }
+        
+        #joystick-zone {
+            width: 100px; height: 100px;
+            background: rgba(0,50,80,0.5); border-radius: 50%; 
+            border: 2px solid rgba(0,200,255,0.4);
+            pointer-events: auto; touch-action: none; position: relative;
+        }
+        
+        #joystick-knob {
+            position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
+            background: radial-gradient(circle, rgba(0,200,255,0.6), rgba(0,100,150,0.4));
+            border: 2px solid #00d4ff; border-radius: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0,200,255,0.4);
+        }
+        
+        #throttle-controls {
+            display: flex; flex-direction: column; gap: 10px; pointer-events: auto;
+        }
+        .throttle-btn {
+            width: 50px; height: 50px; border-radius: 50%; 
+            border: 2px solid rgba(0,200,255,0.5);
+            background: rgba(0,40,60,0.7); color: #00ffff;
+            font-size: 20px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; touch-action: none; user-select: none;
+        }
+        .throttle-btn:active { background: rgba(0,150,200,0.5); }
+        #btn-brake { border-color: rgba(255,100,100,0.5); color: #ff6666; font-size: 14px; }
+
+        /* 탑승 버튼 */
+        #btn-board {
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: #e74c3c; color: white; padding: 12px 30px; border: none;
+            border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.6); z-index: 200; pointer-events: auto;
+            display: none; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } 100% { transform: translateX(-50%) scale(1); } }
+
+        .hidden-in-pilot { display: none !important; }
+
+        /* --- 기타 스타일 --- */
+        #nav-container { position: absolute; top: 80px; left: 0; z-index: 90; display: flex; transition: transform 0.3s; }
+        #nav-container.closed { transform: translateX(-120px); }
+        #nav-panel { width: 140px; max-height: 50vh; overflow-y: auto; background: rgba(10,10,15,0.6); border-radius: 0 0 15px 0; padding: 10px; backdrop-filter: blur(10px); color: #ccc; }
+        .nav-item { padding: 8px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 12px; }
+        .nav-item:hover { background: rgba(255,255,255,0.2); color: white; }
+        #nav-toggle { width: 20px; height: 40px; background: rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #spawn-dock { position: absolute; top: 80px; right: 15px; width: 50px; display: flex; flex-direction: column; gap: 10px; z-index: 100; pointer-events: auto; }
+        .spawn-btn { width: 36px; height: 36px; border-radius: 50%; background-color: #333; background-size: cover; border: 2px solid #555; cursor: pointer; }
+        #msg-box { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: #ff6b6b; font-weight: bold; text-shadow: 0 2px 4px black; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #reset-cam { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #e67e22; color: white; padding: 10px 25px; border-radius: 50px; border:none; cursor:pointer; display:none; pointer-events:auto; }
+        .label { color: rgba(255,255,255,0.7); font-size: 10px; text-shadow: 0 0 3px black; margin-top: -8px; }
+        #chat-toggle { position: absolute; bottom: 30px; left: 20px; width: 50px; height: 50px; background: rgba(30,30,40,0.9); border: 2px solid #4fc3f7; border-radius: 50%; color: #4fc3f7; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; z-index: 101; pointer-events: auto; }
+        #chat-panel { position: absolute; bottom: 90px; left: 20px; width: 320px; height: 400px; background: rgba(15,15,20,0.95); border: 1px solid #4fc3f7; border-radius: 15px; display: flex; flex-direction: column; transform: scale(0); transform-origin: bottom left; transition: transform 0.3s; z-index: 101; pointer-events: auto; overflow: hidden; }
+        #chat-panel.open { transform: scale(1); }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; color: #ddd; }
+        .msg { padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; max-width: 80%; }
+        .msg.user { align-self: flex-end; background: #2c3e50; margin-left: auto; }
+        .msg.ai { align-self: flex-start; background: rgba(79,195,247,0.15); }
+        #chat-input-area { padding: 10px; display: flex; gap: 5px; border-top: 1px solid #333; }
+        #chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; border-radius: 20px; padding: 5px 10px; }
+        #chat-send { background: #4fc3f7; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+    </style>
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+    </script>
+</head>
+<body>
+
+    <div id="top-bar">
+        <h1>🌌 MilkyWay <span style="color:#e74c3c">Sim</span></h1>
+        <div class="control-group">
+            <button id="btn-scale-mode" class="mode-btn">거리: 체험</button>
+            <button id="btn-station" class="mode-btn">🛰️ 정거장</button>
+            <div class="slider-container">
+                <div class="slider-row"><span class="slider-label">정밀</span><input type="range" id="time-slider-fine" min="0" max="2" step="0.1" value="1"></div>
+                <div class="slider-row"><span class="slider-label">고속</span><input type="range" id="time-slider-coarse" min="1" max="100" step="1" value="1"></div>
+            </div>
+            <div id="time-val">1.0x</div>
+        </div>
+    </div>
+
+    <!-- 파일럿 모드 HUD (1인칭 조종석) -->
+    <div id="pilot-hud">
+        <!-- 조종석 내부 조명 -->
+        <div id="cockpit-ambient"></div>
+        
+        <!-- 조종석 프레임 (SVG) -->
+        <svg id="cockpit-frame" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+            <!-- 좌측 큰 프레임 -->
+            <path d="M0,0 L0,1080 L180,1080 L220,900 L200,600 L180,300 L220,50 L150,0 Z" fill="rgba(12,16,24,0.98)"/>
+            <path d="M180,1080 L220,900 L200,600 L180,300 L220,50" stroke="rgba(60,80,100,0.5)" stroke-width="3" fill="none"/>
+            
+            <!-- 우측 큰 프레임 -->
+            <path d="M1920,0 L1920,1080 L1740,1080 L1700,900 L1720,600 L1740,300 L1700,50 L1770,0 Z" fill="rgba(12,16,24,0.98)"/>
+            <path d="M1740,1080 L1700,900 L1720,600 L1740,300 L1700,50" stroke="rgba(60,80,100,0.5)" stroke-width="3" fill="none"/>
+            
+            <!-- 상단 프레임 -->
+            <path d="M150,0 L1770,0 L1700,50 Q960,90 220,50 Z" fill="rgba(12,16,24,0.98)"/>
+            <path d="M220,50 Q960,90 1700,50" stroke="rgba(60,80,100,0.4)" stroke-width="2" fill="none"/>
+            
+            <!-- 상단 프레임 두께감 -->
+            <path d="M300,50 L350,85 L960,100 L1570,85 L1620,50" stroke="rgba(40,50,65,0.6)" stroke-width="4" fill="none"/>
+            
+            <!-- 하단 메인 콘솔 영역 -->
+            <path d="M180,1080 L1740,1080 L1650,850 Q960,800 270,850 Z" fill="rgba(8,12,18,0.99)"/>
+            <path d="M270,850 Q960,800 1650,850" stroke="rgba(50,70,90,0.5)" stroke-width="3" fill="none"/>
+            
+            <!-- 좌측 경사 프레임 (창문 테두리) -->
+            <path d="M220,50 L180,300 L250,320 L280,80 Z" fill="rgba(25,30,40,0.95)"/>
+            <path d="M180,300 L200,600 L260,580 L250,320 Z" fill="rgba(20,25,35,0.95)"/>
+            <path d="M200,600 L220,900 L280,870 L260,580 Z" fill="rgba(25,30,40,0.95)"/>
+            
+            <!-- 우측 경사 프레임 -->
+            <path d="M1700,50 L1740,300 L1670,320 L1640,80 Z" fill="rgba(25,30,40,0.95)"/>
+            <path d="M1740,300 L1720,600 L1660,580 L1670,320 Z" fill="rgba(20,25,35,0.95)"/>
+            <path d="M1720,600 L1700,900 L1640,870 L1660,580 Z" fill="rgba(25,30,40,0.95)"/>
+            
+            <!-- 중앙 콘솔 하이라이트 -->
+            <rect x="700" y="860" width="520" height="120" rx="6" fill="rgba(15,20,28,0.95)" stroke="rgba(50,70,100,0.4)" stroke-width="2"/>
+            
+            <!-- 좌측 콘솔 패널 -->
+            <rect x="300" y="880" width="180" height="80" rx="4" fill="rgba(10,15,22,0.9)" stroke="rgba(40,60,80,0.4)"/>
+            <rect x="310" y="890" width="70" height="35" rx="2" fill="rgba(0,25,40,0.8)" stroke="rgba(0,100,140,0.3)"/>
+            <rect x="390" y="890" width="80" height="35" rx="2" fill="rgba(0,25,40,0.8)" stroke="rgba(0,100,140,0.3)"/>
+            
+            <!-- 우측 콘솔 패널 -->
+            <rect x="1440" y="880" width="180" height="80" rx="4" fill="rgba(10,15,22,0.9)" stroke="rgba(40,60,80,0.4)"/>
+            <rect x="1450" y="890" width="80" height="35" rx="2" fill="rgba(0,25,40,0.8)" stroke="rgba(0,100,140,0.3)"/>
+            <rect x="1540" y="890" width="70" height="35" rx="2" fill="rgba(0,25,40,0.8)" stroke="rgba(0,100,140,0.3)"/>
+            
+            <!-- LED 표시등들 - 좌측 하단 -->
+            <g class="leds-group">
+                <circle cx="320" cy="945" r="4" fill="#44ff44" opacity="0.9"/>
+                <circle cx="335" cy="945" r="4" fill="#44ff44" opacity="0.9"/>
+                <circle cx="350" cy="945" r="4" fill="#ffcc00" opacity="0.9"/>
+                <circle cx="365" cy="945" r="4" fill="#ffcc00" opacity="0.9"/>
+                <circle cx="380" cy="945" r="4" fill="#333" opacity="0.9"/>
+                <circle cx="395" cy="945" r="4" fill="#333" opacity="0.9"/>
+                <circle cx="450" cy="945" r="4" fill="#00aaff" opacity="0.9"/>
+                <circle cx="465" cy="945" r="4" fill="#00aaff" opacity="0.9"/>
+            </g>
+            
+            <!-- LED 표시등들 - 우측 하단 -->
+            <g class="leds-group">
+                <circle cx="1455" cy="945" r="4" fill="#00aaff" opacity="0.9"/>
+                <circle cx="1470" cy="945" r="4" fill="#00aaff" opacity="0.9"/>
+                <circle cx="1525" cy="945" r="4" fill="#333" opacity="0.9"/>
+                <circle cx="1540" cy="945" r="4" fill="#333" opacity="0.9"/>
+                <circle cx="1555" cy="945" r="4" fill="#ffcc00" opacity="0.9"/>
+                <circle cx="1570" cy="945" r="4" fill="#ffcc00" opacity="0.9"/>
+                <circle cx="1585" cy="945" r="4" fill="#ff4444" opacity="0.7">
+                    <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="1600" cy="945" r="4" fill="#44ff44" opacity="0.9"/>
+            </g>
+            
+            <!-- 프레임 하이라이트 라인 -->
+            <line x1="220" y1="55" x2="280" y2="80" stroke="rgba(0,150,200,0.2)" stroke-width="1"/>
+            <line x1="1700" y1="55" x2="1640" y2="80" stroke="rgba(0,150,200,0.2)" stroke-width="1"/>
+        </svg>
+        
+        <div id="glass-reflection"></div>
+        
+        <!-- 좌측 패널 -->
+        <div id="left-panel">
+            <div class="side-display">
+                <div class="side-display-title">PWR</div>
+                <div class="side-gauge"><div class="side-gauge-bar" id="pwr-bar" style="height:85%"></div></div>
+            </div>
+            <div class="side-display">
+                <div class="side-display-title">TEMP</div>
+                <div class="side-gauge"><div class="side-gauge-bar" style="height:45%;background:linear-gradient(0deg,#00ff88,#ffcc00)"></div></div>
+            </div>
+            <div class="side-leds">
+                <div class="side-led on"></div><div class="side-led on"></div><div class="side-led"></div><div class="side-led"></div>
+                <div class="side-led on"></div><div class="side-led"></div><div class="side-led on"></div><div class="side-led"></div>
+            </div>
+        </div>
+        
+        <!-- 우측 패널 -->
+        <div id="right-panel">
+            <div class="side-display">
+                <div class="side-display-title">SHIELD</div>
+                <div class="side-gauge"><div class="side-gauge-bar" style="height:100%;background:linear-gradient(0deg,#0088ff,#00ffcc)"></div></div>
+            </div>
+            <div class="side-display">
+                <div class="side-display-title">O2</div>
+                <div class="side-gauge"><div class="side-gauge-bar" style="height:92%"></div></div>
+            </div>
+            <div class="side-leds">
+                <div class="side-led on"></div><div class="side-led on"></div><div class="side-led on"></div><div class="side-led on"></div>
+                <div class="side-led"></div><div class="side-led on"></div><div class="side-led"></div><div class="side-led on"></div>
+            </div>
+        </div>
+        
+        <!-- 프레임 모서리 -->
+        <div class="frame-corner tl"></div>
+        <div class="frame-corner tr"></div>
+        <div class="frame-corner bl"></div>
+        <div class="frame-corner br"></div>
+
+        <!-- 홀로그램 디스플레이 -->
+        <div id="holo-display">
+            <h3>◈ NAVIGATION ◈</h3>
+            <div class="holo-row"><span class="holo-label">위치</span><span class="holo-value" id="current-location">지구 궤도</span></div>
+            <div class="holo-row"><span class="holo-label">목표</span><span class="holo-value" id="target-distance">- km</span></div>
+            <div class="holo-row"><span class="holo-label">연료</span><span class="holo-value" id="fuel-level">100%</span></div>
+        </div>
+
+        <div id="crosshair"><div id="crosshair-center"></div></div>
+        
+        <div id="nav-controls">
+            <select id="target-select"><option value="">목표 선택...</option></select>
+            <button id="btn-autopilot">자동항법</button>
+            <button id="btn-exit-pilot" class="mode-btn" style="background:#e74c3c;">하차</button>
+        </div>
+        
+        <div id="speed-gauge">
+            <div id="speed-gauge-bg">
+                <span id="speed-display">0</span>
+                <span id="speed-label">km/s</span>
+            </div>
+            <div id="control-hint">W전진 A/D회전 Space브레이크</div>
+        </div>
+        
+        <div id="radar">
+            <div id="radar-sweep"></div>
+            <div id="radar-center"></div>
+        </div>
+
+        <!-- 우주선 내부 이동 버튼 -->
+        <div id="ship-interior-nav">
+            <button class="interior-btn active" data-location="cockpit">
+                <span class="icon">🎮</span><span class="label">조종석</span>
+            </button>
+            <button class="interior-btn" data-location="observation">
+                <span class="icon">🔭</span><span class="label">전망대</span>
+            </button>
+            <button class="interior-btn" data-location="engineering">
+                <span class="icon">⚙️</span><span class="label">엔진실</span>
+            </button>
+            <button class="interior-btn" data-location="quarters">
+                <span class="icon">🛏️</span><span class="label">거주실</span>
+            </button>
+        </div>
+
+        <!-- 내부 이동 힌트 -->
+        <div id="interior-walk-hint">WASD로 이동 | 마우스로 시점</div>
+        
+        <!-- 모바일 컨트롤 -->
+        <div id="mobile-controls">
+            <div id="joystick-zone"><div id="joystick-knob"></div></div>
+            <div id="throttle-controls">
+                <div class="throttle-btn" id="btn-accel">▲</div>
+                <div class="throttle-btn" id="btn-brake">■</div>
+                <div class="throttle-btn" id="btn-decel">▼</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 핸드레일 이동 오버레이 -->
+    <div id="handrail-overlay">
+        <div class="handrail-anim">
+            <div class="handrail-line"></div>
+            <div class="hand-icon">✋</div>
+        </div>
+        <div id="handrail-text">핸드레일을 따라 이동 중...</div>
+    </div>
+
+    <!-- 우주선 선택 패널 -->
+    <div id="ship-select-panel">
+        <div id="ship-select-title">🚀 도킹된 우주선</div>
+        <div id="ship-select-list"></div>
+        <div id="ship-select-hint">우주선을 클릭하여 탑승</div>
+    </div>
+
+    <div id="nav-container">
+        <div id="nav-panel">
+            <div class="nav-header">천체 목록</div><div id="nav-list"></div>
+        </div>
+        <div id="nav-toggle">◀</div>
+    </div>
+
+    <div id="spawn-dock"></div>
+    <div id="msg-box">메시지</div>
+    <button id="reset-cam">🔭 전체 보기</button>
+
+    <div id="chat-toggle">💬</div>
+    <div id="chat-panel">
+        <div id="chat-header"><span>🛸 우주 지식 가이드</span><span id="chat-close">×</span></div>
+        <div id="chat-messages"><div class="msg ai">안녕하세요! 정거장에서 우주선을 타고 직접 여행해보세요.</div></div>
+        <div id="chat-input-area"><input type="text" id="chat-input"><button id="chat-send">➤</button></div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- SHADERS -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+#include <common>
+#include <logdepthbuf_pars_vertex>
+
+varying vec2 vUv;
+varying vec3 vPosition;
+
+void main() {
+    vUv = uv;
+    vPosition = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    #include <logdepthbuf_vertex>
+}
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+#include <common>
+#include <logdepthbuf_pars_fragment>
+
+uniform float time;
+varying vec2 vUv;
+varying vec3 vPosition;
+
+vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+float snoise(vec3 v){ 
+    const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
+    const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+    vec3 i  = floor(v + dot(v, C.yyy) );
+    vec3 x0 = v - i + dot(i, C.xxx) ;
+    vec3 g = step(x0.yzx, x0.xyz);
+    vec3 l = 1.0 - g;
+    vec3 i1 = min( g.xyz, l.zxy );
+    vec3 i2 = max( g.xyz, l.zxy );
+    vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+    vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+    vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+    i = mod(i, 289.0 ); 
+    vec4 p = permute( permute( permute( 
+                i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+            + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
+            + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+    float n_ = 1.0/7.0; // N=7
+    vec3  ns = n_ * D.wyz - D.xzx;
+    vec4 j = p - 49.0 * floor(p * ns.z *ns.z);
+    vec4 x_ = floor(j * ns.z);
+    vec4 y_ = floor(j - 7.0 * x_ );
+    vec4 x = x_ *ns.x + ns.yyyy;
+    vec4 y = y_ *ns.x + ns.yyyy;
+    vec4 h = 1.0 - abs(x) - abs(y);
+    vec4 b0 = vec4( x.xy, y.xy );
+    vec4 b1 = vec4( x.zw, y.zw );
+    vec4 s0 = floor(b0)*2.0 + 1.0;
+    vec4 s1 = floor(b1)*2.0 + 1.0;
+    vec4 sh = -step(h, vec4(0.0));
+    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+    vec3 p0 = vec3(a0.xy,h.x);
+    vec3 p1 = vec3(a0.zw,h.y);
+    vec3 p2 = vec3(a1.xy,h.z);
+    vec3 p3 = vec3(a1.zw,h.w);
+    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+    m = m * m;
+    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
+}
+
+void main() {
+    #include <logdepthbuf_fragment>
+
+    float noiseVal = snoise(vPosition * 1.65 + vec3(time * 0.2));
+    float noiseVal2 = snoise(vPosition * 3.3 - vec3(time * 0.3));
+    
+    float intensity = (noiseVal * 0.6 + noiseVal2 * 0.4) + 0.3;
+    
+    vec3 darkColor = vec3(1.0, 0.4, 0.0);
+    vec3 baseColor = vec3(1.0, 0.7, 0.0);
+    vec3 brightColor = vec3(1.0, 1.0, 0.9);
+
+    vec3 finalColor = mix(darkColor, baseColor, intensity + 0.2);
+    finalColor = mix(finalColor, brightColor, smoothstep(0.4, 0.8, intensity));
+
+    gl_FragColor = vec4(finalColor, 1.0);
+}
+    </script>
+
+    <script id="coronaVertexShader" type="x-shader/x-vertex">
+#include <common>
+#include <logdepthbuf_pars_vertex>
+
+varying vec2 vUv;
+
+void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    #include <logdepthbuf_vertex>
+}
+    </script>
+
+    <script id="coronaFragmentShader" type="x-shader/x-fragment">
+#include <common>
+#include <logdepthbuf_pars_fragment>
+
+uniform float time;
+varying vec2 vUv;
+
+float random(vec2 n) { 
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+float noise(vec2 p){
+    vec2 ip = floor(p);
+    vec2 u = fract(p);
+    u = u*u*(3.0-2.0*u);
+    float res = mix(
+        mix(random(ip), random(ip+vec2(1.0,0.0)), u.x),
+        mix(random(ip+vec2(0.0,1.0)), random(ip+vec2(1.0,1.0)), u.x), u.y);
+    return res*res;
+}
+
+void main() {
+    #include <logdepthbuf_fragment>
+
+    vec2 center = vec2(0.5, 0.5);
+    vec2 pos = vUv - center;
+    float r = length(pos);
+    float angle = atan(pos.y, pos.x);
+
+    float rays = noise(vec2(angle * 10.0 + time * 0.1, r * 2.0 - time * 0.5));
+    rays += noise(vec2(angle * 20.0 - time * 0.2, r * 5.0 + time * 0.2)) * 0.5;
+
+    float glow = 1.0 - smoothstep(0.0, 0.5, r);
+    glow = pow(glow, 3.0);
+
+    float rayIntensity = glow * (0.8 + 0.4 * rays);
+
+    vec3 coronaColor = vec3(1.0, 0.6, 0.2);
+    
+    gl_FragColor = vec4(coronaColor, rayIntensity * 0.8);
+}
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        const CONFIG = { G: 0.1, timeScale: 1.0, subSteps: 10, softening: 1.0, trailLength: 300, distScale: 1.0 };
+        const apiKey = ""; 
+        const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
+        const API_URL = 'data.json'; 
+
+        const DEFAULT_TYPES = {
+            SUN: { r: 50.0, m: 50000, color: 0xffaa00, texType:'star', texKey:'SUN', type:'star', rotSpeed:0.04 },
+            MERCURY: { r: 0.38, m: 0.05, color: 0xaaaaaa, texType:'rock', texKey:'MERCURY', type:'planet', rotSpeed:0.017 },
+            VENUS: { r: 0.95, m: 0.4, color: 0xe3bb76, texType:'gas', texKey:'VENUS', type:'planet', rotSpeed:-0.004 },
+            EARTH: { r: 1.00, m: 0.5, color: 0x2233ff, texType:'earth', texKey:'EARTH', type:'planet', rotSpeed:1.0 },
+            MARS: { r: 0.53, m: 0.06, color: 0xff4500, texType:'rock', texKey:'MARS', type:'planet', rotSpeed:0.97 },
+            JUPITER: { r: 11.2, m: 50.0, color: 0xd8ca9d, texType:'gas', texKey:'JUPITER', type:'gas', rotSpeed:2.4 },
+            SATURN: { r: 9.4, m: 15.0, color: 0xf4d03f, ring:true, texType:'gas', texKey:'SATURN', type:'gas', rotSpeed:2.2 },
+            URANUS: { r: 4.0, m: 3.0, color: 0x40e0d0, texType:'gas', texKey:'URANUS', type:'gas', rotSpeed:-1.4 },
+            NEPTUNE: { r: 3.9, m: 3.0, color: 0x4169e1, texType:'gas', texKey:'NEPTUNE', type:'gas', rotSpeed:1.5 },
+            BLACKHOLE: { r: 3.0, m: 500000, color: 0x000000, type:'blackhole', rotSpeed:0 },
+            RED_GIANT: { r: 100.0, m: 80000, color: 0xff2200, type:'star', texType:'star', rotSpeed:0.01 },
+            MOON: { r: 0.27, m: 0.006, color: 0x888888, texType:'rock', texKey:'MOON', type:'moon', rotSpeed:0.03 }
+        };
+
+        const ASSET_PATH = 'https://raw.githubusercontent.com/mistic100/Solar-System/master/src/assets/textures/';
+        const TEXTURES = { SUN:{map:'sun.jpg'}, MERCURY:{map:'mercury.jpg'}, VENUS:{map:'venus_atmosphere.jpg'}, EARTH:{map:'earth.jpg'}, MARS:{map:'mars.jpg'}, JUPITER:{map:'jupiter.jpg'}, SATURN:{map:'saturn.jpg'}, URANUS:{map:'uranus.jpg'}, NEPTUNE:{map:'neptune.jpg'}, MOON:{map:'moon.jpg'} };
+
+        let scene, camera, renderer, labelRenderer, controls;
+        let bodies=[], particles=[], focusedBody=null, isPlacing=false, ghostMesh=null, spawnData=null;
+        let spaceStation=null, playerShip=null, isPilotMode=false;
+        
+        // 도킹된 우주선들
+        let dockedShips = [];
+        let selectedDockedShip = null;
+        
+        // 우주선 내부 시스템
+        let shipInterior = null;
+        let currentLocation = 'cockpit'; // cockpit, observation, engineering, quarters
+        let isInsideShip = false;
+        let interiorCamera = { yaw: 0, pitch: 0 };
+        let playerPosition = new THREE.Vector3(0, 0, 0);
+        let fuel = 100;
+        
+        const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0,1,0),0);
+        const textureLoader = new THREE.TextureLoader();
+        const galaxyCenter = new THREE.Vector3(-500000, 0, -100000);
+        
+        // Pilot Inputs
+        const inputs = { w:false, a:false, s:false, d:false, brake:false };
+        const mouseInput = { x: 0, y: 0 };
+        let autopilotTarget = null;
+
+        function init() {
+            scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x000000, 0.0000002);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000000000);
+            camera.position.set(0, 500, 800);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            labelRenderer = new CSS2DRenderer();
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.domElement.style.position = 'absolute'; labelRenderer.domElement.style.top = '0px'; labelRenderer.domElement.style.pointerEvents = 'none';
+            document.getElementById('canvas-container').appendChild(labelRenderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; controls.dampingFactor = 0.05; controls.maxDistance = 2000000;
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.05));
+            
+            createDetailedGalaxy();
+            loadDataAndInit();
+            initUI();
+            initChat();
+            initPilotControls();
+
+            document.getElementById('btn-station').onclick = () => {
+                if(spaceStation) {
+                    focusedBody = spaceStation; showMsg("우주정거장 접근");
+                    camera.position.copy(spaceStation.mesh.position).add(new THREE.Vector3(0.3, 0.15, 0.3));
+                    controls.target.copy(spaceStation.mesh.position);
+                    showShipSelectPanel(); 
+                }
+            };
+            document.getElementById('btn-exit-pilot').onclick = exitPilotMode;
+            document.getElementById('btn-autopilot').onclick = toggleAutopilot;
+            document.getElementById('reset-cam').onclick = () => { 
+                if(isPilotMode) exitPilotMode(); 
+                hideShipSelectPanel();
+                resetCamera(); 
+            };
+
+            window.addEventListener('resize', onResize);
+            window.addEventListener('mousemove', e => {
+                if(isPlacing) onMouseMove(e);
+                if(isPilotMode) {
+                    mouseInput.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    mouseInput.y = -(e.clientY / window.innerHeight) * 2 + 1; 
+                }
+            });
+            window.addEventListener('click', onMouseClick);
+            
+            document.getElementById('time-slider-fine').oninput = (e) => { CONFIG.timeScale = parseFloat(e.target.value); document.getElementById('time-val').innerText=CONFIG.timeScale.toFixed(1)+'x'; };
+            document.getElementById('time-slider-coarse').oninput = (e) => { CONFIG.timeScale = parseFloat(e.target.value); document.getElementById('time-val').innerText=CONFIG.timeScale.toFixed(1)+'x'; };
+
+            animate();
+        }
+
+        function initPilotControls() {
+            // PC Keyboard
+            window.addEventListener('keydown', (e) => {
+                if(!isPilotMode) return;
+                switch(e.key.toLowerCase()) {
+                    case 'w': case 'arrowup': inputs.w=true; break; 
+                    case 's': case 'arrowdown': inputs.s=true; break;
+                    case 'a': case 'arrowleft': inputs.a=true; break; 
+                    case 'd': case 'arrowright': inputs.d=true; break;
+                    case ' ': inputs.brake=true; break;
+                }
+            });
+            window.addEventListener('keyup', (e) => {
+                switch(e.key.toLowerCase()) {
+                    case 'w': case 'arrowup': inputs.w=false; break; 
+                    case 's': case 'arrowdown': inputs.s=false; break;
+                    case 'a': case 'arrowleft': inputs.a=false; break; 
+                    case 'd': case 'arrowright': inputs.d=false; break;
+                    case ' ': inputs.brake=false; break;
+                }
+            });
+
+            // Mobile Controls - ✅ null 체크 추가
+            if(/Android|iPhone|iPad/i.test(navigator.userAgent)) { 
+                const mobileControls = document.getElementById('mobile-controls');
+                if(mobileControls) mobileControls.style.display = 'block'; 
+                
+                // Joystick (Direction)
+                const joystick = document.getElementById('joystick-zone');
+                const stick = document.getElementById('joystick-knob');
+                
+                // ✅ joystick과 stick이 존재할 때만 이벤트 등록
+                if(joystick && stick) {
+                    let jTouchId = null;
+                    const maxR = 50;
+
+                    joystick.addEventListener('touchstart', e=>{ e.preventDefault(); jTouchId=e.changedTouches[0].identifier; });
+                    joystick.addEventListener('touchmove', e=>{
+                        e.preventDefault();
+                        for(let i=0; i<e.changedTouches.length; i++){
+                            if(e.changedTouches[i].identifier === jTouchId){
+                                const t = e.changedTouches[i];
+                                const rect = joystick.getBoundingClientRect();
+                                const cx = rect.left + rect.width/2;
+                                const cy = rect.top + rect.height/2;
+                                let dx = t.clientX - cx;
+                                let dy = t.clientY - cy;
+                                const d = Math.sqrt(dx*dx+dy*dy);
+                                if(d > maxR) { dx = (dx/d)*maxR; dy = (dy/d)*maxR; }
+                                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                                
+                                mouseInput.x = dx / maxR;
+                                mouseInput.y = -dy / maxR; 
+                            }
+                        }
+                    });
+                    joystick.addEventListener('touchend', e=>{
+                        e.preventDefault(); jTouchId=null;
+                        stick.style.transform = `translate(-50%, -50%)`;
+                        mouseInput.x = 0; mouseInput.y = 0;
+                    });
+                }
+
+                // Throttle (Speed)
+                const btnAccel = document.getElementById('btn-accel');
+                const btnDecel = document.getElementById('btn-decel');
+                const btnBrake = document.getElementById('btn-brake');
+                
+                if(btnAccel) {
+                    btnAccel.addEventListener('touchstart', (e)=>{ e.preventDefault(); inputs.w=true; });
+                    btnAccel.addEventListener('touchend', (e)=>{ e.preventDefault(); inputs.w=false; });
+                }
+                if(btnDecel) {
+                    btnDecel.addEventListener('touchstart', (e)=>{ e.preventDefault(); inputs.s=true; });
+                    btnDecel.addEventListener('touchend', (e)=>{ e.preventDefault(); inputs.s=false; });
+                }
+                if(btnBrake) {
+                    btnBrake.addEventListener('touchstart', (e)=>{ e.preventDefault(); inputs.brake=true; });
+                    btnBrake.addEventListener('touchend', (e)=>{ e.preventDefault(); inputs.brake=false; });
+                }
+            }
+        }
+
+        // 우주선 선택 패널 표시
+        function showShipSelectPanel() {
+            const panel = document.getElementById('ship-select-panel');
+            const list = document.getElementById('ship-select-list');
+            list.innerHTML = '';
+            
+            dockedShips.forEach((ship, index) => {
+                const item = document.createElement('div');
+                item.className = 'ship-select-item';
+                item.innerHTML = `
+                    <div class="ship-color-dot" style="background: #${ship.color.toString(16).padStart(6, '0')}; color: #${ship.color.toString(16).padStart(6, '0')};"></div>
+                    <span class="ship-select-name">${ship.name}</span>
+                    <button class="ship-select-btn">탑승</button>
+                `;
+                item.onclick = () => boardDockedShip(index);
+                list.appendChild(item);
+            });
+            
+            panel.classList.add('active');
+        }
+        
+        function hideShipSelectPanel() {
+            document.getElementById('ship-select-panel').classList.remove('active');
+        }
+        
+        // 도킹된 우주선에 탑승
+        function boardDockedShip(shipIndex) {
+            if(shipIndex < 0 || shipIndex >= dockedShips.length) return;
+            
+            selectedDockedShip = dockedShips[shipIndex];
+            hideShipSelectPanel();
+            enterPilotMode(selectedDockedShip);
+        }
+
+        function enterPilotMode(dockedShip) {
+            if(!spaceStation || !dockedShip) return;
+            isPilotMode = true;
+            controls.enabled = false;
+            hideShipSelectPanel();
+            document.getElementById('pilot-hud').classList.add('active');
+            document.getElementById('top-bar').classList.add('hidden-in-pilot');
+            document.getElementById('nav-container').classList.add('hidden-in-pilot');
+            document.getElementById('chat-toggle').classList.add('hidden-in-pilot');
+            
+            // 도킹된 우주선을 정거장에서 분리
+            const worldPos = new THREE.Vector3();
+            dockedShip.mesh.getWorldPosition(worldPos);
+            const worldQuat = new THREE.Quaternion();
+            dockedShip.mesh.getWorldQuaternion(worldQuat);
+            
+            // 정거장에서 제거
+            spaceStation.mesh.remove(dockedShip.mesh);
+            
+            // 크기 키우고 월드에 추가
+            const shipGroup = new THREE.Group();
+            const scale = 80; // 우주 크기로 확대
+            
+            // 메인 몸체
+            const bodyGeo = new THREE.ConeGeometry(0.8, 3.5, 8);
+            bodyGeo.rotateX(Math.PI/2);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: dockedShip.color, metalness: 0.8, roughness: 0.2 });
+            shipGroup.add(new THREE.Mesh(bodyGeo, bodyMat));
+            
+            // 날개
+            const wingGeo = new THREE.BoxGeometry(2.5, 0.08, 0.8);
+            const wingMat = new THREE.MeshStandardMaterial({ color: dockedShip.color, metalness: 0.7 });
+            const wings = new THREE.Mesh(wingGeo, wingMat);
+            wings.position.set(0, 0, 0.3);
+            shipGroup.add(wings);
+            
+            // 엔진 노즐
+            const nozzleGeo = new THREE.CylinderGeometry(0.25, 0.4, 0.6, 8);
+            nozzleGeo.rotateX(Math.PI/2);
+            const nozzle = new THREE.Mesh(nozzleGeo, new THREE.MeshStandardMaterial({ color: 0x222233, metalness: 0.9 }));
+            nozzle.position.set(0, 0, -1.8);
+            shipGroup.add(nozzle);
+            
+            // 엔진 불꽃
+            const flameGeo = new THREE.ConeGeometry(0.35, 1.5, 8);
+            flameGeo.rotateX(-Math.PI/2);
+            const flameMat = new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.8 });
+            const flame = new THREE.Mesh(flameGeo, flameMat);
+            flame.position.set(0, 0, -2.5);
+            flame.visible = false;
+            shipGroup.add(flame);
+            
+            // 캐노피
+            const canopyGeo = new THREE.SphereGeometry(0.5, 16, 8, 0, Math.PI*2, 0, Math.PI/2);
+            const canopyMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.3 });
+            const canopy = new THREE.Mesh(canopyGeo, canopyMat);
+            canopy.position.set(0, 0.25, 0.8);
+            canopy.rotation.x = -Math.PI/2;
+            shipGroup.add(canopy);
+            
+            // 위치 설정 (정거장 근처에서 출발)
+            shipGroup.position.copy(worldPos).add(new THREE.Vector3(0, 2, 0));
+            scene.add(shipGroup);
+            
+            // 우주선 내부 생성
+            shipInterior = createShipInterior(dockedShip.color);
+            scene.add(shipInterior);
+            
+            playerShip = { 
+                mesh: shipGroup, 
+                flame: flame, 
+                velocity: new THREE.Vector3(), 
+                speed: 0, 
+                maxSpeed: 300, 
+                accel: 80, 
+                turnSpeed: 1.5,
+                dockedShipData: dockedShip
+            };
+            
+            // 목표 선택 드롭다운
+            const select = document.getElementById('target-select');
+            select.innerHTML = '<option value="">목표 선택...</option>';
+            bodies.forEach(b => { 
+                if(!b.isStatic || b.type==='star') { 
+                    const opt = document.createElement('option'); 
+                    opt.value = b.name; 
+                    opt.innerText = b.name; 
+                    select.appendChild(opt); 
+                } 
+            });
+            select.onchange = (e) => { 
+                autopilotTarget = bodies.find(b => b.name === e.target.value) || null; 
+            };
+            
+            // 내부 이동 버튼 이벤트
+            initInteriorNav();
+            
+            currentLocation = 'cockpit';
+            isInsideShip = false;
+            fuel = 100;
+            updateInteriorButtons();
+            showMsg(`🚀 ${dockedShip.name} 탑승! W:전진 A/D:회전`);
+        }
+        
+        // 우주선 내부 3D 모델 생성
+        function createShipInterior(shipColor) {
+            const interior = new THREE.Group();
+            const accentColor = shipColor || 0x3388aa;
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2a, metalness: 0.8, roughness: 0.3 });
+            const consoleMat = new THREE.MeshStandardMaterial({ color: 0x0a0a15, metalness: 0.9, roughness: 0.2 });
+            const screenMat = new THREE.MeshBasicMaterial({ color: accentColor, transparent: true, opacity: 0.2 });
+            const railMat = new THREE.MeshStandardMaterial({ color: 0xffcc00, metalness: 0.8, roughness: 0.3 });
+            const pipeMat = new THREE.MeshStandardMaterial({ color: 0x444455, metalness: 0.8 });
+            
+            // === 조종석 ===
+            const cockpit = new THREE.Group();
+            cockpit.name = 'cockpit';
+            
+            // 바닥
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(4, 5), metalMat);
+            floor.rotation.x = -Math.PI/2; floor.position.y = -1;
+            cockpit.add(floor);
+            
+            // 천장
+            const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(4, 5), metalMat);
+            ceiling.rotation.x = Math.PI/2; ceiling.position.y = 1.8;
+            cockpit.add(ceiling);
+            
+            // 메인 콘솔
+            const console1 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 1), consoleMat);
+            console1.position.set(0, -0.3, -2); console1.rotation.x = -0.2;
+            cockpit.add(console1);
+            
+            // 콘솔 화면들
+            for (let i = -1; i <= 1; i++) {
+                const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.4), screenMat);
+                screen.position.set(i * 0.9, 0, -1.95); screen.rotation.x = -0.2;
+                cockpit.add(screen);
+            }
+            
+            // 조종간
+            const stickGeo = new THREE.CylinderGeometry(0.03, 0.05, 0.4, 8);
+            const stick1 = new THREE.Mesh(stickGeo, pipeMat);
+            stick1.position.set(-0.6, -0.5, -1.5); stick1.rotation.x = 0.3;
+            cockpit.add(stick1);
+            const stick2 = stick1.clone();
+            stick2.position.set(0.6, -0.5, -1.5);
+            cockpit.add(stick2);
+            
+            // 파일럿 좌석
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.6), new THREE.MeshStandardMaterial({ color: 0x222233 }));
+            seat.position.set(0, -0.8, -0.8);
+            cockpit.add(seat);
+            const seatBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.1), new THREE.MeshStandardMaterial({ color: 0x222233 }));
+            seatBack.position.set(0, -0.3, -0.5);
+            cockpit.add(seatBack);
+            
+            // 내부 조명
+            const cockpitLight = new THREE.PointLight(0x4488ff, 0.4, 6);
+            cockpitLight.position.set(0, 1.5, -1);
+            cockpit.add(cockpitLight);
+            
+            interior.add(cockpit);
+            
+            // === 전망대 ===
+            const obs = new THREE.Group();
+            obs.name = 'observation';
+            obs.position.set(0, 0, -6);
+            
+            const dome = new THREE.Mesh(
+                new THREE.SphereGeometry(2, 32, 16, 0, Math.PI*2, 0, Math.PI/2),
+                new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.05, side: THREE.DoubleSide })
+            );
+            dome.rotation.x = Math.PI; dome.position.y = 0.5;
+            obs.add(dome);
+            
+            const obsFloor = new THREE.Mesh(new THREE.CircleGeometry(2, 32), metalMat);
+            obsFloor.rotation.x = -Math.PI/2; obsFloor.position.y = -0.8;
+            obs.add(obsFloor);
+            
+            // 원형 핸드레일
+            const rail = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.03, 8, 32), railMat);
+            rail.rotation.x = Math.PI/2; rail.position.y = 0;
+            obs.add(rail);
+            
+            obs.add(new THREE.PointLight(0x4488ff, 0.3, 5));
+            interior.add(obs);
+            
+            // === 엔진실 ===
+            const eng = new THREE.Group();
+            eng.name = 'engineering';
+            eng.position.set(0, 0, 6);
+            
+            const engFloor = new THREE.Mesh(new THREE.PlaneGeometry(4, 5), new THREE.MeshStandardMaterial({ color: 0x2a1a1a }));
+            engFloor.rotation.x = -Math.PI/2; engFloor.position.y = -1;
+            eng.add(engFloor);
+            
+            // 엔진 코어
+            const core = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.6, 0.8, 2, 16),
+                new THREE.MeshStandardMaterial({ color: 0x333344, metalness: 0.9, emissive: 0x001133, emissiveIntensity: 0.3 })
+            );
+            core.position.set(0, 0, 1.2);
+            eng.add(core);
+            
+            // 글로우
+            const glow = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.3, 0.5, 0.3, 16),
+                new THREE.MeshBasicMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6 })
+            );
+            glow.position.set(0, -1, 1.2);
+            eng.add(glow);
+            
+            // 파이프들
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2;
+                const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.5, 8), pipeMat);
+                pipe.position.set(Math.cos(angle) * 1.2, 0, Math.sin(angle) * 1.2 + 1.2);
+                eng.add(pipe);
+            }
+            
+            eng.add(new THREE.PointLight(0xff4400, 0.4, 6));
+            interior.add(eng);
+            
+            // === 거주실 ===
+            const quarters = new THREE.Group();
+            quarters.name = 'quarters';
+            quarters.position.set(0, 3, 0);
+            
+            const room = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 2, 3),
+                new THREE.MeshStandardMaterial({ color: 0x1a2a1a, side: THREE.BackSide })
+            );
+            quarters.add(room);
+            
+            // 슬리핑 포드
+            const pod = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.3, 1, 8, 16),
+                new THREE.MeshStandardMaterial({ color: 0x334455, metalness: 0.7 })
+            );
+            pod.rotation.z = Math.PI/2; pod.position.set(-1, 0, -0.6);
+            quarters.add(pod);
+            
+            // 테이블
+            const table = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.4, 0.4, 0.06, 16),
+                new THREE.MeshStandardMaterial({ color: 0x555566, metalness: 0.8 })
+            );
+            table.position.set(0.6, 0, 0.4);
+            quarters.add(table);
+            
+            quarters.add(new THREE.PointLight(0xffffcc, 0.3, 5));
+            interior.add(quarters);
+            
+            // === 핸드레일 연결 ===
+            // 조종석 -> 전망대
+            const path1 = new THREE.TubeGeometry(
+                new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(0, 0, -1),
+                    new THREE.Vector3(0, 0.4, -3),
+                    new THREE.Vector3(0, 0.3, -5),
+                    new THREE.Vector3(0, 0, -6)
+                ]), 16, 0.02, 8, false
+            );
+            interior.add(new THREE.Mesh(path1, railMat));
+            
+            // 조종석 -> 엔진실
+            const path2 = new THREE.TubeGeometry(
+                new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(0, 0, 0.5),
+                    new THREE.Vector3(0, 0.4, 2.5),
+                    new THREE.Vector3(0, 0.3, 4.5),
+                    new THREE.Vector3(0, 0, 6)
+                ]), 16, 0.02, 8, false
+            );
+            interior.add(new THREE.Mesh(path2, railMat));
+            
+            // 조종석 -> 거주실
+            const path3 = new THREE.TubeGeometry(
+                new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(0, 1.2, 0),
+                    new THREE.Vector3(0, 2.4, 0),
+                    new THREE.Vector3(0, 3, 0)
+                ]), 16, 0.02, 8, false
+            );
+            interior.add(new THREE.Mesh(path3, railMat));
+            
+            return interior;
+        }
+        
+        // 내부 이동 버튼 초기화
+        function initInteriorNav() {
+            document.querySelectorAll('.interior-btn').forEach(btn => {
+                btn.onclick = () => moveToLocation(btn.dataset.location);
+            });
+        }
+        
+        // 우주선 내부 위치 이동
+        function moveToLocation(location) {
+            if (location === currentLocation || !isPilotMode) return;
+            
+            const overlay = document.getElementById('handrail-overlay');
+            const text = document.getElementById('handrail-text');
+            const names = { cockpit: '조종석', observation: '전망대', engineering: '엔진실', quarters: '거주실' };
+            
+            text.textContent = `${names[location]}으로 이동 중...`;
+            overlay.classList.add('active');
+            
+            // 애니메이션 리셋
+            const hand = overlay.querySelector('.hand-icon');
+            hand.style.animation = 'none';
+            hand.offsetHeight;
+            hand.style.animation = 'moveHand 1s ease-in-out forwards';
+            
+            setTimeout(() => {
+                currentLocation = location;
+                isInsideShip = (location !== 'cockpit');
+                updateInteriorButtons();
+                overlay.classList.remove('active');
+                showMsg(`${names[location]} 도착`);
+                
+                // 내부 이동 힌트
+                const hint = document.getElementById('interior-walk-hint');
+                if(isInsideShip) {
+                    hint.classList.add('active');
+                    setTimeout(() => hint.classList.remove('active'), 3000);
+                }
+            }, 1000);
+        }
+        
+        function updateInteriorButtons() {
+            document.querySelectorAll('.interior-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.location === currentLocation);
+            });
+        }
+
+        function exitPilotMode() {
+            isPilotMode = false; 
+            controls.enabled = true;
+            document.getElementById('pilot-hud').classList.remove('active');
+            document.getElementById('top-bar').classList.remove('hidden-in-pilot');
+            document.getElementById('nav-container').classList.remove('hidden-in-pilot');
+            document.getElementById('chat-toggle').classList.remove('hidden-in-pilot');
+            
+            // 우주선을 다시 정거장에 도킹
+            if(playerShip && playerShip.dockedShipData && spaceStation) {
+                const dockedShip = playerShip.dockedShipData;
+                
+                // 새로운 도킹 우주선 메시 생성
+                const newDockedMesh = createDockedShipMesh(dockedShip.color, dockedShip.name);
+                newDockedMesh.position.copy(dockedShip.offset);
+                newDockedMesh.userData = { 
+                    isDockedShip: true, 
+                    shipIndex: dockedShips.indexOf(dockedShip),
+                    shipName: dockedShip.name,
+                    shipColor: dockedShip.color
+                };
+                spaceStation.mesh.add(newDockedMesh);
+                dockedShip.mesh = newDockedMesh;
+            }
+            
+            if(playerShip) { 
+                scene.remove(playerShip.mesh); 
+                playerShip = null; 
+            }
+            if(shipInterior) {
+                scene.remove(shipInterior);
+                shipInterior = null;
+            }
+            
+            focusedBody = spaceStation;
+            if(spaceStation) {
+                camera.position.copy(spaceStation.mesh.position).add(new THREE.Vector3(0.3, 0.15, 0.3));
+                controls.target.copy(spaceStation.mesh.position);
+            }
+            autopilotTarget = null;
+            currentLocation = 'cockpit';
+            isInsideShip = false;
+            selectedDockedShip = null;
+            showMsg("🛬 우주선이 정거장에 도킹되었습니다.");
+        }
+
+        function toggleAutopilot() {
+            const btn = document.getElementById('btn-autopilot');
+            if(autopilotTarget) {
+                if(btn.classList.contains('engaged')) { 
+                    btn.classList.remove('engaged'); 
+                    btn.innerText = "자동항법"; 
+                    autopilotTarget = null; 
+                } else { 
+                    btn.classList.add('engaged'); 
+                    btn.innerText = "자동항법 ON"; 
+                }
+            } else { 
+                showMsg("목표를 먼저 선택하세요."); 
+            }
+        }
+
+        function updatePilot(dt) {
+            if(!playerShip) return;
+            
+            const canControl = (currentLocation === 'cockpit');
+            const btnAuto = document.getElementById('btn-autopilot');
+            
+            // 자동 항법
+            if(autopilotTarget && btnAuto.classList.contains('engaged')) {
+                const targetPos = autopilotTarget.mesh.position.clone();
+                const direction = new THREE.Vector3().subVectors(targetPos, playerShip.mesh.position).normalize();
+                const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1), direction);
+                playerShip.mesh.quaternion.slerp(targetQuat, dt * 2.0);
+                const dist = playerShip.mesh.position.distanceTo(targetPos);
+                if(dist > autopilotTarget.radius * 4) { 
+                    inputs.w = true; inputs.s = false; inputs.brake = false; 
+                } else { 
+                    inputs.w = false; inputs.s = true; 
+                    if(playerShip.speed < 1) { 
+                        btnAuto.classList.remove('engaged'); 
+                        btnAuto.innerText = "도착!"; 
+                        showMsg(autopilotTarget.name + " 궤도 진입"); 
+                    } 
+                }
+            } else if(canControl) {
+                // ★ 자동차 스타일 조종 ★
+                // 마우스 좌우: 좌우 회전 (요)
+                const turnAmount = mouseInput.x * playerShip.turnSpeed * dt * 2;
+                playerShip.mesh.rotateY(-turnAmount);
+                
+                // 마우스 상하: 상하 회전 (피치) - 약하게
+                const pitchAmount = mouseInput.y * playerShip.turnSpeed * dt * 0.5;
+                playerShip.mesh.rotateX(pitchAmount);
+                
+                // A/D: 좌우 회전 (자동차 핸들처럼)
+                if(inputs.a) playerShip.mesh.rotateY(dt * 2.0);
+                if(inputs.d) playerShip.mesh.rotateY(-dt * 2.0);
+            }
+
+            // ★ 자동차 스타일 속도 제어 ★
+            if(canControl) {
+                if(inputs.brake) {
+                    // 브레이크: 급정지
+                    playerShip.speed *= 0.8;
+                    if(Math.abs(playerShip.speed) < 0.5) playerShip.speed = 0;
+                } else if(inputs.w) {
+                    // W: 가속
+                    playerShip.speed += playerShip.accel * dt;
+                    fuel = Math.max(0, fuel - dt * 0.03);
+                } else if(inputs.s) {
+                    // S: 후진/감속
+                    playerShip.speed -= playerShip.accel * 0.6 * dt;
+                } else {
+                    // 관성 감속
+                    playerShip.speed *= 0.99;
+                    if(Math.abs(playerShip.speed) < 0.5) playerShip.speed = 0;
+                }
+            }
+
+            // 속도 제한 (후진 -80, 전진 300)
+            playerShip.speed = Math.max(-80, Math.min(playerShip.maxSpeed, playerShip.speed));
+
+            // ★ 우주선 이동 (중력 영향 없음) ★
+            const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(playerShip.mesh.quaternion);
+            playerShip.mesh.position.add(forward.multiplyScalar(playerShip.speed * dt));
+
+            // 우주선 내부도 함께 이동
+            if(shipInterior) {
+                shipInterior.position.copy(playerShip.mesh.position);
+                shipInterior.quaternion.copy(playerShip.mesh.quaternion);
+            }
+
+            // ★ 1인칭 카메라 - 위치에 따라 다른 시점 ★
+            const q = playerShip.mesh.quaternion;
+            
+            if(currentLocation === 'cockpit') {
+                // 조종석: 앞을 바라봄
+                const offset = new THREE.Vector3(0, 0.2, 0.5);
+                offset.applyQuaternion(q);
+                camera.position.copy(playerShip.mesh.position).add(offset);
+                
+                const lookTarget = new THREE.Vector3(0, 0, 25);
+                lookTarget.applyQuaternion(q);
+                camera.lookAt(playerShip.mesh.position.clone().add(lookTarget));
+                
+            } else if(currentLocation === 'observation') {
+                // 전망대: 위쪽 돔에서 우주를 바라봄
+                const offset = new THREE.Vector3(0, 0.3, -6);
+                offset.applyQuaternion(q);
+                camera.position.copy(playerShip.mesh.position).add(offset);
+                
+                // WASD로 시점 회전
+                interiorCamera.yaw += (inputs.a ? 1 : 0) * dt * 2;
+                interiorCamera.yaw -= (inputs.d ? 1 : 0) * dt * 2;
+                interiorCamera.pitch += (inputs.w ? 1 : 0) * dt;
+                interiorCamera.pitch -= (inputs.s ? 1 : 0) * dt;
+                interiorCamera.pitch = Math.max(-1, Math.min(1.2, interiorCamera.pitch));
+                
+                const lookDir = new THREE.Vector3(
+                    Math.sin(interiorCamera.yaw) * Math.cos(interiorCamera.pitch),
+                    Math.sin(interiorCamera.pitch),
+                    Math.cos(interiorCamera.yaw) * Math.cos(interiorCamera.pitch)
+                );
+                lookDir.applyQuaternion(q);
+                camera.lookAt(camera.position.clone().add(lookDir));
+                
+            } else if(currentLocation === 'engineering') {
+                // 엔진실: 엔진을 바라봄
+                const offset = new THREE.Vector3(0, 0.2, 5);
+                offset.applyQuaternion(q);
+                camera.position.copy(playerShip.mesh.position).add(offset);
+                
+                interiorCamera.yaw += (inputs.a ? 1 : 0) * dt * 2;
+                interiorCamera.yaw -= (inputs.d ? 1 : 0) * dt * 2;
+                
+                const lookDir = new THREE.Vector3(
+                    Math.sin(interiorCamera.yaw),
+                    0,
+                    Math.cos(interiorCamera.yaw)
+                );
+                lookDir.applyQuaternion(q);
+                camera.lookAt(camera.position.clone().add(lookDir));
+                
+            } else if(currentLocation === 'quarters') {
+                // 거주실
+                const offset = new THREE.Vector3(0, 3.2, 0);
+                offset.applyQuaternion(q);
+                camera.position.copy(playerShip.mesh.position).add(offset);
+                
+                interiorCamera.yaw += (inputs.a ? 1 : 0) * dt * 2;
+                interiorCamera.yaw -= (inputs.d ? 1 : 0) * dt * 2;
+                
+                const lookDir = new THREE.Vector3(
+                    Math.sin(interiorCamera.yaw),
+                    -0.2,
+                    Math.cos(interiorCamera.yaw)
+                );
+                lookDir.applyQuaternion(q);
+                camera.lookAt(camera.position.clone().add(lookDir));
+            }
+
+            // 엔진 불꽃
+            playerShip.flame.visible = inputs.w || playerShip.speed > 10;
+            if(playerShip.flame.visible) playerShip.flame.scale.setScalar(0.8 + Math.random()*0.4);
+            
+            // HUD 업데이트
+            document.getElementById('speed-display').innerText = Math.abs(playerShip.speed).toFixed(0);
+            updateHUD();
+            updateRadar();
+        }
+
+        function updateHUD() {
+            if(!playerShip) return;
+            
+            // 연료
+            document.getElementById('fuel-level').innerText = fuel.toFixed(0) + '%';
+            
+            // 목표 거리
+            if(autopilotTarget) {
+                const dist = playerShip.mesh.position.distanceTo(autopilotTarget.mesh.position);
+                document.getElementById('target-distance').innerText = (dist / 10).toFixed(0) + ' km';
+            } else {
+                document.getElementById('target-distance').innerText = '- km';
+            }
+
+            // 현재 위치 (가장 가까운 천체)
+            let nearest = null, nearestDist = Infinity;
+            bodies.forEach(b => {
+                const d = playerShip.mesh.position.distanceTo(b.mesh.position);
+                if(d < nearestDist) { nearestDist = d; nearest = b; }
+            });
+            if(nearest) {
+                document.getElementById('current-location').innerText = `${nearest.name} 근처`;
+            }
+        }
+
+        function updateRadar() {
+            const radar = document.getElementById('radar');
+            document.querySelectorAll('.radar-blip').forEach(b => b.remove());
+            if(!playerShip) return;
+            
+            const range = 10000; 
+            const shipPos = playerShip.mesh.position; 
+            const shipQuatInv = playerShip.mesh.quaternion.clone().invert();
+            
+            bodies.forEach(b => {
+                if(b.type === 'station') return;
+                const relPos = b.mesh.position.clone().sub(shipPos);
+                if(relPos.length() < range) {
+                    relPos.applyQuaternion(shipQuatInv);
+                    const x = relPos.x / range * 40; 
+                    const y = -relPos.z / range * 40;
+                    const blip = document.createElement('div'); 
+                    blip.className = 'radar-blip';
+                    blip.style.left = `calc(50% + ${x}px)`; 
+                    blip.style.top = `calc(50% + ${y}px)`;
+                    if(autopilotTarget === b) { 
+                        blip.style.backgroundColor = '#ff0000'; 
+                        blip.style.width = '7px'; 
+                        blip.style.height = '7px'; 
+                        blip.style.zIndex = 10; 
+                    } else { 
+                        blip.style.backgroundColor = b.type==='star' ? '#ffaa00' : '#00ffff'; 
+                    }
+                    radar.appendChild(blip);
+                }
+            });
+        }
+
+        function resetSimulation() {
+            if(spaceStation) { scene.remove(spaceStation.mesh); spaceStation=null; }
+            if(playerShip) { scene.remove(playerShip.mesh); playerShip=null; }
+            const toRemove=bodies.filter(b=>!b.isStatic); 
+            toRemove.forEach(b=>{
+                scene.remove(b.mesh);
+                if(b.trail) scene.remove(b.trail);
+                if(b.mesh) b.mesh.traverse(c=>{if(c.isCSS2DObject&&c.element)c.element.remove();});
+            }); 
+            bodies=bodies.filter(b=>b.isStatic); 
+            particles.forEach(p=>scene.remove(p.mesh)); 
+            particles=[]; 
+            loadDataAndInit();
+        }
+
+        function createSpaceStation(earthBody) {
+            const group = new THREE.Group();
+            const s = 0.05;
+            const hull = new THREE.Mesh(new THREE.CylinderGeometry(0.2*s, 0.2*s, 4*s, 16), new THREE.MeshStandardMaterial({color:0xeeeeee})); hull.rotation.z = Math.PI/2; group.add(hull);
+            const pGeo = new THREE.BoxGeometry(1.5*s, 0.05*s, 3*s); const pMat = new THREE.MeshStandardMaterial({color:0x111199});
+            const lp = new THREE.Mesh(pGeo, pMat); lp.position.set(-2.5*s, 0, 0); group.add(lp);
+            const rp = new THREE.Mesh(pGeo, pMat); rp.position.set(2.5*s, 0, 0); group.add(rp);
+            const hub = new THREE.Mesh(new THREE.SphereGeometry(0.5*s, 16, 16), new THREE.MeshStandardMaterial({color:0xaaaaaa})); group.add(hub);
+            const sGeo = new THREE.ConeGeometry(0.15*s, 0.5*s, 8); const sMat = new THREE.MeshStandardMaterial({color:0xffffff});
+            const s1 = new THREE.Mesh(sGeo, sMat); s1.rotation.x=Math.PI; s1.position.set(0, 0.6*s, 0); group.add(s1);
+            const s2 = new THREE.Mesh(sGeo, sMat); s2.rotation.z=-Math.PI/2; s2.position.set(0.6*s, 0, 0); group.add(s2);
+            const s3 = new THREE.Mesh(sGeo, sMat); s3.rotation.x=-Math.PI/2; s3.position.set(0, 0, 0.6*s); group.add(s3);
+            const d = document.createElement('div'); d.className='label'; d.textContent='ISS'; d.style.color='#00ffff'; d.style.fontSize='8px';
+            const l = new CSS2DObject(d); l.position.set(0, 1*s, 0); group.add(l);
+            scene.add(group);
+            spaceStation = { mesh: group, name: "우주정거장", type: "station", parentBody: earthBody, orbitRadius: earthBody.radius*2.0, orbitSpeed: 0.5, angle: 0 };
+            
+            // 도킹된 우주선들 생성
+            createDockedShips();
+        }
+        
+        // 도킹된 우주선 3대 생성
+        function createDockedShips() {
+            dockedShips = [];
+            
+            const shipTypes = [
+                { name: '탐사선 Alpha', color: 0x3388aa, offset: new THREE.Vector3(0.15, 0.02, 0.08) },
+                { name: '수송선 Beta', color: 0x44aa55, offset: new THREE.Vector3(-0.12, 0.02, 0.1) },
+                { name: '전투기 Gamma', color: 0xaa4444, offset: new THREE.Vector3(0, 0.02, -0.12) }
+            ];
+            
+            shipTypes.forEach((type, index) => {
+                const shipMesh = createDockedShipMesh(type.color, type.name);
+                shipMesh.position.copy(type.offset);
+                shipMesh.userData = { 
+                    isDockedShip: true, 
+                    shipIndex: index, 
+                    shipName: type.name,
+                    shipColor: type.color
+                };
+                spaceStation.mesh.add(shipMesh);
+                dockedShips.push({
+                    mesh: shipMesh,
+                    name: type.name,
+                    color: type.color,
+                    offset: type.offset.clone()
+                });
+            });
+        }
+        
+        // 도킹된 우주선 메시 생성
+        function createDockedShipMesh(color, name) {
+            const group = new THREE.Group();
+            const sc = 0.012; // 우주선 크기
+            
+            // 메인 몸체
+            const bodyGeo = new THREE.ConeGeometry(0.8 * sc, 3.5 * sc, 8);
+            bodyGeo.rotateX(Math.PI/2);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8, roughness: 0.2 });
+            group.add(new THREE.Mesh(bodyGeo, bodyMat));
+            
+            // 날개
+            const wingGeo = new THREE.BoxGeometry(2.5 * sc, 0.08 * sc, 0.8 * sc);
+            const wingMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7 });
+            const wings = new THREE.Mesh(wingGeo, wingMat);
+            wings.position.set(0, 0, 0.3 * sc);
+            group.add(wings);
+            
+            // 엔진 노즐
+            const nozzleGeo = new THREE.CylinderGeometry(0.25 * sc, 0.4 * sc, 0.6 * sc, 8);
+            nozzleGeo.rotateX(Math.PI/2);
+            const nozzle = new THREE.Mesh(nozzleGeo, new THREE.MeshStandardMaterial({ color: 0x222233, metalness: 0.9 }));
+            nozzle.position.set(0, 0, -1.8 * sc);
+            group.add(nozzle);
+            
+            // 캐노피 (조종석 창)
+            const canopyGeo = new THREE.SphereGeometry(0.5 * sc, 16, 8, 0, Math.PI*2, 0, Math.PI/2);
+            const canopyMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.4 });
+            const canopy = new THREE.Mesh(canopyGeo, canopyMat);
+            canopy.position.set(0, 0.2 * sc, 0.8 * sc);
+            canopy.rotation.x = -Math.PI/2;
+            group.add(canopy);
+            
+            // 라벨
+            const div = document.createElement('div');
+            div.className = 'label';
+            div.textContent = name;
+            div.style.color = '#' + color.toString(16).padStart(6, '0');
+            div.style.fontSize = '7px';
+            div.style.pointerEvents = 'auto';
+            div.style.cursor = 'pointer';
+            const label = new CSS2DObject(div);
+            label.position.set(0, 0.04, 0);
+            group.add(label);
+            
+            return group;
+        }
+
+        function generateAccretionDiskTexture() { 
+            const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=512; 
+            const ctx = canvas.getContext('2d'); const cx=256; const cy=256; 
+            const g = ctx.createRadialGradient(cx, cy, 120, cx, cy, 250); 
+            g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(0.2,'rgba(255,30,0,0.9)'); 
+            g.addColorStop(0.4,'rgba(255,140,0,1)'); g.addColorStop(0.6,'rgba(255,240,150,1)'); 
+            g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,256,0,Math.PI*2); ctx.fill(); 
+            return new THREE.CanvasTexture(canvas); 
+        }
+        function generateJetTexture() { 
+            const c=document.createElement('canvas'); c.width=64; c.height=256; 
+            const ctx=c.getContext('2d'); const g=ctx.createLinearGradient(0,0,0,256); 
+            g.addColorStop(0,'rgba(200,230,255,0)'); g.addColorStop(0.2,'rgba(150,200,255,0.8)'); 
+            g.addColorStop(1,'rgba(100,0,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,64,256); 
+            return new THREE.CanvasTexture(c); 
+        }
+        function generateProceduralTexture(type, colorHex) { 
+            const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=256; 
+            const ctx = canvas.getContext('2d'); const color = new THREE.Color(colorHex); 
+            ctx.fillStyle = '#' + color.getHexString(); ctx.fillRect(0, 0, 512, 256); 
+            if(type==='gas'){ for(let i=0;i<15;i++){ ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.15})`; ctx.fillRect(0,Math.random()*256,512,Math.random()*30+5); } } 
+            else if(type==='rock'){ for(let i=0;i<400;i++){ ctx.fillStyle='rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.arc(Math.random()*512,Math.random()*256,Math.random()*3+1,0,Math.PI*2); ctx.fill(); } } 
+            else if(type==='earth'){ ctx.fillStyle='#1a3b8e'; ctx.fillRect(0,0,512,256); ctx.fillStyle='#2d6e32'; for(let i=0;i<30;i++){ ctx.beginPath(); ctx.ellipse(Math.random()*512,60+Math.random()*136,20+Math.random()*40,10+Math.random()*30,Math.random()*Math.PI,0,Math.PI*2); ctx.fill(); } } 
+            return new THREE.CanvasTexture(canvas); 
+        }
+        function createGlow(size, color) { 
+            const c=document.createElement('canvas'); c.width=64; c.height=64; 
+            const ctx=c.getContext('2d'); const g=ctx.createRadialGradient(32,32,0,32,32,32); 
+            g.addColorStop(0,'#'+new THREE.Color(color).getHexString()); g.addColorStop(1,'rgba(0,0,0,0)'); 
+            ctx.fillStyle=g; ctx.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); 
+        }
+
+        function createDetailedGalaxy() { 
+            const bhGeo = new THREE.SphereGeometry(800 * CONFIG.distScale, 64, 64); 
+            const bhMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); 
+            const blackHole = new THREE.Mesh(bhGeo, bhMat); 
+            blackHole.position.copy(galaxyCenter).multiplyScalar(CONFIG.distScale); 
+            scene.add(blackHole); 
+            
+            const disk = new THREE.Mesh(new THREE.RingGeometry(1200 * CONFIG.distScale, 3800 * CONFIG.distScale, 128), new THREE.MeshBasicMaterial({ map: generateAccretionDiskTexture(), side: THREE.DoubleSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite:false })); 
+            disk.rotation.x = Math.PI/2; disk.rotation.y = Math.PI/8; blackHole.add(disk); 
+            
+            const jetGeo = new THREE.CylinderGeometry(100 * CONFIG.distScale, 600 * CONFIG.distScale, 8000 * CONFIG.distScale, 32, 1, true); 
+            jetGeo.translate(0, 4000 * CONFIG.distScale, 0); 
+            const jetMat = new THREE.MeshBasicMaterial({ map: generateJetTexture(), side: THREE.DoubleSide, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false }); 
+            const jetGroup = new THREE.Group(); 
+            const jetUp = new THREE.Mesh(jetGeo, jetMat); const jetDown = new THREE.Mesh(jetGeo, jetMat); 
+            jetDown.rotation.x = Math.PI; jetGroup.add(jetUp); jetGroup.add(jetDown); 
+            jetGroup.rotation.z = Math.PI/8; blackHole.add(jetGroup); 
+            
+            bodies.push({ mesh: blackHole, mass: 10000000, radius: 800 * CONFIG.distScale, velocity: new THREE.Vector3(), force: new THREE.Vector3(), name: '은하 중심', type: 'blackhole', isStatic: true, jets: { up: jetUp, down: jetDown } }); 
+            
+            const centerDiv = document.createElement('div'); centerDiv.className = 'galaxy-label'; centerDiv.textContent = '은하 중심'; 
+            const centerLabel = new CSS2DObject(centerDiv); 
+            centerLabel.position.copy(galaxyCenter).multiplyScalar(CONFIG.distScale); 
+            scene.add(centerLabel); 
+            
+            createGalaxyStars(); 
+        }
+        function createGalaxyStars() { 
+            const geom = new THREE.BufferGeometry(); const pos=[], col=[]; const c=new THREE.Color(); 
+            for(let i=0; i<80000; i++){ 
+                const r=(Math.pow(Math.random(),2)*800000+5000) * CONFIG.distScale; 
+                const ang=(i%4)*((Math.PI*2)/4) + r/(CONFIG.distScale * 800000)*15 + (Math.random()-0.5)*0.5; 
+                const x=Math.cos(ang)*r; const z=Math.sin(ang)*r; 
+                const y=((Math.random()-0.5)*15000*(1-r/(CONFIG.distScale * 800000))) * CONFIG.distScale; 
+                const gx=x + galaxyCenter.x * CONFIG.distScale; 
+                const gy=y + galaxyCenter.y * CONFIG.distScale; 
+                const gz=z + galaxyCenter.z * CONFIG.distScale; 
+                if(Math.sqrt(gx*gx+gy*gy+gz*gz) < 50000 * CONFIG.distScale) continue; 
+                pos.push(gx,gy,gz); c.setHSL(0.6*(r/(CONFIG.distScale*800000))+0.05, 0.8, 0.8); col.push(c.r,c.g,c.b); 
+            } 
+            geom.setAttribute('position', new THREE.Float32BufferAttribute(pos,3)); 
+            geom.setAttribute('color', new THREE.Float32BufferAttribute(col,3)); 
+            const galaxyMat = new THREE.PointsMaterial({ size: 100 * CONFIG.distScale, vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, sizeAttenuation: true, depthWrite: false, depthTest: true }); 
+            const points = new THREE.Points(geom, galaxyMat); 
+            window.galaxyPoints = points; 
+            scene.add(points); 
+        }
+        function initTrail(body) { 
+            const points=[]; for(let i=0;i<CONFIG.trailLength;i++) points.push(body.mesh.position.clone()); 
+            const trail = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: body.mesh.material.color||0xffffff, transparent:true, opacity:0.3})); 
+            trail.frustumCulled=false; scene.add(trail); 
+            body.trail=trail; body.trailPoints=points; body.trailIndex=0; body.trailTimer=0; 
+        }
+        
+        function focusBody(body) {
+            focusedBody = body;
+            document.getElementById('reset-cam').style.display = 'block';
+            showMsg(`${body.name} 추적 모드`);
+            if (body.type === 'station') {
+               const offset = new THREE.Vector3(2, 1, 2); 
+               camera.position.copy(body.mesh.position).add(offset);
+               controls.target.copy(body.mesh.position);
+            } else {
+               controls.target.copy(body.mesh.position);
+            }
+        }
+
+        function onMouseMove(e) { if (!isPlacing || !ghostMesh) return; mouse.x=(e.clientX/window.innerWidth)*2-1; mouse.y=-(e.clientY/window.innerHeight)*2+1; raycaster.setFromCamera(mouse, camera); const target=new THREE.Vector3(); raycaster.ray.intersectPlane(plane, target); if(target) ghostMesh.position.copy(target); }
+        function onMouseClick(e) { 
+            if(e.target.closest('.spawn-btn')||e.target.closest('#top-bar')) return; 
+            if(isPlacing&&ghostMesh){ 
+                createBody(spawnData.type, ghostMesh.position.clone(), new THREE.Vector3(0,0,0), spawnData.name+" (New)", spawnData.tex); 
+                scene.remove(ghostMesh); ghostMesh=null; isPlacing=false; showMsg("생성 완료!"); return; 
+            } 
+            mouse.x=(e.clientX/window.innerWidth)*2-1; mouse.y=-(e.clientY/window.innerHeight)*2+1; 
+            raycaster.setFromCamera(mouse, camera); 
+            const intersects=raycaster.intersectObjects(bodies.map(b=>b.mesh)); 
+            if(intersects.length>0){ 
+                const target=bodies.find(b=>b.mesh===intersects[0].object); 
+                if(target) focusBody(target); 
+            } 
+        }
+
+        function createBody(typeData, pos, vel, name, textureKeyName=null) {
+            let mesh, jetsInfo, coronaMesh;
+            if (typeData.type === 'star') {
+                const geo = new THREE.SphereGeometry(typeData.r, 64, 64);
+                const mat = new THREE.ShaderMaterial({ uniforms: { time: { value: 0 } }, vertexShader: document.getElementById('vertexShader').textContent, fragmentShader: document.getElementById('fragmentShader').textContent, transparent: false, depthWrite: true, depthTest: true, blending: THREE.NoBlending, side: THREE.FrontSide });
+                mesh = new THREE.Mesh(geo, mat);
+                const light = new THREE.PointLight(typeData.color, 3.0, 0, 0); mesh.add(light);
+                const coronaGeo = new THREE.PlaneGeometry(typeData.r * 6, typeData.r * 6);
+                const coronaMat = new THREE.ShaderMaterial({ uniforms: { time: { value: 0 } }, vertexShader: document.getElementById('coronaVertexShader').textContent, fragmentShader: document.getElementById('coronaFragmentShader').textContent, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+                coronaMesh = new THREE.Mesh(coronaGeo, coronaMat); mesh.add(coronaMesh);
+            } else if (typeData.type === 'blackhole') {
+                const geo = new THREE.SphereGeometry(typeData.r, 32, 32); mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color:0}));
+            } else {
+                const geo = new THREE.SphereGeometry(typeData.r, 64, 64);
+                const params = { color: typeData.color, roughness: 0.8, metalness: 0.1 };
+                const safeMap = generateProceduralTexture(typeData.texType||'rock', typeData.color); params.map = safeMap;
+                const mat = new THREE.MeshStandardMaterial(params);
+                mesh = new THREE.Mesh(geo, mat);
+                mesh.castShadow = true; mesh.receiveShadow = true;
+            }
+            mesh.position.copy(pos); scene.add(mesh);
+            if (textureKeyName && typeData.type !== 'star') { let url = textureKeyName.startsWith('http') || textureKeyName.startsWith('uploads/') ? textureKeyName : (TEXTURES[textureKeyName] ? ASSET_PATH + TEXTURES[textureKeyName].map : null); if(url) textureLoader.load(url, (t) => { mesh.material.map = t; mesh.material.needsUpdate = true; }); }
+            if (typeData.ring) { const rGeo = new THREE.RingGeometry(typeData.r*1.3, typeData.r*2.2, 64); const rMat = new THREE.MeshStandardMaterial({ color: 0xaa9977, side: THREE.DoubleSide, transparent:true, opacity:0.9 }); const rMesh = new THREE.Mesh(rGeo, rMat); rMesh.rotation.x = -Math.PI/2; rMesh.receiveShadow=true; mesh.add(rMesh); new THREE.TextureLoader().load('https://raw.githubusercontent.com/simondevyoutube/ThreeJS_Tutorial_BasicWorld/master/resources/saturn_ring.png', (t)=>{rMat.map=t;rMat.alphaMap=t;rMat.needsUpdate=true;}); }
+            const div = document.createElement('div'); div.className = 'label'; div.textContent = name; const label = new CSS2DObject(div); label.position.set(0, typeData.r*1.5, 0); mesh.add(label);
+            const body = { mesh: mesh, mass: typeData.m, radius: typeData.r, velocity: vel.clone(), force: new THREE.Vector3(), name: name, type: typeData.type||'planet', rotSpeed: typeData.rotSpeed || 0, corona: coronaMesh };
+            initTrail(body); bodies.push(body); updateNavList(); 
+            if(name==='지구') createSpaceStation(body);
+            return body;
+        }
+
+        function resetCamera() { focusedBody=null; document.getElementById('reset-cam').style.display='none'; controls.target.set(0,0,0); updateNavList(); }
+        function showMsg(text) { const el=document.getElementById('msg-box'); el.innerText=text; el.style.opacity=1; setTimeout(()=>el.style.opacity=0, 3000); }
+        function onResize() { camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); labelRenderer.setSize(window.innerWidth, window.innerHeight); }
+        function loadDataAndInit() { if (API_URL) { fetch(API_URL).then(res => res.json()).then(data => initSolarSystem(data || DEFAULT_TYPES)).catch(err => initSolarSystem(DEFAULT_TYPES)); } else { initSolarSystem(DEFAULT_TYPES); } }
+
+        function initSolarSystem(data) {
+            // 태양 생성
+            createBody(DEFAULT_TYPES.SUN, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), '태양', 'SUN');
+            
+            // 행성들 생성 - 안정적인 원궤도를 위한 속도 계산: v = sqrt(G * M / r)
+            // G = 0.1, Sun M = 50000
+            const planets = [
+                { type: 'MERCURY', dist: 80, speed: 7.9, name: '수성' },
+                { type: 'VENUS', dist: 120, speed: 6.45, name: '금성' },
+                { type: 'EARTH', dist: 170, speed: 5.42, name: '지구' },
+                { type: 'MARS', dist: 230, speed: 4.66, name: '화성' },
+                { type: 'JUPITER', dist: 350, speed: 3.78, name: '목성' },
+                { type: 'SATURN', dist: 500, speed: 3.16, name: '토성' },
+                { type: 'URANUS', dist: 650, speed: 2.77, name: '천왕성' },
+                { type: 'NEPTUNE', dist: 800, speed: 2.5, name: '해왕성' }
+            ];
+            
+            planets.forEach(p => {
+                const angle = Math.random() * Math.PI * 2;
+                const pos = new THREE.Vector3(Math.cos(angle) * p.dist, 0, Math.sin(angle) * p.dist);
+                const vel = new THREE.Vector3(-Math.sin(angle) * p.speed, 0, Math.cos(angle) * p.speed);
+                createBody(DEFAULT_TYPES[p.type], pos, vel, p.name, p.type);
+            });
+        }
+
+        function initUI() {
+            // 네비게이션 패널 토글
+            document.getElementById('nav-toggle').onclick = () => {
+                document.getElementById('nav-container').classList.toggle('closed');
+            };
+            updateNavList();
+        }
+
+        function updateNavList() {
+            const list = document.getElementById('nav-list');
+            if(!list) return;
+            list.innerHTML = '';
+            bodies.forEach(b => {
+                if(b.type === 'blackhole' && b.name === '은하 중심') return;
+                const item = document.createElement('div');
+                item.className = 'nav-item';
+                item.innerHTML = `<span>${b.name}</span>`;
+                item.onclick = () => focusBody(b);
+                list.appendChild(item);
+            });
+        }
+
+        function initChat() {
+            const toggle = document.getElementById('chat-toggle');
+            const panel = document.getElementById('chat-panel');
+            const close = document.getElementById('chat-close');
+            
+            if(toggle) toggle.onclick = () => panel.classList.toggle('open');
+            if(close) close.onclick = () => panel.classList.remove('open');
+        }
+
+        function updatePhysics(dt) {
+            const G = CONFIG.G;
+            const subDt = dt / CONFIG.subSteps;
+            
+            for(let step = 0; step < CONFIG.subSteps; step++) {
+                // 힘 초기화
+                bodies.forEach(b => b.force.set(0,0,0));
+                
+                // 중력 계산
+                for(let i = 0; i < bodies.length; i++) {
+                    for(let j = i+1; j < bodies.length; j++) {
+                        const a = bodies[i], b = bodies[j];
+                        if(a.isStatic && b.isStatic) continue;
+                        
+                        const diff = new THREE.Vector3().subVectors(b.mesh.position, a.mesh.position);
+                        const dist = diff.length() + CONFIG.softening;
+                        const forceMag = G * a.mass * b.mass / (dist * dist);
+                        const forceDir = diff.normalize();
+                        
+                        if(!a.isStatic) a.force.add(forceDir.clone().multiplyScalar(forceMag));
+                        if(!b.isStatic) b.force.add(forceDir.clone().multiplyScalar(-forceMag));
+                    }
+                }
+                
+                // 속도 및 위치 업데이트
+                bodies.forEach(b => {
+                    if(b.isStatic) return;
+                    const accel = b.force.clone().divideScalar(b.mass);
+                    b.velocity.add(accel.multiplyScalar(subDt));
+                    b.mesh.position.add(b.velocity.clone().multiplyScalar(subDt));
+                });
+            }
+        }
+
+        function updateTrails() {
+            bodies.forEach(b => {
+                if(!b.trail || b.isStatic) return;
+                b.trailTimer++;
+                if(b.trailTimer >= 2) {
+                    b.trailTimer = 0;
+                    b.trailPoints[b.trailIndex].copy(b.mesh.position);
+                    b.trailIndex = (b.trailIndex + 1) % CONFIG.trailLength;
+                    
+                    const positions = [];
+                    for(let i = 0; i < CONFIG.trailLength; i++) {
+                        const idx = (b.trailIndex + i) % CONFIG.trailLength;
+                        positions.push(b.trailPoints[idx].x, b.trailPoints[idx].y, b.trailPoints[idx].z);
+                    }
+                    b.trail.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                }
+            });
+        }
+
+        const clock=new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt=clock.getDelta()*CONFIG.timeScale;
+            const elapsedTime = clock.getElapsedTime(); 
+            const prevPos=focusedBody?focusedBody.mesh.position.clone():null;
+            
+            bodies.forEach(b => {
+                if(b.rotSpeed && !b.isStatic) b.mesh.rotation.y += b.rotSpeed * 0.01 * CONFIG.timeScale;
+                if(b.type === 'star') {
+                    if(b.mesh.material.uniforms) b.mesh.material.uniforms.time.value = elapsedTime;
+                    if(b.corona) {
+                        b.corona.material.uniforms.time.value = elapsedTime;
+                        b.corona.lookAt(camera.position); 
+                    }
+                }
+                if(b.type === 'blackhole' && b.jets) { const s = 1.0 + Math.random()*0.05; b.jets.up.scale.y=s; b.jets.down.scale.y=s; }
+            });
+
+            if(spaceStation && spaceStation.parentBody) {
+                spaceStation.angle += spaceStation.orbitSpeed * dt * 0.1;
+                const r = spaceStation.orbitRadius;
+                spaceStation.mesh.position.x = spaceStation.parentBody.mesh.position.x + Math.cos(spaceStation.angle) * r;
+                spaceStation.mesh.position.z = spaceStation.parentBody.mesh.position.z + Math.sin(spaceStation.angle) * r;
+                spaceStation.mesh.position.y = spaceStation.parentBody.mesh.position.y;
+                spaceStation.mesh.lookAt(spaceStation.parentBody.mesh.position); spaceStation.mesh.rotateY(Math.PI/2);
+            }
+
+            if(isPilotMode) updatePilot(dt); 
+
+            if(dt>0){ updatePhysics(dt); updateTrails(); }
+            if(!isPilotMode && focusedBody && prevPos){ camera.position.add(new THREE.Vector3().subVectors(focusedBody.mesh.position,prevPos)); controls.target.copy(focusedBody.mesh.position); }
+            controls.update(); renderer.render(scene, camera); labelRenderer.render(scene, camera);
+        }
+        init();
+    </script>
+</body>
+</html>

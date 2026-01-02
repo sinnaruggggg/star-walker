@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Starstrider</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #0c1445 0%, #1a237e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #1a237e; font-size: 28px; margin-bottom: 10px; }
+        .app-name { color: #5c6bc0; font-size: 16px; margin-bottom: 30px; }
+        h2 {
+            color: #303f9f;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8eaf6;
+        }
+        p, li { color: #555; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 20px; }
+        .highlight { background: #e8eaf6; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .contact { background: #f5f5f5; padding: 20px; border-radius: 10px; margin-top: 30px; }
+        .date { color: #999; font-size: 14px; margin-top: 30px; text-align: center; }
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch button {
+            color: #5c6bc0;
+            background: white;
+            padding: 8px 20px;
+            border: 1px solid #5c6bc0;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .lang-switch button:hover, .lang-switch button.active {
+            background: #5c6bc0;
+            color: white;
+        }
+        .english { display: none; }
+        .btn-area { text-align: center; margin-top: 30px; }
+        .close-btn {
+            display: inline-block;
+            padding: 12px 40px;
+            background: #5c6bc0;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close-btn:hover {
+            background: #3f51b5;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-switch">
+            <button onclick="showKorean()" id="btn-ko" class="active">한국어</button>
+            <button onclick="showEnglish()" id="btn-en">English</button>
+        </div>
+
+        <!-- 한국어 버전 -->
+        <div class="korean" id="ko-content">
+            <h1>🚀 개인정보 처리방침</h1>
+            <p class="app-name">Starstrider - 우주 탐험 시뮬레이터</p>
+
+            <div class="highlight">
+                <strong>핵심 요약:</strong> Starstrider는 게임 서비스 제공을 위한 최소한의 정보만 수집합니다.
+            </div>
+
+            <h2>1. 수집하는 정보</h2>
+            <p>Starstrider는 다음 정보를 수집합니다:</p>
+            <ul>
+                <li>아이디 (로그인용)</li>
+                <li>비밀번호 (암호화 저장)</li>
+                <li>닉네임 (게임 내 표시)</li>
+                <li>이메일 (선택사항)</li>
+            </ul>
+
+            <h2>2. 정보 이용 목적</h2>
+            <ul>
+                <li>게임 로그인 및 계정 관리</li>
+                <li>멀티플레이어 서비스 제공</li>
+                <li>게임 내 닉네임 표시</li>
+            </ul>
+
+            <h2>3. 정보 보관 기간</h2>
+            <p>회원 탈퇴 시 즉시 삭제됩니다.</p>
+
+            <h2>4. 제3자 제공</h2>
+            <p>수집된 정보는 제3자에게 제공되지 않습니다.</p>
+
+            <h2>5. 데이터 보안</h2>
+            <p>비밀번호는 암호화되어 저장되며, 안전하게 관리됩니다.</p>
+
+            <h2>6. 이용자의 권리</h2>
+            <ul>
+                <li>개인정보 열람 요청</li>
+                <li>개인정보 수정 요청</li>
+                <li>회원 탈퇴 및 정보 삭제 요청</li>
+            </ul>
+
+            <h2>7. 정책 변경</h2>
+            <p>본 개인정보 처리방침이 변경될 경우, 이 페이지에 업데이트됩니다.</p>
+
+            <div class="contact">
+                <h3>📧 문의</h3>
+                <p>질문이나 의견이 있으시면 연락해 주세요:</p>
+                <p><strong>이메일:</strong> sinnaru@naver.com</p>
+            </div>
+
+            <div class="btn-area">
+                <button class="close-btn" onclick="window.close(); history.back();">✕ 닫기</button>
+            </div>
+
+            <p class="date">최종 업데이트: 2025년 1월</p>
+        </div>
+
+        <!-- English Version -->
+        <div class="english" id="en-content">
+            <h1>🚀 Privacy Policy</h1>
+            <p class="app-name">Starstrider - Space Exploration Simulator</p>
+
+            <div class="highlight">
+                <strong>Summary:</strong> Starstrider collects only minimal information necessary to provide the game service.
+            </div>
+
+            <h2>1. Information We Collect</h2>
+            <p>Starstrider collects the following information:</p>
+            <ul>
+                <li>Username (for login)</li>
+                <li>Password (encrypted)</li>
+                <li>Nickname (displayed in game)</li>
+                <li>Email (optional)</li>
+            </ul>
+
+            <h2>2. Purpose of Use</h2>
+            <ul>
+                <li>Game login and account management</li>
+                <li>Multiplayer service provision</li>
+                <li>In-game nickname display</li>
+            </ul>
+
+            <h2>3. Retention Period</h2>
+            <p>Information is deleted immediately upon account deletion.</p>
+
+            <h2>4. Third-Party Sharing</h2>
+            <p>Collected information is not shared with third parties.</p>
+
+            <h2>5. Data Security</h2>
+            <p>Passwords are encrypted and securely managed.</p>
+
+            <h2>6. User Rights</h2>
+            <ul>
+                <li>Request to view personal information</li>
+                <li>Request to modify personal information</li>
+                <li>Request account deletion and data removal</li>
+            </ul>
+
+            <h2>7. Policy Changes</h2>
+            <p>If this privacy policy changes, it will be updated on this page.</p>
+
+            <div class="contact">
+                <h3>📧 Contact</h3>
+                <p>If you have questions or comments:</p>
+                <p><strong>Email:</strong> sinnaru@naver.com</p>
+            </div>
+
+            <div class="btn-area">
+                <button class="close-btn" onclick="window.close(); history.back();">✕ Close</button>
+            </div>
+
+            <p class="date">Last Updated: January 2025</p>
+        </div>
+    </div>
+
+    <script>
+        function showKorean() {
+            document.getElementById('ko-content').style.display = 'block';
+            document.getElementById('en-content').style.display = 'none';
+            document.getElementById('btn-ko').classList.add('active');
+            document.getElementById('btn-en').classList.remove('active');
+        }
+        function showEnglish() {
+            document.getElementById('ko-content').style.display = 'none';
+            document.getElementById('en-content').style.display = 'block';
+            document.getElementById('btn-ko').classList.remove('active');
+            document.getElementById('btn-en').classList.add('active');
+        }
+    </script>
+</body>
+</html>
