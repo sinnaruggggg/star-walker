@@ -16742,21 +16742,40 @@ window.MissionSystem = MissionSystem;
             // 새로운 distScale로 태양계 재생성
             initSolarSystem(DEFAULT_TYPES);
             
-            // ★★★ 멀티모드: 공유 시간 기준 설정 (실제 시간 기반) ★★★
-            // 모든 클라이언트가 동일한 시간 기준을 사용하여 천체 위치 동기화
+            // ★★★ 멀티모드: 서버 시간 기준으로 천체 위치 동기화 ★★★
             window.multiEpoch = new Date('2025-01-01T00:00:00Z').getTime();  // 고정 기준점
-            const elapsedDays = (Date.now() - window.multiEpoch) / (1000 * 60 * 60 * 24);  // 경과 일수
-            
-            // 각 천체의 궤도 위상을 실제 경과 시간에 맞춤
-            bodies.forEach(b => {
-                if (b.orbitalPeriod && b.orbitalPeriod > 0) {
-                    // 경과 시간에 따른 궤도 위상 계산
-                    const orbitsCompleted = elapsedDays / b.orbitalPeriod;
-                    b.trueAnomaly = (orbitsCompleted * 2 * Math.PI) % (2 * Math.PI);
+
+            // 서버 시간 동기화 후 천체 위치 계산
+            async function syncCelestialPositions() {
+                // 서버 시간 동기화 시도
+                if (typeof syncServerTime === 'function') {
+                    await syncServerTime();
                 }
-            });
-            
-            console.log('멀티모드: 공유 시간 기준 설정 완료 (경과:', elapsedDays.toFixed(2), '일)');
+
+                // 동기화된 시간 사용 (getSyncedTime이 없으면 Date.now 사용)
+                const syncedTime = typeof getSyncedTime === 'function' ? getSyncedTime() : Date.now();
+                const elapsedDays = (syncedTime - window.multiEpoch) / (1000 * 60 * 60 * 24);
+
+                // 각 천체의 궤도 위상을 서버 시간 기준으로 계산
+                bodies.forEach(b => {
+                    if (b.orbitalPeriod && b.orbitalPeriod > 0) {
+                        const orbitsCompleted = elapsedDays / b.orbitalPeriod;
+                        b.trueAnomaly = (orbitsCompleted * 2 * Math.PI) % (2 * Math.PI);
+                    }
+                });
+
+                // 위성들도 동기화
+                satellites.forEach(sat => {
+                    if (sat.orbitalPeriod && sat.orbitalPeriod > 0) {
+                        const orbitsCompleted = elapsedDays / sat.orbitalPeriod;
+                        sat.angle = (orbitsCompleted * 2 * Math.PI) % (2 * Math.PI);
+                    }
+                });
+
+                console.log('멀티모드: 서버 시간 동기화 완료 (경과:', elapsedDays.toFixed(2), '일, 오프셋:', serverTimeOffset, 'ms)');
+            }
+
+            syncCelestialPositions();
             
             // ISS 재생성
             setTimeout(() => {
@@ -27372,6 +27391,56 @@ let mpLastSentPosition = { x: 0, y: 0, z: 0 };
 let mpLastSentRotation = { x: 0, y: 0, z: 0 };
 let mpLastSentTime = 0;
 let mpForceUpdateCounter = 0;
+
+// ★★★ 서버 시간 동기화 ★★★
+let serverTimeOffset = 0;  // 서버시간 - 클라이언트시간 (밀리초)
+let serverTimeSynced = false;
+
+// 서버 시간 가져오기 (Supabase RPC 또는 테이블 이용)
+async function syncServerTime() {
+    if (!supabase) return;
+
+    try {
+        const clientTimeBefore = Date.now();
+
+        // Supabase에서 현재 서버 시간 조회
+        const { data, error } = await supabase.rpc('get_server_time');
+
+        if (error) {
+            // RPC 없으면 player_positions 테이블의 서버 타임스탬프 이용
+            const { data: posData } = await supabase
+                .from('player_positions')
+                .select('updated_at')
+                .limit(1);
+
+            if (posData && posData.length > 0) {
+                const serverTime = new Date(posData[0].updated_at).getTime();
+                const clientTimeAfter = Date.now();
+                const roundTrip = clientTimeAfter - clientTimeBefore;
+                serverTimeOffset = serverTime - clientTimeBefore - (roundTrip / 2);
+                serverTimeSynced = true;
+                console.log('⏱️ 서버 시간 동기화 (테이블):', serverTimeOffset, 'ms 오프셋');
+            }
+            return;
+        }
+
+        if (data) {
+            const serverTime = new Date(data).getTime();
+            const clientTimeAfter = Date.now();
+            const roundTrip = clientTimeAfter - clientTimeBefore;
+            serverTimeOffset = serverTime - clientTimeBefore - (roundTrip / 2);
+            serverTimeSynced = true;
+            console.log('⏱️ 서버 시간 동기화 (RPC):', serverTimeOffset, 'ms 오프셋');
+        }
+    } catch (e) {
+        console.warn('서버 시간 동기화 실패:', e);
+    }
+}
+
+// 동기화된 현재 시간 반환
+function getSyncedTime() {
+    return Date.now() + serverTimeOffset;
+}
 
 // Supabase SDK 로드 및 초기화
 function initSupabase() {
