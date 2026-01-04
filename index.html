@@ -13105,12 +13105,13 @@ window.MissionSystem = MissionSystem;
         function updateKeplerOrbits(dt) {
             const baseUnit = 220;
 
-            // ★★★ 멀티모드: 서버 동기화 시간 기준 (모든 기기 동일) ★★★
+            // ★★★ 멀티모드: 고정 epoch 기준 (모든 기기 동일한 시간 사용) ★★★
             if (window.gameMode === 'multi') {
-                const syncedTime = typeof getSyncedTime === 'function' ? getSyncedTime() : Date.now();
-                keplerTime = (syncedTime - KEPLER_EPOCH) * 0.00000001;  // 서버 시간 기준 절대값
+                // Date.now()는 모든 기기에서 거의 동일 (UTC 기준)
+                // 서버 동기화 없이도 대부분의 기기에서 수 초 이내 오차
+                keplerTime = (Date.now() - KEPLER_EPOCH) * 0.00000001;
             } else {
-                // 싱글모드: 기존 방식 (상대적 누적)
+                // 싱글모드: 기존 방식 (상대적 누적, timeScale 적용)
                 keplerTime += dt * 0.0001 * CONFIG.timeScale;
             }
             
@@ -16836,10 +16837,9 @@ window.MissionSystem = MissionSystem;
             particles.forEach(p => { if(p && p.mesh) scene.remove(p.mesh); });
             particles = [];
             
-            // 케플러 시간 리셋 (멀티모드면 서버 시간 기준)
+            // 케플러 시간 리셋 (멀티모드면 UTC 기준 절대값)
             if (window.gameMode === 'multi') {
-                const syncedTime = typeof getSyncedTime === 'function' ? getSyncedTime() : Date.now();
-                keplerTime = (syncedTime - KEPLER_EPOCH) * 0.00000001;
+                keplerTime = (Date.now() - KEPLER_EPOCH) * 0.00000001;
             } else {
                 keplerTime = 0;
             }
