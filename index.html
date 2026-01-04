@@ -23803,19 +23803,27 @@ window.MissionSystem = MissionSystem;
                 } 
             });
 
-            satellites.forEach(sat => { 
-                if (sat && sat.parentBody && sat.parentBody.mesh && sat.mesh) { 
+            satellites.forEach(sat => {
+                if (sat && sat.parentBody && sat.parentBody.mesh && sat.mesh) {
                     // 물리 활성화된 위성(moon)은 궤도 계산 건너뛰기 - 물리 법칙으로 이동
                     if (sat.isPhysicsEnabled) {
                         // 자전만 적용
                         sat.mesh.rotation.y += 0.01;
                         return;
                     }
-                    
-                    // ★★★ 위성 공전 속도: timeScale과 별개로 일정 속도 유지 ★★★
-                    // 멀티모드에서는 10배 느리게 (0.1배수)
-                    const satelliteSpeedMultiplier = window.gameMode === 'multi' ? 0.1 : CONFIG.timeScale;
-                    sat.angle += sat.orbitSpeed * rawDt * satelliteSpeedMultiplier * 0.033; 
+
+                    // ★★★ 멀티모드: 절대 시간 기준 각도 계산 (모든 기기 동일) ★★★
+                    if (window.gameMode === 'multi') {
+                        // 위성별 고유 시드 (이름 기반 해시)
+                        const seed = sat.name ? sat.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
+                        // 절대 시간 기준 각도 = 초기각도 + (시간 * 속도)
+                        const baseTime = Date.now() * 0.000001;  // 천천히 변화
+                        sat.angle = (seed + baseTime * sat.orbitSpeed * 0.1) % (Math.PI * 2);
+                    } else {
+                        // 싱글모드: 기존 방식 (상대적 누적)
+                        const satelliteSpeedMultiplier = CONFIG.timeScale;
+                        sat.angle += sat.orbitSpeed * rawDt * satelliteSpeedMultiplier * 0.033;
+                    } 
                     
                     // 실제 거리 모드에서는 실제 비율 사용, 체험 모드에서는 기본 비율
                     const isRealMode = CONFIG.distScale > 1.0;
