@@ -23791,7 +23791,7 @@ window.MissionSystem = MissionSystem;
                     // ★★★ 위성 공전 속도: timeScale과 별개로 일정 속도 유지 ★★★
                     // 멀티모드에서는 10배 느리게 (0.1배수)
                     const satelliteSpeedMultiplier = window.gameMode === 'multi' ? 0.1 : CONFIG.timeScale;
-                    sat.angle += sat.orbitSpeed * rawDt * satelliteSpeedMultiplier * 0.1; 
+                    sat.angle += sat.orbitSpeed * rawDt * satelliteSpeedMultiplier * 0.033; 
                     
                     // 실제 거리 모드에서는 실제 비율 사용, 체험 모드에서는 기본 비율
                     const isRealMode = CONFIG.distScale > 1.0;
