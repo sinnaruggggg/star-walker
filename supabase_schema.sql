@@ -91,7 +91,81 @@ CREATE POLICY "ships_write_auth" ON ships FOR ALL USING (auth.role() = 'authenti
 CREATE POLICY "celestial_write_auth" ON celestial_bodies FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "config_write_auth" ON game_config FOR ALL USING (auth.role() = 'authenticated');
 
--- 7. 인덱스
+-- 7. 플레이어 위치 테이블 (멀티플레이어)
+CREATE TABLE IF NOT EXISTS player_positions (
+    user_id TEXT PRIMARY KEY,
+    nickname TEXT NOT NULL DEFAULT '익명',
+    x NUMERIC(20,6) NOT NULL DEFAULT 0,
+    y NUMERIC(20,6) NOT NULL DEFAULT 0,
+    z NUMERIC(20,6) NOT NULL DEFAULT 0,
+    rot_x NUMERIC(10,6) NOT NULL DEFAULT 0,
+    rot_y NUMERIC(10,6) NOT NULL DEFAULT 0,
+    rot_z NUMERIC(10,6) NOT NULL DEFAULT 0,
+    ship_type TEXT DEFAULT 'shuttle',
+    current_body TEXT DEFAULT NULL,
+    speed NUMERIC(10,2) DEFAULT 0,
+    dir_x NUMERIC(10,6) DEFAULT 0,
+    dir_y NUMERIC(10,6) DEFAULT 0,
+    dir_z NUMERIC(10,6) DEFAULT -1,
+    is_autopilot BOOLEAN DEFAULT false,
+    autopilot_target TEXT DEFAULT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 플레이어 위치 RLS
+ALTER TABLE player_positions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "player_positions_read_all" ON player_positions FOR SELECT USING (true);
+CREATE POLICY "player_positions_write_all" ON player_positions FOR INSERT WITH CHECK (true);
+CREATE POLICY "player_positions_update_all" ON player_positions FOR UPDATE USING (true);
+CREATE POLICY "player_positions_delete_all" ON player_positions FOR DELETE USING (true);
+
+-- 플레이어 위치 인덱스
+CREATE INDEX IF NOT EXISTS idx_player_positions_updated ON player_positions(updated_at);
+
+-- 8. 채팅 테이블
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    nickname TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 채팅 RLS
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "chat_read_all" ON chat_messages FOR SELECT USING (true);
+CREATE POLICY "chat_write_all" ON chat_messages FOR INSERT WITH CHECK (true);
+
+-- 채팅 인덱스
+CREATE INDEX IF NOT EXISTS idx_chat_created ON chat_messages(created_at);
+
+-- 9. 방문 기록 테이블
+CREATE TABLE IF NOT EXISTS visited_bodies (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    body_name TEXT NOT NULL,
+    last_visited_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, body_name)
+);
+
+-- 방문 기록 RLS
+ALTER TABLE visited_bodies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "visited_read_all" ON visited_bodies FOR SELECT USING (true);
+CREATE POLICY "visited_write_all" ON visited_bodies FOR INSERT WITH CHECK (true);
+CREATE POLICY "visited_update_all" ON visited_bodies FOR UPDATE USING (true);
+
+-- 방문 기록 인덱스
+CREATE INDEX IF NOT EXISTS idx_visited_user ON visited_bodies(user_id);
+
+-- 10. 서버 시간 조회 함수 (멀티플레이어 동기화용)
+CREATE OR REPLACE FUNCTION get_server_time()
+RETURNS TIMESTAMPTZ AS $$
+BEGIN
+    RETURN NOW();
+END;
+$$ LANGUAGE plpgsql;
+
+-- 11. 기존 인덱스
 CREATE INDEX IF NOT EXISTS idx_ships_tier ON ships(tier);
 CREATE INDEX IF NOT EXISTS idx_ships_unlocked ON ships(unlocked);
 CREATE INDEX IF NOT EXISTS idx_celestial_type ON celestial_bodies(body_type);

@@ -28522,10 +28522,15 @@ function mpSendMyPosition(forceUpdate = false) {
         updated_at: new Date().toISOString()
     };
 
+    // ★★★ user_id가 PRIMARY KEY면 onConflict 불필요 ★★★
     supabase
         .from('player_positions')
-        .upsert(data, { onConflict: 'user_id' })
-        .then(function() {})
+        .upsert(data)
+        .then(function(result) {
+            if (result.error) {
+                console.log('MP 위치 전송 에러:', result.error.message);
+            }
+        })
         .catch(function(e) {
             console.log('MP 위치 전송 실패:', e);
         });
