@@ -13095,21 +13095,17 @@ window.MissionSystem = MissionSystem;
             }
         };
         
-        // ★★★ 케플러 궤도 시간 변수 ★★★
-        // 멀티모드에서는 서버 동기화 시간 사용, 싱글에서는 로컬 시간 사용
-        let keplerTime = 0;
-        const KEPLER_EPOCH = new Date('2025-01-01T00:00:00Z').getTime();  // 고정 기준점
+        // ★★★ 케플러 궤도 시간 변수 (누적) ★★★
+        let keplerTime = Date.now() * 0.00001;  // 원본 스케일 유지
 
         // ★★★ NASA JPL 공식 공식으로 케플러 궤도 계산 ★★★
         // 출처: https://ssd.jpl.nasa.gov/planets/approx_pos.html
         function updateKeplerOrbits(dt) {
             const baseUnit = 220;
 
-            // ★★★ 멀티모드: 고정 epoch 기준 (모든 기기 동일한 시간 사용) ★★★
+            // ★★★ 멀티모드: Date.now() 기준 절대값 (모든 기기 동일) ★★★
             if (window.gameMode === 'multi') {
-                // Date.now()는 모든 기기에서 거의 동일 (UTC 기준)
-                // 서버 동기화 없이도 대부분의 기기에서 수 초 이내 오차
-                keplerTime = (Date.now() - KEPLER_EPOCH) * 0.00000001;
+                keplerTime = Date.now() * 0.00001;  // 원본과 동일한 스케일
             } else {
                 // 싱글모드: 기존 방식 (상대적 누적, timeScale 적용)
                 keplerTime += dt * 0.0001 * CONFIG.timeScale;
@@ -16837,12 +16833,8 @@ window.MissionSystem = MissionSystem;
             particles.forEach(p => { if(p && p.mesh) scene.remove(p.mesh); });
             particles = [];
             
-            // 케플러 시간 리셋 (멀티모드면 UTC 기준 절대값)
-            if (window.gameMode === 'multi') {
-                keplerTime = (Date.now() - KEPLER_EPOCH) * 0.00000001;
-            } else {
-                keplerTime = 0;
-            }
+            // 케플러 시간 리셋
+            keplerTime = Date.now() * 0.00001;
             
             // 태양계 재생성
             initSolarSystem(DEFAULT_TYPES);
