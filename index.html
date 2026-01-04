@@ -28260,7 +28260,11 @@ function processLogin(user, username, nickname) {
 }
 
 function guestLogin() {
-    mpUserId = 'guest_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    // ★★★ UUID 형식으로 생성 (테이블이 uuid 타입) ★★★
+    mpUserId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
     mpNickname = '탐험가' + Math.floor(Math.random() * 9999);
     mpUser = null;
     
@@ -28493,15 +28497,24 @@ function mpSendMyPosition(forceUpdate = false) {
         shipType = SHIP_TYPES[window.selectedShipIndex] ? SHIP_TYPES[window.selectedShipIndex].id : 'shuttle';
     }
 
-    var isAutopilot = window.autopilot && window.autopilot.engaged;
-    var speed = ship.speed || 0;
-    var fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(ship.mesh.quaternion);
-
-    var autopilotTarget = null;
-    if (isAutopilot && window.shipTargetBody) {
-        autopilotTarget = window.shipTargetBody.name;
+    // 우주선 색상 가져오기
+    var shipColor = '#00aaff';
+    if (typeof SHIP_TYPES !== 'undefined' && window.selectedShipIndex !== undefined) {
+        var shipData = SHIP_TYPES[window.selectedShipIndex];
+        if (shipData && shipData.color) {
+            shipColor = '#' + shipData.color;
+        }
     }
 
+    // 상태 결정
+    var status = 'flying';
+    if (window.autopilot && window.autopilot.engaged) {
+        status = 'autopilot';
+    } else if (ship.speed < 1) {
+        status = 'idle';
+    }
+
+    // ★★★ 테이블 구조에 맞는 데이터만 전송 ★★★
     var data = {
         user_id: mpUserId,
         nickname: mpNickname,
@@ -28512,14 +28525,9 @@ function mpSendMyPosition(forceUpdate = false) {
         rot_y: rot.y,
         rot_z: rot.z,
         ship_type: shipType,
-        current_body: window.focusedBody ? window.focusedBody.name : null,
-        speed: speed,
-        dir_x: fwd.x,
-        dir_y: fwd.y,
-        dir_z: fwd.z,
-        is_autopilot: isAutopilot,
-        autopilot_target: autopilotTarget,
-        updated_at: new Date().toISOString()
+        ship_color: shipColor,
+        status: status,
+        current_body: window.focusedBody ? window.focusedBody.name : null
     };
 
     // ★★★ user_id가 PRIMARY KEY면 onConflict 불필요 ★★★
