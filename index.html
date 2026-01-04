@@ -13103,9 +13103,9 @@ window.MissionSystem = MissionSystem;
         function updateKeplerOrbits(dt) {
             const baseUnit = 220;
 
-            // ★★★ 멀티모드: Date.now() 기준 절대값 (모든 기기 동일) ★★★
+            // ★★★ 멀티모드: 고정값 (천체 위치 불변) ★★★
             if (window.gameMode === 'multi') {
-                keplerTime = Date.now() * 0.00001;  // 원본과 동일한 스케일
+                keplerTime = 176800;  // 고정값 - 모든 접속에서 동일한 행성 위치
             } else {
                 // 싱글모드: 기존 방식 (상대적 누적, timeScale 적용)
                 keplerTime += dt * 0.0001 * CONFIG.timeScale;
@@ -15195,12 +15195,11 @@ window.MissionSystem = MissionSystem;
             mesh.add(label);
             scene.add(mesh);
             
-            // ★★★ 멀티모드: 위성 초기 각도도 동기화 (Date.now 기준) ★★★
+            // ★★★ 멀티모드: 위성 초기 각도 고정 ★★★
             let initialAngle;
             if (window.gameMode === 'multi') {
                 const seed = name ? name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
-                const baseTime = Date.now() * 0.000001;
-                initialAngle = (seed + baseTime * speed * 0.1) % (Math.PI * 2);
+                initialAngle = (seed * 0.1) % (Math.PI * 2);  // 고정값
             } else {
                 initialAngle = Math.random() * Math.PI * 2;
             }
@@ -16843,8 +16842,8 @@ window.MissionSystem = MissionSystem;
             particles.forEach(p => { if(p && p.mesh) scene.remove(p.mesh); });
             particles = [];
             
-            // 케플러 시간 리셋
-            keplerTime = Date.now() * 0.00001;
+            // 케플러 시간 리셋 (멀티모드는 고정값)
+            keplerTime = window.gameMode === 'multi' ? 176800 : Date.now() * 0.00001;
             
             // 태양계 재생성
             initSolarSystem(DEFAULT_TYPES);
@@ -18701,11 +18700,10 @@ window.MissionSystem = MissionSystem;
             } else {
                 // 최초 탑승: 정거장에 도킹된 상태에서 시작
 
-                // ★★★ 멀티모드: 정거장 위치 강제 동기화 (스폰 전) ★★★
+                // ★★★ 멀티모드: 정거장 위치 고정값으로 강제 (스폰 전) ★★★
                 if (window.gameMode === 'multi' && station.parentBody && station.parentBody.mesh) {
                     const seed = station.name ? station.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
-                    const baseTime = Date.now() * 0.000001;
-                    station.angle = (seed + baseTime * station.orbitSpeed * 0.1) % (Math.PI * 2);
+                    station.angle = (seed * 0.1) % (Math.PI * 2);  // 고정값
 
                     // 궤도 반경 계산
                     const isRealMode = CONFIG.distScale > 1.0;
@@ -18718,7 +18716,7 @@ window.MissionSystem = MissionSystem;
                     station.mesh.position.z = station.parentBody.mesh.position.z + Math.sin(station.angle) * r;
                     station.mesh.position.y = station.parentBody.mesh.position.y;
 
-                    console.log('★ 멀티모드 정거장 위치 동기화:', station.angle, station.mesh.position);
+                    console.log('★ 멀티모드 정거장 위치 고정:', station.angle, station.mesh.position);
                 }
 
                 const stationWorldPos = new THREE.Vector3();
@@ -23843,13 +23841,11 @@ window.MissionSystem = MissionSystem;
                         return;
                     }
 
-                    // ★★★ 멀티모드: 절대 시간 기준 각도 계산 (모든 기기 동일) ★★★
+                    // ★★★ 멀티모드: 위성 위치 고정 (공전 안함) ★★★
                     if (window.gameMode === 'multi') {
-                        // 위성별 고유 시드 (이름 기반 해시)
+                        // 위성별 고유 고정 각도 (이름 기반 해시)
                         const seed = sat.name ? sat.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
-                        // 절대 시간 기준 각도 = 초기각도 + (시간 * 속도)
-                        const baseTime = Date.now() * 0.000001;  // 천천히 변화
-                        sat.angle = (seed + baseTime * sat.orbitSpeed * 0.1) % (Math.PI * 2);
+                        sat.angle = (seed * 0.1) % (Math.PI * 2);  // 고정값
                     } else {
                         // 싱글모드: 기존 방식 (상대적 누적)
                         const satelliteSpeedMultiplier = CONFIG.timeScale;
