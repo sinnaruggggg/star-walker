@@ -462,7 +462,7 @@
         const SUPABASE_URL = 'https://sfirzuqngdbpwvdoyero.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmaXJ6dXFuZ2RicHd2ZG95ZXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MjU2MzYsImV4cCI6MjA4MTUwMTYzNn0.Si0i23yCuihJ4LOM-LXxZ8atl2YOytd1Cm2Ur6yj3fk';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let shipsData = [];
         let celestialData = {};
@@ -481,7 +481,7 @@
         // 우주선 목록 로드
         async function loadShips() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('ships')
                     .select('*')
                     .order('tier');
@@ -599,7 +599,7 @@
             };
 
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('ships')
                     .upsert(shipData, { onConflict: 'id' });
 
@@ -619,7 +619,7 @@
             if (!confirm('정말 삭제하시겠습니까?')) return;
 
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('ships')
                     .delete()
                     .eq('id', currentEditShip);
@@ -647,13 +647,13 @@
                 const ext = file.name.split('.').pop();
                 const fileName = `${file.name.replace(/\.[^/.]+$/, '')}_${timestamp}.${ext}`;
 
-                const { data, error } = await supabase.storage
+                const { data, error } = await supabaseClient.storage
                     .from('assets')
                     .upload(`ships/${fileName}`, file);
 
                 if (error) throw error;
 
-                const { data: urlData } = supabase.storage
+                const { data: urlData } = supabaseClient.storage
                     .from('assets')
                     .getPublicUrl(`ships/${fileName}`);
 
