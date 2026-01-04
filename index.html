@@ -18703,24 +18703,30 @@ window.MissionSystem = MissionSystem;
             } else {
                 // 최초 탑승: 정거장에 도킹된 상태에서 시작
 
-                // ★★★ 멀티모드: Date.now() 기준 정거장 위치 동기화 (스폰 전) ★★★
-                if (window.gameMode === 'multi' && station.parentBody && station.parentBody.mesh) {
-                    const seed = station.name ? station.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
-                    const baseTime = Date.now() * 0.0000001;
-                    station.angle = (seed * 0.1 + baseTime * station.orbitSpeed) % (Math.PI * 2);
+                // ★★★ 멀티모드: 스폰 전 모든 천체 위치 강제 업데이트 ★★★
+                if (window.gameMode === 'multi') {
+                    // 1. 먼저 행성들 위치 업데이트 (keplerTime 기준)
+                    if (typeof updateKeplerOrbits === 'function') {
+                        updateKeplerOrbits(0);
+                    }
 
-                    // 궤도 반경 계산
-                    const isRealMode = CONFIG.distScale > 1.0;
-                    const r = isRealMode && station.realOrbitRadius
-                        ? station.realOrbitRadius * (station.parentBody.radius || 1)
-                        : station.orbitRadius;
+                    // 2. 그 다음 위성/정거장 위치 업데이트
+                    if (station.parentBody && station.parentBody.mesh) {
+                        const seed = station.name ? station.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
+                        const baseTime = Date.now() * 0.0000001;
+                        station.angle = (seed * 0.1 + baseTime * station.orbitSpeed) % (Math.PI * 2);
 
-                    // 위치 업데이트
-                    station.mesh.position.x = station.parentBody.mesh.position.x + Math.cos(station.angle) * r;
-                    station.mesh.position.z = station.parentBody.mesh.position.z + Math.sin(station.angle) * r;
-                    station.mesh.position.y = station.parentBody.mesh.position.y;
+                        const isRealMode = CONFIG.distScale > 1.0;
+                        const r = isRealMode && station.realOrbitRadius
+                            ? station.realOrbitRadius * (station.parentBody.radius || 1)
+                            : station.orbitRadius;
 
-                    console.log('★ 멀티모드 정거장 위치 동기화:', station.angle, station.mesh.position);
+                        station.mesh.position.x = station.parentBody.mesh.position.x + Math.cos(station.angle) * r;
+                        station.mesh.position.z = station.parentBody.mesh.position.z + Math.sin(station.angle) * r;
+                        station.mesh.position.y = station.parentBody.mesh.position.y;
+
+                        console.log('★ 스폰 전 강제 동기화 - 지구:', station.parentBody.mesh.position, '정거장:', station.mesh.position);
+                    }
                 }
 
                 const stationWorldPos = new THREE.Vector3();
