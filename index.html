@@ -13095,16 +13095,24 @@ window.MissionSystem = MissionSystem;
             }
         };
         
-        // ★★★ 케플러 궤도 시간 변수 (누적) ★★★
-        let keplerTime = Date.now() * 0.00001;
-        
+        // ★★★ 케플러 궤도 시간 변수 ★★★
+        // 멀티모드에서는 서버 동기화 시간 사용, 싱글에서는 로컬 시간 사용
+        let keplerTime = 0;
+        const KEPLER_EPOCH = new Date('2025-01-01T00:00:00Z').getTime();  // 고정 기준점
+
         // ★★★ NASA JPL 공식 공식으로 케플러 궤도 계산 ★★★
         // 출처: https://ssd.jpl.nasa.gov/planets/approx_pos.html
         function updateKeplerOrbits(dt) {
             const baseUnit = 220;
-            
-            // 시간 누적 (timeScale 적용)
-            keplerTime += dt * 0.0001;
+
+            // ★★★ 멀티모드: 서버 동기화 시간 기준 (모든 기기 동일) ★★★
+            if (window.gameMode === 'multi') {
+                const syncedTime = typeof getSyncedTime === 'function' ? getSyncedTime() : Date.now();
+                keplerTime = (syncedTime - KEPLER_EPOCH) * 0.00000001;  // 서버 시간 기준 절대값
+            } else {
+                // 싱글모드: 기존 방식 (상대적 누적)
+                keplerTime += dt * 0.0001 * CONFIG.timeScale;
+            }
             
             bodies.forEach(body => {
                 if (!body || !body.mesh || !body.name) return;
@@ -16828,8 +16836,13 @@ window.MissionSystem = MissionSystem;
             particles.forEach(p => { if(p && p.mesh) scene.remove(p.mesh); });
             particles = [];
             
-            // 케플러 시간 리셋
-            keplerTime = Date.now() * 0.00001;
+            // 케플러 시간 리셋 (멀티모드면 서버 시간 기준)
+            if (window.gameMode === 'multi') {
+                const syncedTime = typeof getSyncedTime === 'function' ? getSyncedTime() : Date.now();
+                keplerTime = (syncedTime - KEPLER_EPOCH) * 0.00000001;
+            } else {
+                keplerTime = 0;
+            }
             
             // 태양계 재생성
             initSolarSystem(DEFAULT_TYPES);
@@ -27396,44 +27409,40 @@ let mpForceUpdateCounter = 0;
 let serverTimeOffset = 0;  // 서버시간 - 클라이언트시간 (밀리초)
 let serverTimeSynced = false;
 
-// 서버 시간 가져오기 (Supabase RPC 또는 테이블 이용)
+// 서버 시간 가져오기 (HTTP Date 헤더 사용)
 async function syncServerTime() {
     if (!supabase) return;
 
     try {
         const clientTimeBefore = Date.now();
 
-        // Supabase에서 현재 서버 시간 조회
-        const { data, error } = await supabase.rpc('get_server_time');
-
-        if (error) {
-            // RPC 없으면 player_positions 테이블의 서버 타임스탬프 이용
-            const { data: posData } = await supabase
-                .from('player_positions')
-                .select('updated_at')
-                .limit(1);
-
-            if (posData && posData.length > 0) {
-                const serverTime = new Date(posData[0].updated_at).getTime();
-                const clientTimeAfter = Date.now();
-                const roundTrip = clientTimeAfter - clientTimeBefore;
-                serverTimeOffset = serverTime - clientTimeBefore - (roundTrip / 2);
-                serverTimeSynced = true;
-                console.log('⏱️ 서버 시간 동기화 (테이블):', serverTimeOffset, 'ms 오프셋');
+        // Supabase REST API 호출하여 Date 헤더에서 서버 시간 추출
+        const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+            method: 'HEAD',
+            headers: {
+                'apikey': SUPABASE_ANON_KEY
             }
-            return;
-        }
+        });
 
-        if (data) {
-            const serverTime = new Date(data).getTime();
-            const clientTimeAfter = Date.now();
+        const clientTimeAfter = Date.now();
+        const serverDateHeader = response.headers.get('date');
+
+        if (serverDateHeader) {
+            const serverTime = new Date(serverDateHeader).getTime();
             const roundTrip = clientTimeAfter - clientTimeBefore;
             serverTimeOffset = serverTime - clientTimeBefore - (roundTrip / 2);
             serverTimeSynced = true;
-            console.log('⏱️ 서버 시간 동기화 (RPC):', serverTimeOffset, 'ms 오프셋');
+            console.log('⏱️ 서버 시간 동기화 완료:', serverTimeOffset, 'ms 오프셋');
+        } else {
+            // Date 헤더 없으면 오프셋 0으로 (로컬 시간 사용)
+            serverTimeOffset = 0;
+            serverTimeSynced = true;
+            console.log('⏱️ 서버 시간 헤더 없음, 로컬 시간 사용');
         }
     } catch (e) {
         console.warn('서버 시간 동기화 실패:', e);
+        serverTimeOffset = 0;
+        serverTimeSynced = true;
     }
 }
 
