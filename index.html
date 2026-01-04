@@ -24202,8 +24202,9 @@ window.MissionSystem = MissionSystem;
             try {
                 scene = new THREE.Scene();
                 scene.fog = new THREE.FogExp2(0x000000, 0.00000007);
+                window.scene = scene;  // ★ 멀티플레이어에서 사용
 
-                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 30000000000); 
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 30000000000);
                 camera.position.set(0, 500, 800);
                 window.camera = camera;  // ★ 망원경 모드에서 사용
 
@@ -28716,11 +28717,12 @@ function createOtherPlayerShip(player) {
     console.log('🎮 다른 플레이어 생성 시도:', player.user_id, player.nickname);
     console.log('   위치:', player.pos_x, player.pos_y, player.pos_z);
 
-    // scene 체크
-    if (typeof scene === 'undefined' || !scene) {
-        console.error('❌ scene이 정의되지 않음!');
+    // scene 체크 (window.scene 사용)
+    if (!window.scene) {
+        console.error('❌ window.scene이 정의되지 않음!');
         return;
     }
+    const scene = window.scene;
 
     // THREE 체크
     if (typeof THREE === 'undefined') {
@@ -28791,7 +28793,9 @@ function createOtherPlayerShip(player) {
 function removeOtherPlayer(userId) {
     const player = mpOtherPlayers[userId];
     if (player) {
-        scene.remove(player.mesh);
+        if (window.scene) {
+            window.scene.remove(player.mesh);
+        }
         delete mpOtherPlayers[userId];
     }
 }
