@@ -28592,8 +28592,14 @@ function mpSendMyPosition(forceUpdate = false) {
 }
 
 function mpGetOtherPlayers() {
-    if (!supabase) return;
-    if (!mpUserId) return;
+    if (!supabase) {
+        console.log('⚠️ mpGetOtherPlayers: supabase 없음');
+        return;
+    }
+    if (!mpUserId) {
+        console.log('⚠️ mpGetOtherPlayers: mpUserId 없음');
+        return;
+    }
 
     // ★★★ 테이블 구조에 맞게 수정 (updated_at 없음) ★★★
     supabase
@@ -28604,36 +28610,42 @@ function mpGetOtherPlayers() {
             var players = result.data;
             var error = result.error;
 
+            console.log('📡 player_positions 조회 결과:', {
+                players: players ? players.length : 0,
+                error: error,
+                myId: mpUserId
+            });
+
             if (error) {
                 console.log('MP 플레이어 조회 에러:', error.message);
                 return;
             }
 
-            if (players && players.length > 0) {
-                var formattedPlayers = players.map(function(p) {
-                    return {
-                        user_id: p.user_id,
-                        nickname: p.nickname || '익명',
-                        pos_x: p.x || 0,
-                        pos_y: p.y || 0,
-                        pos_z: p.z || 0,
-                        rot_x: p.rot_x || 0,
-                        rot_y: p.rot_y || 0,
-                        rot_z: p.rot_z || 0,
-                        ship_type: p.ship_type || 'shuttle',
-                        ship_color: p.ship_color || '#00aaff',
-                        status: p.status || 'flying',
-                        current_location: p.current_body
-                    };
-                });
+            // 플레이어가 없어도 updateOtherPlayers 호출 (기존 플레이어 제거용)
+            var formattedPlayers = (players || []).map(function(p) {
+                console.log('   - 플레이어 발견:', p.user_id, p.nickname, 'x:', p.x, 'y:', p.y, 'z:', p.z);
+                return {
+                    user_id: p.user_id,
+                    nickname: p.nickname || '익명',
+                    pos_x: p.x || 0,
+                    pos_y: p.y || 0,
+                    pos_z: p.z || 0,
+                    rot_x: p.rot_x || 0,
+                    rot_y: p.rot_y || 0,
+                    rot_z: p.rot_z || 0,
+                    ship_type: p.ship_type || 'shuttle',
+                    ship_color: p.ship_color || '#00aaff',
+                    status: p.status || 'flying',
+                    current_location: p.current_body
+                };
+            });
 
-                console.log('📡 다른 플레이어 조회:', formattedPlayers.length, '명');
-                updateOtherPlayers(formattedPlayers);
+            console.log('📡 다른 플레이어:', formattedPlayers.length, '명');
+            updateOtherPlayers(formattedPlayers);
 
-                var onlineEl = document.getElementById('mp-online');
-                if (onlineEl) {
-                    onlineEl.textContent = t('playersOnline') + ': ' + (players.length + 1) + t('playersCount');
-                }
+            var onlineEl = document.getElementById('mp-online');
+            if (onlineEl) {
+                onlineEl.textContent = t('playersOnline') + ': ' + (formattedPlayers.length + 1) + t('playersCount');
             }
         })
         .catch(function(e) {
@@ -28701,45 +28713,79 @@ function mpInterpolateOtherPlayers(deltaTime) {
 window.mpInterpolateOtherPlayers = mpInterpolateOtherPlayers;
 
 function createOtherPlayerShip(player) {
-    const geometry = new THREE.ConeGeometry(0.3, 1, 8);
-    geometry.rotateX(Math.PI / 2);
+    console.log('🎮 다른 플레이어 생성 시도:', player.user_id, player.nickname);
+    console.log('   위치:', player.pos_x, player.pos_y, player.pos_z);
 
-    // ★★★ 플레이어의 ship_color 사용 ★★★
-    const shipColor = player.ship_color || '#00ffff';
-    const colorValue = new THREE.Color(shipColor);
+    // scene 체크
+    if (typeof scene === 'undefined' || !scene) {
+        console.error('❌ scene이 정의되지 않음!');
+        return;
+    }
 
-    const material = new THREE.MeshBasicMaterial({
-        color: colorValue,
-        transparent: true,
-        opacity: 0.8
-    });
+    // THREE 체크
+    if (typeof THREE === 'undefined') {
+        console.error('❌ THREE가 정의되지 않음!');
+        return;
+    }
 
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(
-        parseFloat(player.pos_x),
-        parseFloat(player.pos_y),
-        parseFloat(player.pos_z)
-    );
+    try {
+        const geometry = new THREE.ConeGeometry(0.3, 1, 8);
+        geometry.rotateX(Math.PI / 2);
 
-    const glowGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-    const glowMaterial = new THREE.MeshBasicMaterial({
-        color: colorValue,
-        transparent: true,
-        opacity: 0.3
-    });
-    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-    mesh.add(glow);
-    
-    scene.add(mesh);
-    
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'mp-player-label';
-    labelDiv.textContent = player.nickname;
-    const label = new CSS2DObject(labelDiv);
-    label.position.set(0, 1, 0);
-    mesh.add(label);
-    
-    mpOtherPlayers[player.user_id] = { mesh, label };
+        // ★★★ 플레이어의 ship_color 사용 ★★★
+        const shipColor = player.ship_color || '#00ffff';
+        const colorValue = new THREE.Color(shipColor);
+
+        const material = new THREE.MeshBasicMaterial({
+            color: colorValue,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(
+            parseFloat(player.pos_x) || 0,
+            parseFloat(player.pos_y) || 0,
+            parseFloat(player.pos_z) || 0
+        );
+
+        const glowGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: colorValue,
+            transparent: true,
+            opacity: 0.3
+        });
+        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+        mesh.add(glow);
+
+        scene.add(mesh);
+        console.log('✅ 메시 scene에 추가됨');
+
+        // CSS2DObject 체크
+        if (typeof CSS2DObject === 'undefined') {
+            console.warn('⚠️ CSS2DObject 없음, 레이블 스킵');
+            mpOtherPlayers[player.user_id] = { mesh, label: null };
+        } else {
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'mp-player-label';
+            labelDiv.textContent = player.nickname || '익명';
+            labelDiv.style.color = '#0ff';
+            labelDiv.style.fontSize = '12px';
+            labelDiv.style.background = 'rgba(0,0,0,0.7)';
+            labelDiv.style.padding = '2px 6px';
+            labelDiv.style.borderRadius = '3px';
+            const label = new CSS2DObject(labelDiv);
+            label.position.set(0, 1.5, 0);
+            mesh.add(label);
+            console.log('✅ 레이블 추가됨:', player.nickname);
+
+            mpOtherPlayers[player.user_id] = { mesh, label };
+        }
+
+        console.log('🎮 플레이어 생성 완료! 현재 mpOtherPlayers:', Object.keys(mpOtherPlayers).length);
+    } catch (e) {
+        console.error('❌ createOtherPlayerShip 에러:', e);
+    }
 }
 
 function removeOtherPlayer(userId) {
