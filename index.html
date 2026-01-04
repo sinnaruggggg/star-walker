@@ -15195,11 +15195,21 @@ window.MissionSystem = MissionSystem;
             mesh.add(label);
             scene.add(mesh);
             
-            // 위성 물리 속성 (모든 위성은 부모 행성을 따라가며 공전)
+            // ★★★ 멀티모드: 위성 초기 각도도 동기화 (Date.now 기준) ★★★
+            let initialAngle;
+            if (window.gameMode === 'multi') {
+                const seed = name ? name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
+                const baseTime = Date.now() * 0.000001;
+                initialAngle = (seed + baseTime * speed * 0.1) % (Math.PI * 2);
+            } else {
+                initialAngle = Math.random() * Math.PI * 2;
+            }
+
+            // 위성 물리 속성 (모든 위성은 부모 행성 따라가며 공전)
             const satellite = {
                 mesh: mesh, name: name, type: isSpaceStation ? "station" : "moon",
                 isSpaceStation: isSpaceStation,  // ★ 추가: 우주정거장 여부
-                parentBody: parentBody, orbitRadius: dist, orbitSpeed: speed, angle: Math.random() * Math.PI * 2,
+                parentBody: parentBody, orbitRadius: dist, orbitSpeed: speed, angle: initialAngle,
                 realOrbitRadius: dist,  // 실제 거리 비율 (나중에 설정)
                 // ★★★ 위성은 물리 비활성화 - 부모 행성 따라감 (안정적) ★★★
                 mass: isSpaceStation ? 0.001 : (typeData ? typeData.m : 0.01),
@@ -18690,6 +18700,27 @@ window.MissionSystem = MissionSystem;
                 console.log('저장된 상태에서 복원');
             } else {
                 // 최초 탑승: 정거장에 도킹된 상태에서 시작
+
+                // ★★★ 멀티모드: 정거장 위치 강제 동기화 (스폰 전) ★★★
+                if (window.gameMode === 'multi' && station.parentBody && station.parentBody.mesh) {
+                    const seed = station.name ? station.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 0;
+                    const baseTime = Date.now() * 0.000001;
+                    station.angle = (seed + baseTime * station.orbitSpeed * 0.1) % (Math.PI * 2);
+
+                    // 궤도 반경 계산
+                    const isRealMode = CONFIG.distScale > 1.0;
+                    const r = isRealMode && station.realOrbitRadius
+                        ? station.realOrbitRadius * (station.parentBody.radius || 1)
+                        : station.orbitRadius;
+
+                    // 위치 업데이트
+                    station.mesh.position.x = station.parentBody.mesh.position.x + Math.cos(station.angle) * r;
+                    station.mesh.position.z = station.parentBody.mesh.position.z + Math.sin(station.angle) * r;
+                    station.mesh.position.y = station.parentBody.mesh.position.y;
+
+                    console.log('★ 멀티모드 정거장 위치 동기화:', station.angle, station.mesh.position);
+                }
+
                 const stationWorldPos = new THREE.Vector3();
                 station.mesh.getWorldPosition(stationWorldPos);
                 
