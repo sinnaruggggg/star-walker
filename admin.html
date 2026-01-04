@@ -646,17 +646,16 @@
                 const timestamp = Date.now();
                 const ext = file.name.split('.').pop();
                 const fileName = `${file.name.replace(/\.[^/.]+$/, '')}_${timestamp}.${ext}`;
-                const folder = file.type.includes('model') || ext === 'glb' || ext === 'gltf' ? 'models' : 'images';
 
                 const { data, error } = await supabase.storage
-                    .from('game-assets')
-                    .upload(`${folder}/${fileName}`, file);
+                    .from('assets')
+                    .upload(`ships/${fileName}`, file);
 
                 if (error) throw error;
 
                 const { data: urlData } = supabase.storage
-                    .from('game-assets')
-                    .getPublicUrl(`${folder}/${fileName}`);
+                    .from('assets')
+                    .getPublicUrl(`ships/${fileName}`);
 
                 resultDiv.innerHTML = `
                     <p style="color:#0f0;">✅ 업로드 완료!</p>

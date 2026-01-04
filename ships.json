@@ -14,8 +14,8 @@
         "description": "기본 우주선. 안정적인 성능.",
         "unlocked": true,
         "price": 0,
-        "image": "https:\/\/raw.githubusercontent.com\/sinnaruggggg\/star-walker\/main\/shuttle_1766687228.png",
-        "model": "https:\/\/raw.githubusercontent.com\/sinnaruggggg\/star-walker\/main\/shuttle_model_1766687230.glb",
+        "image": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/shuttle_1765902833.png",
+        "model": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/shuttle_model_1767450908791.glb",
         "engineConfig": {
             "thrust": [
                 {
@@ -75,8 +75,8 @@
         "description": "장거리 탐사용. 넓은 센서 범위.",
         "unlocked": true,
         "price": 500,
-        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/explorer_1766457854.png",
-        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/explorer_model_1766457987.glb",
+        "image": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/explorer_1766457854.png",
+        "model": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/explorer_model_1766457987.glb",
         "engineConfig": {
             "thrust": [
                 {
@@ -151,8 +151,8 @@
         "description": "고속 요격기. 빠른 가속과 선회.",
         "unlocked": true,
         "price": 1500,
-        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/interceptor_1765905786.png",
-        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/interceptor_model_1765905786.glb",
+        "image": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/interceptor_1765905786.png",
+        "model": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/interceptor_model_1765905786.glb",
         "engineConfig": {
             "thrust": [
                 {
@@ -211,8 +211,8 @@
         "description": "대형 화물선. 느리지만 연료가 풍부.",
         "unlocked": true,
         "price": 2000,
-        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/freighter_1765288722.png",
-        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/freighter_model_1765906618.glb"
+        "image": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/freighter_1765288722.png",
+        "model": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/freighter_model_1765906618.glb"
     },
     {
         "id": "corvette",
@@ -229,8 +229,8 @@
         "description": "다목적 호위함. 균형 잡힌 성능.",
         "unlocked": false,
         "price": 5000,
-        "image": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/corvette_1766596560.png",
-        "model": "https:\/\/cdn.jsdelivr.net\/gh\/sinnaruggggg\/star-walker@main\/corvette_model_1766592781.glb"
+        "image": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/corvette_1767447584082.png",
+        "model": "https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/corvette_model_1766592781.glb"
     },
     {
         "id": "racer",

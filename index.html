@@ -10515,16 +10515,16 @@ window.MissionSystem = MissionSystem;
         const API_BASE = '/api';  // Vercel API
         const API_URL = 'data.json';  // fallback
         const ASSET_PATH = 'uploads/';  // fallback
-        const GITHUB_CDN = 'https://raw.githubusercontent.com/sinnaruggggg/star-walker/main/';  // GitHub Raw (jsdelivr 50MB 제한 우회)
-        
+        const SUPABASE_STORAGE = 'https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/';  // Supabase Storage
+
         const TEXTURES = {
             SUN: { map: '2k_sun.jpg' }, MERCURY: { map: '2k_mercury.jpg' }, VENUS: { map: '2k_venus_atmosphere.jpg' },
             EARTH: { map: '2k_earth_daymap.jpg' }, MARS: { map: '2k_mars.jpg' }, JUPITER: { map: '2k_jupiter.jpg' },
             SATURN: { map: '2k_saturn.jpg' }, URANUS: { map: '2k_uranus.jpg' }, NEPTUNE: { map: '2k_neptune.jpg' }, MOON: { map: '2k_moon.jpg' }
         };
-        
-        // ★ GitHub에 업로드된 파일명 매핑 (admin에서 업로드한 파일들)
-        const GITHUB_TEXTURES = {
+
+        // ★ Supabase Storage에 업로드된 파일명 매핑 (assets/ 루트에 있음)
+        const SUPABASE_TEXTURES = {
             'earth': 'earth_1765901958.jpeg',
             'mars': 'mars_1765902547.jpg',
             'venus': 'venus_1765902007.jpg',
@@ -10536,21 +10536,25 @@ window.MissionSystem = MissionSystem;
             'mercury': 'mercury_1765902026.jpg',
             'jupiter': 'jupiter_1765902587.jpg'
         };
-        
+
         // ★ 텍스처 URL 가져오기 함수
         function getTextureUrl(filename) {
-            // GitHub CDN에서 찾기
+            // Supabase Storage에서 찾기
             const baseName = filename.toLowerCase().replace(/\.(jpg|jpeg|png)$/i, '').replace(/^2k_/, '').replace(/_.*$/, '');
-            if (GITHUB_TEXTURES[baseName]) {
-                return GITHUB_CDN + GITHUB_TEXTURES[baseName];
+            if (SUPABASE_TEXTURES[baseName]) {
+                return SUPABASE_STORAGE + SUPABASE_TEXTURES[baseName];
             }
-            // uploads/ 경로면 GitHub에서 파일명만 추출해서 시도
+            // uploads/ 경로면 Supabase에서 파일명만 추출해서 시도
             if (filename.startsWith('uploads/')) {
                 const justFilename = filename.replace('uploads/', '').replace('ships/', '');
-                return GITHUB_CDN + justFilename;
+                return SUPABASE_STORAGE + justFilename;
             }
-            // 기본: 로컬 경로
-            return ASSET_PATH + filename;
+            // http로 시작하면 그대로
+            if (filename.startsWith('http')) {
+                return filename;
+            }
+            // 기본: Supabase Storage (루트)
+            return SUPABASE_STORAGE + filename;
         }
 
         let scene, camera, renderer, labelRenderer, controls;
@@ -10867,7 +10871,7 @@ window.MissionSystem = MissionSystem;
                 price: 500,
                 unlocked: true,
                 image: '',
-                model: 'https://raw.githubusercontent.com/sinnaruggggg/star-walker/main/shuttle_model_1766513531.glb'
+                model: 'https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/shuttle_model_1767450908791.glb'
             },
             {
                 id: 'scout',
@@ -10896,7 +10900,7 @@ window.MissionSystem = MissionSystem;
                 descLa: 'Explorator longinquus. Latus sensus.',
                 price: 1000,
                 unlocked: true,
-                model: 'https://raw.githubusercontent.com/sinnaruggggg/star-walker/main/explorer_model_1766457987.glb'
+                model: 'https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/explorer_model_1766457987.glb'
             },
             {
                 id: 'interceptor',
@@ -10926,7 +10930,7 @@ window.MissionSystem = MissionSystem;
                 descLa: 'Velox interceptor. Celer acceleratio.',
                 price: 2000,
                 unlocked: true,
-                model: 'https://raw.githubusercontent.com/sinnaruggggg/star-walker/main/interceptor_model_1765905786.glb'
+                model: 'https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/interceptor_model_1765905786.glb'
             },
             {
                 id: 'freighter',
@@ -10955,7 +10959,7 @@ window.MissionSystem = MissionSystem;
                 descLa: 'Magna oneraria. Lenta sed combustibile.',
                 price: 4000,
                 unlocked: true,
-                model: 'https://raw.githubusercontent.com/sinnaruggggg/star-walker/main/freighter_model_1765906618.glb'
+                model: 'https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/freighter_model_1765906618.glb'
             },
             {
                 id: 'corvette',
@@ -13426,8 +13430,8 @@ window.MissionSystem = MissionSystem;
                     console.log('DRACO 로더 없이 진행');
                 }
                 
-                // ★ URL 변환 (jsdelivr → raw.githubusercontent)
-                const modelUrl = convertToGitHubUrl(shipType.model);
+                // ★ URL을 Supabase Storage로 변환
+                const modelUrl = convertToSupabaseUrl(shipType.model);
                 console.log('🚀 GLB 로드 시도:', modelUrl);
                 
                 gltfLoader.load(modelUrl, (gltf) => {
@@ -14815,17 +14819,17 @@ window.MissionSystem = MissionSystem;
                 if (textureKeyName.startsWith('http')) {
                     url = textureKeyName;
                 } else if (textureKeyName.startsWith('uploads/')) {
-                    // uploads 경로는 GitHub CDN으로
+                    // uploads 경로는 Supabase Storage로
                     const justFilename = textureKeyName.replace('uploads/', '').replace('ships/', '');
-                    url = GITHUB_CDN + justFilename;
+                    url = SUPABASE_STORAGE + justFilename;
                 } else if (TEXTURES[textureKeyName]) {
-                    // TEXTURES 매핑에서 GitHub 파일 찾기
+                    // TEXTURES 매핑에서 Supabase 파일 찾기
                     url = getTextureUrl(TEXTURES[textureKeyName].map);
                 } else {
                     url = getTextureUrl(textureKeyName);
                 }
                 if(url) textureLoader.load(url, (t) => { mesh.material.map = t; mesh.material.needsUpdate = true; }, undefined, (err) => {
-                    console.warn('텍스처 로드 실패 (GitHub), 로컬 시도:', textureKeyName);
+                    console.warn('텍스처 로드 실패 (Supabase), 로컬 시도:', textureKeyName);
                     // 실패시 로컬 시도
                     const localUrl = textureKeyName.startsWith('uploads/') ? textureKeyName : ASSET_PATH + (TEXTURES[textureKeyName] ? TEXTURES[textureKeyName].map : textureKeyName);
                     textureLoader.load(localUrl, (t) => { mesh.material.map = t; mesh.material.needsUpdate = true; });
@@ -14852,18 +14856,18 @@ window.MissionSystem = MissionSystem;
                 const rMat = new THREE.MeshStandardMaterial({ color: 0xaa9977, side: THREE.DoubleSide, transparent:true, opacity:0.9 });
                 const rMesh = new THREE.Mesh(rGeo, rMat); rMesh.rotation.x = -Math.PI/2; rMesh.castShadow = true; rMesh.receiveShadow=true; mesh.add(rMesh);
                 
-                // ★ 고리 텍스처 로드 (data.json의 ringTexture 또는 GitHub CDN)
+                // ★ 고리 텍스처 로드 (data.json의 ringTexture 또는 Supabase Storage)
                 let ringTexPath;
                 if (typeData.ringTexture) {
                     if (typeData.ringTexture.startsWith('http')) {
                         ringTexPath = typeData.ringTexture;
                     } else if (typeData.ringTexture.startsWith('uploads/')) {
-                        ringTexPath = GITHUB_CDN + typeData.ringTexture.replace('uploads/', '');
+                        ringTexPath = SUPABASE_STORAGE + typeData.ringTexture.replace('uploads/', '');
                     } else {
                         ringTexPath = typeData.ringTexture;
                     }
                 } else {
-                    ringTexPath = GITHUB_CDN + 'saturn_ring_1765903886.png';
+                    ringTexPath = SUPABASE_STORAGE + 'saturn_ring_1765903886.png';
                 }
                 new THREE.TextureLoader().load(ringTexPath, (t)=>{
                     t.wrapS = THREE.RepeatWrapping;
@@ -15516,22 +15520,15 @@ window.MissionSystem = MissionSystem;
         
         // ★ ships.json에서 우주선 이미지/모델 로드
         let shipsDataLoaded = false;
-        
-        // ★ 우주선 파일 경로를 GitHub CDN으로 변환
-        function convertToGitHubUrl(path) {
+
+        // ★ 우주선 파일 경로를 Supabase Storage로 변환
+        function convertToSupabaseUrl(path) {
             if (!path || path.length === 0) return path;
-            
-            // ★ jsdelivr URL을 raw.githubusercontent로 변환 (50MB 제한 우회)
-            if (path.includes('cdn.jsdelivr.net/gh/')) {
-                return path
-                    .replace('https://cdn.jsdelivr.net/gh/', 'https://raw.githubusercontent.com/')
-                    .replace('@main/', '/main/');
-            }
-            
+
             if (path.startsWith('http')) return path;  // 이미 절대 URL
             if (path.startsWith('uploads/')) {
                 const filename = path.replace('uploads/', '').replace('ships/', '');
-                return GITHUB_CDN + filename;
+                return SUPABASE_STORAGE + 'ships/' + filename;
             }
             return path;
         }
@@ -15566,13 +15563,13 @@ window.MissionSystem = MissionSystem;
 
                         const ship = SHIP_TYPES.find(s => s.id === shipData.id);
                         if (ship) {
-                            // 이미지와 모델 경로 업데이트 (GitHub CDN으로 변환)
+                            // 이미지와 모델 경로 업데이트 (Supabase Storage로 변환)
                             if (shipData.image && shipData.image.length > 0) {
-                                ship.image = convertToGitHubUrl(shipData.image);
+                                ship.image = convertToSupabaseUrl(shipData.image);
                                 console.log(`    ✅ ${ship.id} 이미지 적용: ${ship.image}`);
                             }
                             if (shipData.model && shipData.model.length > 0) {
-                                ship.model = convertToGitHubUrl(shipData.model);
+                                ship.model = convertToSupabaseUrl(shipData.model);
                                 console.log(`    ✅ ${ship.id} 모델 적용: ${ship.model}`);
                             }
                             // ★ 엔진 설정 로드
@@ -18249,8 +18246,8 @@ window.MissionSystem = MissionSystem;
                     console.log('DRACO 로더 없이 진행');
                 }
                 
-                // ★ URL 변환 (jsdelivr → raw.githubusercontent)
-                const modelUrl = convertToGitHubUrl(ship.model);
+                // ★ URL을 Supabase Storage로 변환
+                const modelUrl = convertToSupabaseUrl(ship.model);
                 console.log('🚀 플레이어 우주선 GLB 로드 시도:', modelUrl);
                 
                 gltfLoader.load(modelUrl, (gltf) => {

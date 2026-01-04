@@ -330,8 +330,13 @@
             
             <div class="section">
                 <h3>📂 모델 로드</h3>
-                <label for="glb-file" class="file-btn">GLB 파일 선택</label>
+                <label for="glb-file" class="file-btn">💾 로컬 파일 선택</label>
                 <input type="file" id="glb-file" accept=".glb,.gltf">
+                <div style="margin: 10px 0; text-align: center; color: #666;">또는</div>
+                <button class="file-btn" id="load-storage-btn" style="background: linear-gradient(135deg, #00aa66, #00dd88);">☁️ Supabase Storage에서 로드</button>
+                <select id="storage-models" style="display:none; width:100%; margin-top:10px; padding:10px; background:#1a1a2e; color:#fff; border:1px solid #00ffff; border-radius:8px;">
+                    <option value="">-- 모델 선택 --</option>
+                </select>
                 <div id="model-info"></div>
             </div>
             
@@ -430,11 +435,18 @@
     }
     </script>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        
+
+        // ★★★ Supabase 설정 ★★★
+        const SUPABASE_URL = 'https://sfirzuqngdbpwvdoyero.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmaXJ6dXFuZ2RicHd2ZG95ZXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MDk3NjgsImV4cCI6MjA2NTM4NTc2OH0.0WzBJGDvNjiDp9k-R5Lz6lOGxXP-9CwXtDuCQRHreLU';
+        const SUPABASE_STORAGE = SUPABASE_URL + '/storage/v1/object/public/assets/';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let scene, camera, renderer, controls;
         let currentModel = null;
         let engines = [];
@@ -442,6 +454,7 @@
         let selectedEngineIndex = -1;
         let raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
+        let gltfLoader = new GLTFLoader();
         
         // ★★★ 진행 방향 화살표 ★★★
         let forwardArrow = null;
@@ -553,11 +566,88 @@
             updateOutput();
         }
         
+        // ★★★ Supabase Storage에서 GLB 파일 목록 로드 ★★★
+        async function loadStorageModels() {
+            const select = document.getElementById('storage-models');
+            select.innerHTML = '<option value="">로딩 중...</option>';
+            select.style.display = 'block';
+
+            try {
+                // ships 폴더에서 GLB 파일 목록 가져오기
+                const { data, error } = await supabase.storage
+                    .from('assets')
+                    .list('ships', { limit: 100 });
+
+                if (error) throw error;
+
+                const glbFiles = data.filter(f => f.name.endsWith('.glb'));
+
+                if (glbFiles.length === 0) {
+                    select.innerHTML = '<option value="">GLB 파일 없음</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="">-- 모델 선택 (' + glbFiles.length + '개) --</option>';
+                glbFiles.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = SUPABASE_STORAGE + 'ships/' + file.name;
+                    option.textContent = file.name;
+                    select.appendChild(option);
+                });
+
+            } catch (err) {
+                console.error('Storage 로드 실패:', err);
+                select.innerHTML = '<option value="">로드 실패: ' + err.message + '</option>';
+            }
+        }
+
+        // ★★★ URL에서 모델 로드 ★★★
+        function loadModelFromUrl(url, filename) {
+            document.getElementById('model-info').innerHTML = '⏳ 로딩 중...';
+
+            gltfLoader.load(url, (gltf) => {
+                if (currentModel) scene.remove(currentModel);
+                clearEngines();
+
+                currentModel = gltf.scene;
+                currentModel.rotation.y = modelRotationY;
+                scene.add(currentModel);
+
+                const box = new THREE.Box3().setFromObject(currentModel);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+
+                currentModel.position.sub(center);
+
+                camera.position.set(size.x * 2, size.y * 1.5, size.z * 2);
+                controls.target.set(0, 0, 0);
+
+                document.getElementById('model-info').innerHTML =
+                    `✅ ${filename}<br>📐 ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`;
+
+                updateOutput();
+            }, undefined, (err) => {
+                document.getElementById('model-info').innerHTML = '❌ 로드 실패: ' + err.message;
+                console.error('GLB 로드 에러:', err);
+            });
+        }
+
         function setupEvents() {
             document.getElementById('glb-file').addEventListener('change', (e) => {
                 if (e.target.files[0]) loadModel(e.target.files[0]);
             });
-            
+
+            // ★★★ Supabase Storage 버튼 ★★★
+            document.getElementById('load-storage-btn').addEventListener('click', loadStorageModels);
+
+            // ★★★ Storage 모델 선택 ★★★
+            document.getElementById('storage-models').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    const filename = e.target.value.split('/').pop();
+                    loadModelFromUrl(e.target.value, filename);
+                }
+            });
+
             // ★★★ 전방 방향 버튼 이벤트 ★★★
             document.querySelectorAll('.forward-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
