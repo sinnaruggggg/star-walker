@@ -557,8 +557,9 @@
             // 모델에 회전 적용
             if (currentModel) {
                 currentModel.rotation.y = modelRotationY;
+                currentModel.updateMatrixWorld(true);  // ★ 행렬 업데이트
             }
-            
+
             // 화살표 업데이트
             createForwardArrow();
             
@@ -618,6 +619,7 @@
                 const size = box.getSize(new THREE.Vector3());
 
                 currentModel.position.sub(center);
+                currentModel.updateMatrixWorld(true);  // ★ 행렬 업데이트 (클릭 좌표 변환용)
 
                 camera.position.set(size.x * 2, size.y * 1.5, size.z * 2);
                 controls.target.set(0, 0, 0);
@@ -788,11 +790,12 @@
                 
                 // 중심점 조정 (회전 후)
                 currentModel.position.sub(center);
-                
+                currentModel.updateMatrixWorld(true);  // ★ 행렬 업데이트 (클릭 좌표 변환용)
+
                 camera.position.set(size.x * 2, size.y * 1.5, size.z * 2);
                 controls.target.set(0, 0, 0);
-                
-                document.getElementById('model-info').innerHTML = 
+
+                document.getElementById('model-info').innerHTML =
                     `✅ ${file.name}<br>📐 ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`;
                 
                 updateOutput();
