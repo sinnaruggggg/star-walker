@@ -28915,19 +28915,20 @@ function setupRealtimeSubscription() {
                 if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
                     const p = payload.new;
                     if (p.user_id !== mpUserId) {
-                        // 실시간으로 받은 데이터 즉시 반영
+                        // ★★★ 테이블 구조에 맞게 수정 ★★★
                         const formattedPlayer = {
                             user_id: p.user_id,
-                            nickname: p.nickname,
-                            pos_x: p.x,
-                            pos_y: p.y,
-                            pos_z: p.z,
-                            rot_x: p.rot_x,
-                            rot_y: p.rot_y,
-                            rot_z: p.rot_z,
-                            ship_type: p.ship_type,
-                            is_autopilot: p.is_autopilot,
-                            speed: p.speed
+                            nickname: p.nickname || '익명',
+                            pos_x: p.x || 0,
+                            pos_y: p.y || 0,
+                            pos_z: p.z || 0,
+                            rot_x: p.rot_x || 0,
+                            rot_y: p.rot_y || 0,
+                            rot_z: p.rot_z || 0,
+                            ship_type: p.ship_type || 'shuttle',
+                            ship_color: p.ship_color || '#00aaff',
+                            status: p.status || 'flying',
+                            current_location: p.current_body
                         };
 
                         if (mpOtherPlayers[p.user_id]) {
@@ -28935,6 +28936,12 @@ function setupRealtimeSubscription() {
                             const ship = mpOtherPlayers[p.user_id];
                             ship.targetPosition = new THREE.Vector3(p.x, p.y, p.z);
                             ship.targetRotation = new THREE.Euler(p.rot_x, p.rot_y, p.rot_z);
+                            ship.status = p.status || 'flying';
+                            // 레이블 업데이트
+                            if (ship.label) {
+                                const statusIcon = p.status === 'autopilot' ? '🚀' : '';
+                                ship.label.element.textContent = statusIcon + (p.nickname || '익명');
+                            }
                         } else {
                             // 새 플레이어 생성
                             createOtherPlayerShip(formattedPlayer);
