@@ -27437,20 +27437,17 @@ const MP_INACTIVE_TIMEOUT = 60000;   // 60초 후 비활성 판정
 // 유저 정보
 let mpUser = null;
 let mpUserId = null;
-let mpSessionId = null;  // ★★★ 기기별 세션 ID (같은 계정도 구분) ★★★
 let mpNickname = '익명';
 let mpOtherPlayers = {};
 let mpChatLastId = 0;
 let mpIntervals = [];
 let mpRealtimeChannel = null;
 
-// ★★★ 세션 ID 생성 함수 (UUID 형식) ★★★
-function generateSessionId(userId) {
-    // DB가 UUID 타입이므로 순수 UUID 형식으로 생성
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+// ★★★ 중복 접속 감지용 세션 토큰 ★★★
+let mpSessionToken = null;
+
+function generateSessionToken() {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
 // ★★★ 델타 압축용 마지막 전송 상태 ★★★
@@ -27579,13 +27576,12 @@ function loadSavedLogin() {
                             avatar_url: profile.avatar_url
                         };
                         mpUserId = session.user.id;
-                        mpSessionId = generateSessionId(session.user.id);  // ★★★ 세션 ID 생성 ★★★
+                        mpSessionToken = generateSessionToken();  // ★★★ 중복 접속 감지용 ★★★
                         mpNickname = profile.nickname;
 
                         // window 객체에도 설정
                         window.mpUser = mpUser;
                         window.mpUserId = mpUserId;
-                        window.mpSessionId = mpSessionId;
                         window.mpNickname = mpNickname;
                         window.currentUser = profile.username;
                         
@@ -28073,13 +28069,12 @@ function submitAuth() {
                 unlockedShips: ['shuttle']
             };
             mpUserId = user.id;
-            mpSessionId = generateSessionId(user.id);  // ★★★ 세션 ID 생성 ★★★
+            mpSessionToken = generateSessionToken();  // ★★★ 중복 접속 감지용 ★★★
             mpNickname = username;
 
             // window 객체에도 설정
             window.mpUser = mpUser;
             window.mpUserId = mpUserId;
-            window.mpSessionId = mpSessionId;
             window.mpNickname = mpNickname;
             window.currentUser = mpUser.username;
             
@@ -28274,12 +28269,11 @@ function processLogin(user, username, nickname) {
         unlockedShips: ['shuttle']
     };
     mpUserId = user.id;
-    mpSessionId = generateSessionId(user.id);  // ★★★ 세션 ID 생성 ★★★
+    mpSessionToken = generateSessionToken();  // ★★★ 중복 접속 감지용 ★★★
     mpNickname = mpUser.nickname;
 
     window.mpUser = mpUser;
     window.mpUserId = mpUserId;
-    window.mpSessionId = mpSessionId;
     window.mpNickname = mpNickname;
     window.currentUser = mpUser.username;
 
@@ -28334,13 +28328,12 @@ function guestLogin() {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
-    mpSessionId = generateSessionId(mpUserId);  // ★★★ 세션 ID 생성 ★★★
+    mpSessionToken = generateSessionToken();  // ★★★ 중복 접속 감지용 ★★★
     mpNickname = '탐험가' + Math.floor(Math.random() * 9999);
     mpUser = null;
 
     // ★ window 객체에도 설정
     window.mpUserId = mpUserId;
-    window.mpSessionId = mpSessionId;
     window.mpNickname = mpNickname;
     window.mpUser = null;
     
@@ -28365,10 +28358,9 @@ function logout() {
         localStorage.removeItem('solar_user');
         mpUser = null;
         mpUserId = null;
-        mpSessionId = null;
+        mpSessionToken = null;
         window.mpUser = null;
         window.mpUserId = null;
-        window.mpSessionId = null;
         window.currentUser = null;
         location.reload();
     };
@@ -28535,7 +28527,7 @@ function mpSendMyPosition(forceUpdate = false) {
     var ship = window.playerShip;
     if (!ship || !ship.mesh) return;
     if (!supabase) return;
-    if (!mpSessionId) return;  // ★★★ 세션 ID 체크 ★★★
+    if (!mpUserId) return;
 
     var pos = ship.mesh.position;
     var rot = ship.mesh.rotation;
@@ -28587,9 +28579,9 @@ function mpSendMyPosition(forceUpdate = false) {
         status = 'idle';
     }
 
-    // ★★★ 세션 ID로 저장 (같은 계정도 기기별 구분) ★★★
+    // ★★★ 위치 데이터 ★★★
     var data = {
-        user_id: mpSessionId,  // ★★★ 세션 ID 사용 ★★★
+        user_id: mpUserId,
         nickname: mpNickname,
         x: pos.x,
         y: pos.y,
@@ -28622,16 +28614,16 @@ function mpGetOtherPlayers() {
         console.log('⚠️ mpGetOtherPlayers: supabase 없음');
         return;
     }
-    if (!mpSessionId) {
-        console.log('⚠️ mpGetOtherPlayers: mpSessionId 없음');
+    if (!mpUserId) {
+        console.log('⚠️ mpGetOtherPlayers: mpUserId 없음');
         return;
     }
 
-    // ★★★ 세션 ID로 자기 자신 제외 (같은 계정도 기기별 구분) ★★★
+    // ★★★ 원래 user_id로 자기 자신 제외 ★★★
     supabase
         .from('player_positions')
         .select('*')
-        .neq('user_id', mpSessionId)  // ★★★ 세션 ID로 필터링 ★★★
+        .neq('user_id', mpUserId)
         .then(function(result) {
             var players = result.data;
             var error = result.error;
@@ -28639,7 +28631,7 @@ function mpGetOtherPlayers() {
             console.log('📡 player_positions 조회 결과:', {
                 players: players ? players.length : 0,
                 error: error,
-                mySessionId: mpSessionId
+                myUserId: mpUserId
             });
 
             if (error) {
@@ -28680,12 +28672,17 @@ function mpGetOtherPlayers() {
 }
 
 function updateOtherPlayers(players) {
+    console.log('🔄 updateOtherPlayers 호출, 플레이어 수:', players.length);
+    console.log('🔄 현재 mpOtherPlayers:', Object.keys(mpOtherPlayers));
+
     const activeIds = new Set();
 
     players.forEach(player => {
         activeIds.add(player.user_id);
+        console.log('🔄 처리 중:', player.user_id, '이미 존재?', !!mpOtherPlayers[player.user_id]);
 
         if (!mpOtherPlayers[player.user_id]) {
+            console.log('🔄 createOtherPlayerShip 호출 시도:', player.user_id);
             createOtherPlayerShip(player);
         } else {
             const ship = mpOtherPlayers[player.user_id];
@@ -28965,7 +28962,7 @@ function startMultiplayer() {
     setTimeout(() => mpSendMyPosition(true), 500);
 
     window.mpStarted = true;
-    console.log('🚀 멀티플레이어 시작! 세션ID:', mpSessionId);
+    console.log('🚀 멀티플레이어 시작! ID:', mpUserId);
     console.log('📡 동기화 설정: 위치전송=' + MP_UPDATE_INTERVAL + 'ms, 조회=' + MP_SYNC_INTERVAL + 'ms');
 
     // UI 업데이트 (로그인 상태 반영)
@@ -28989,7 +28986,7 @@ function setupRealtimeSubscription() {
                 // INSERT 또는 UPDATE 이벤트 처리
                 if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
                     const p = payload.new;
-                    if (p.user_id !== mpSessionId) {  // ★★★ 세션 ID로 필터링 ★★★
+                    if (p.user_id !== mpUserId) {  // ★★★ 자기 자신 제외 ★★★
                         // ★★★ 테이블 구조에 맞게 수정 ★★★
                         const formattedPlayer = {
                             user_id: p.user_id,
@@ -29046,11 +29043,11 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('beforeunload', function() {
-    // ★★★ 세션 ID로 플레이어 위치 삭제 ★★★
-    if (supabase && mpSessionId) {
+    // ★★★ user_id로 플레이어 위치 삭제 ★★★
+    if (supabase && mpUserId) {
         // REST API로 직접 DELETE 요청 (sendBeacon 호환)
         navigator.sendBeacon(
-            SUPABASE_URL + '/rest/v1/player_positions?user_id=eq.' + encodeURIComponent(mpSessionId),
+            SUPABASE_URL + '/rest/v1/player_positions?user_id=eq.' + encodeURIComponent(mpUserId),
             ''
         );
     }
