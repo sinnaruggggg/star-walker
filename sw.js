@@ -1,5 +1,5 @@
-// Solar Explorer Service Worker v1.0.0
-const CACHE_NAME = 'solar-explorer-v1.0.0';
+// Solar Explorer Service Worker v2.1.0
+const CACHE_NAME = 'solar-explorer-v2.1.0';
 const OFFLINE_URL = '/solar/offline.html';
 
 // 캐시할 핵심 파일들
