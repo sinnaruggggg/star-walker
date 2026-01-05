@@ -27444,11 +27444,13 @@ let mpChatLastId = 0;
 let mpIntervals = [];
 let mpRealtimeChannel = null;
 
-// ★★★ 세션 ID 생성 함수 ★★★
+// ★★★ 세션 ID 생성 함수 (UUID 형식) ★★★
 function generateSessionId(userId) {
-    const random = Math.random().toString(36).substring(2, 8);
-    const timestamp = Date.now().toString(36);
-    return userId + '_' + timestamp + random;
+    // DB가 UUID 타입이므로 순수 UUID 형식으로 생성
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 // ★★★ 델타 압축용 마지막 전송 상태 ★★★
