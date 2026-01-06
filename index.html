@@ -28677,6 +28677,15 @@ function updateOtherPlayers(players) {
     players.forEach(player => {
         activeIds.add(player.user_id);
 
+        // ★★★ 기존 메시 버전 체크 - 없으면 강제 재생성 ★★★
+        const existing = mpOtherPlayers[player.user_id];
+        if (existing && !existing._v2) {
+            // 구버전 메시 제거
+            console.log('🔄 구버전 메시 제거:', player.user_id);
+            if (window.scene) window.scene.remove(existing.mesh);
+            delete mpOtherPlayers[player.user_id];
+        }
+
         if (!mpOtherPlayers[player.user_id]) {
             // 새 플레이어 생성
             createOtherPlayerShip(player);
@@ -28784,8 +28793,8 @@ function createOtherPlayerShip(player) {
         shipGroup.add(label);
     }
 
-    mpOtherPlayers[player.user_id] = { mesh: shipGroup, label: label };
-    console.log('✅ 다른 플레이어 생성 완료:', player.nickname, '위치:', shipGroup.position);
+    mpOtherPlayers[player.user_id] = { mesh: shipGroup, label: label, _v2: true };
+    console.log('✅ 다른 플레이어 생성 완료:', player.nickname, '위치:', shipGroup.position.x.toFixed(2), shipGroup.position.y.toFixed(2), shipGroup.position.z.toFixed(2));
 }
 
 // ★★★ GLB 없을 때 기본 형태 생성 ★★★
