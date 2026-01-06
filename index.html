@@ -28723,17 +28723,26 @@ function mpInterpolateOtherPlayers(deltaTime) {
 
     Object.values(mpOtherPlayers).forEach(ship => {
         if (myShip && myShip.mesh) {
-            // ★★★ 테스트: 강제로 내 우주선 옆에 배치 ★★★
-            const testPos = new THREE.Vector3(
-                myShip.mesh.position.x + 200,  // 내 옆 200 거리
-                myShip.mesh.position.y,
-                myShip.mesh.position.z
-            );
-            ship.mesh.position.lerp(testPos, lerpFactor);
+            // ★★★ 테스트: 우주선 바로 옆에 배치 (0.5 단위 = 조종석에서 보임) ★★★
+            // 우주선 전방 및 오른쪽 벡터 계산
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(myShip.mesh.quaternion);
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(myShip.mesh.quaternion);
 
-            // 거리 로그
-            if (!ship.lastLogTime || Date.now() - ship.lastLogTime > 2000) {
-                console.log('📏 테스트: 내 위치', myShip.mesh.position, '다른 플레이어', ship.mesh.position);
+            // 우주선 오른쪽 0.5단위 + 전방 0.3단위 위치 (조종석에서 잘 보이는 위치)
+            const testPos = myShip.mesh.position.clone()
+                .add(right.multiplyScalar(0.5))
+                .add(forward.multiplyScalar(0.3));
+
+            ship.mesh.position.copy(testPos);  // 즉시 배치
+
+            // 매 초 로그
+            if (!ship.lastLogTime || Date.now() - ship.lastLogTime > 1000) {
+                const dist = myShip.mesh.position.distanceTo(ship.mesh.position);
+                console.log('🚀 테스트 위치 (0.5 단위 옆):');
+                console.log('   내 우주선:', myShip.mesh.position.x.toFixed(4), myShip.mesh.position.y.toFixed(4), myShip.mesh.position.z.toFixed(4));
+                console.log('   다른 플레이어:', ship.mesh.position.x.toFixed(4), ship.mesh.position.y.toFixed(4), ship.mesh.position.z.toFixed(4));
+                console.log('   거리:', dist.toFixed(4), '단위');
+                console.log('   visible:', ship.mesh.visible, 'parent:', ship.mesh.parent ? 'scene' : 'null');
                 ship.lastLogTime = Date.now();
             }
         }
@@ -28766,12 +28775,13 @@ function createOtherPlayerShip(player) {
     }
 
     try {
-        // ★★★ 크기를 아주 크게 (50, 150) - 거리 2000에서도 보이도록 ★★★
-        const geometry = new THREE.ConeGeometry(50, 150, 8);
+        // ★★★ 테스트용 - 확실히 보이는 큰 메시 ★★★
+        // 우주선 옆 0.5단위 거리에 배치할 예정이므로, 0.1 크기면 충분히 보임
+        const geometry = new THREE.ConeGeometry(0.1, 0.3, 8);  // 적당한 크기
         geometry.rotateX(Math.PI / 2);
 
         // ★★★ 플레이어의 ship_color 사용 ★★★
-        const shipColor = player.ship_color || '#ff00ff';  // 기본색 마젠타 (눈에 잘 띔)
+        const shipColor = player.ship_color || '#00ff00';  // 기본색 초록 (눈에 잘 띔)
         const colorValue = new THREE.Color(shipColor);
 
         const material = new THREE.MeshBasicMaterial({
@@ -28782,25 +28792,26 @@ function createOtherPlayerShip(player) {
         });
 
         const mesh = new THREE.Mesh(geometry, material);
+
         mesh.position.set(
             parseFloat(player.pos_x) || 0,
             parseFloat(player.pos_y) || 0,
             parseFloat(player.pos_z) || 0
         );
-        console.log('📍 메시 위치 설정됨:', mesh.position);
+        console.log('📍 메시 생성됨 - 위치:', mesh.position);
 
-        // ★★★ 빛나는 구체 추가 (더 잘 보이게) ★★★
-        const glowGeometry = new THREE.SphereGeometry(80, 16, 16);
+        // ★★★ 빛나는 구체 추가 (테스트용 - 크고 밝게) ★★★
+        const glowGeometry = new THREE.SphereGeometry(0.15, 16, 16);  // 눈에 띄는 크기
         const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff0000,  // 빨간색 (눈에 확 띔)
+            color: 0x00ff00,  // 초록색 (내 우주선과 구분)
             transparent: true,
-            opacity: 0.6
+            opacity: 0.8
         });
         const glow = new THREE.Mesh(glowGeometry, glowMaterial);
         mesh.add(glow);
 
-        // ★★★ 포인트 라이트 추가 (주변 조명) ★★★
-        const light = new THREE.PointLight(0xff0000, 1, 500);
+        // ★★★ 포인트 라이트 추가 (가까운 거리용) ★★★
+        const light = new THREE.PointLight(0x00ff00, 2, 2);  // 초록빛, 강도 2, 범위 2
         mesh.add(light);
 
         scene.add(mesh);
@@ -28814,13 +28825,15 @@ function createOtherPlayerShip(player) {
             const labelDiv = document.createElement('div');
             labelDiv.className = 'mp-player-label';
             labelDiv.textContent = player.nickname || '익명';
-            labelDiv.style.color = '#0ff';
-            labelDiv.style.fontSize = '12px';
-            labelDiv.style.background = 'rgba(0,0,0,0.7)';
-            labelDiv.style.padding = '2px 6px';
-            labelDiv.style.borderRadius = '3px';
+            labelDiv.style.color = '#0f0';  // 초록색 (메시와 일치)
+            labelDiv.style.fontSize = '14px';  // 좀 더 크게
+            labelDiv.style.fontWeight = 'bold';
+            labelDiv.style.background = 'rgba(0,0,0,0.8)';
+            labelDiv.style.padding = '4px 8px';
+            labelDiv.style.borderRadius = '4px';
+            labelDiv.style.border = '1px solid #0f0';  // 테두리 추가
             const label = new CSS2DObject(labelDiv);
-            label.position.set(0, 1.5, 0);
+            label.position.set(0, 0.25, 0);  // 메시 위 0.25 단위 (메시 높이 0.3 기준)
             mesh.add(label);
             console.log('✅ 레이블 추가됨:', player.nickname);
 

@@ -29,9 +29,25 @@
 3. 플레이어 위치: x: 9774, z: 5317 / 나: x: 10511, z: 3502 (거리 ~2000)
 
 #### 수정 내용
-- [x] 우주선 메시 크기 확대: `ConeGeometry(0.3, 1, 8)` → `ConeGeometry(5, 15, 8)`
-- [x] 글로우 크기 확대: `SphereGeometry(0.5)` → `SphereGeometry(8)`
+- [x] 우주선 메시 크기 확대: `ConeGeometry(0.3, 1, 8)` → `ConeGeometry(50, 150, 8)`
+- [x] 글로우 크기 확대: `SphereGeometry(0.5)` → `SphereGeometry(80)` (빨간색)
+- [x] PointLight 추가 (빨간색, 강도 1, 거리 500)
 - [ ] 중복 접속 감지 및 강제 로그아웃 구현
+
+#### 추가 문제: 다른 플레이어가 멀리 보임 (좌표는 가까운데)
+- 좌표상 거리 ~2000인데 화면에서는 훨씬 멀리 보임
+- **테스트**: `mpInterpolateOtherPlayers`에서 강제로 내 옆 200 거리에 배치하는 코드 추가
+- 테스트 목적: Floating Origin 문제인지 좌표 문제인지 구분
+
+```javascript
+// 테스트 코드 (mpInterpolateOtherPlayers 내부)
+const testPos = new THREE.Vector3(
+    myShip.mesh.position.x + 200,  // 내 옆 200 거리
+    myShip.mesh.position.y,
+    myShip.mesh.position.z
+);
+ship.mesh.position.lerp(testPos, lerpFactor);
+```
 
 ---
 
