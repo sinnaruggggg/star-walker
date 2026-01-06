@@ -113,6 +113,15 @@ ship.mesh.position.copy(testPos);
    window.GLTFLoader = GLTFLoader;
    ```
 
+3. **CSS2DObject 전역 노출** (index.html:8659)
+   ```javascript
+   window.CSS2DObject = CSS2DObject;
+   ```
+
+4. **createOtherPlayerShip에서 window 접근으로 변경**
+   - `SHIP_TYPES` → `window.SHIP_TYPES`
+   - `CSS2DObject` → `window.CSS2DObject`
+
 #### 리소스 경로 정리
 
 **행성 텍스처** - Supabase Storage `assets/`:
