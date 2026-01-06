@@ -28719,6 +28719,7 @@ function updateOtherPlayers(players) {
 // ★★★ 프레임마다 호출되는 부드러운 보간 함수 ★★★
 function mpInterpolateOtherPlayers(deltaTime) {
     const lerpFactor = Math.min(1, deltaTime * 5);
+    const myShip = window.playerShip;
 
     Object.values(mpOtherPlayers).forEach(ship => {
         // ★★★ 위치 보간 (부드러운 이동) ★★★
@@ -28731,6 +28732,19 @@ function mpInterpolateOtherPlayers(deltaTime) {
             ship.mesh.rotation.x += (ship.targetRotation.x - ship.mesh.rotation.x) * lerpFactor;
             ship.mesh.rotation.y += (ship.targetRotation.y - ship.mesh.rotation.y) * lerpFactor;
             ship.mesh.rotation.z += (ship.targetRotation.z - ship.mesh.rotation.z) * lerpFactor;
+        }
+
+        // ★★★ 거리 기반 마커 크기 조절 (멀수록 크게) ★★★
+        if (myShip && myShip.mesh && ship.marker) {
+            const dist = myShip.mesh.position.distanceTo(ship.mesh.position);
+            // 거리에 비례하여 마커 크기 조절 (최소 0.03, 최대 50)
+            const markerScale = Math.max(0.03, Math.min(50, dist * 0.005));
+            ship.marker.scale.setScalar(markerScale);
+        }
+
+        // ★★★ 레이블이 항상 카메라를 향하도록 ★★★
+        if (ship.label && window.camera) {
+            // CSS2DObject는 자동으로 카메라를 향함
         }
     });
 }
@@ -28879,6 +28893,7 @@ function createOtherPlayerShip(player) {
         mpOtherPlayers[player.user_id] = {
             mesh: shipGroup,
             label: label,
+            marker: marker,  // 거리 기반 크기 조절용
             shipType: shipTypeId,
             targetPosition: new THREE.Vector3(
                 parseFloat(player.pos_x) || 0,
