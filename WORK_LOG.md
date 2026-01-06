@@ -55,10 +55,24 @@ const testPos = myShip.mesh.position.clone()
 ship.mesh.position.copy(testPos);
 ```
 
-#### 다음 단계
-- 테스트 결과에 따라:
-  - 보이면 → 실제 좌표 적용 시 스케일 변환 필요
-  - 안 보이면 → 렌더링 레이어/카메라 문제
+#### 해결: 테스트 성공 후 실제 구현 완료 (2024-01-06)
+
+**원인**: 좌표 스케일이 매우 작음 (0.5 단위 = 바로 옆, 2000 단위 = 매우 멀리)
+
+**구현 내용**:
+1. `createOtherPlayerShip` 완전 재작성
+   - SHIP_TYPES에서 ship_type으로 우주선 타입 찾기
+   - GLTFLoader로 GLB 모델 로드 (실패 시 기본 콘 형태)
+   - 플레이어 우주선과 동일한 스케일 (0.08) 적용
+   - CSS2DObject로 닉네임 레이블 표시
+
+2. `mpInterpolateOtherPlayers` 수정
+   - 테스트 코드 제거
+   - 실제 DB 좌표 사용
+   - 위치/회전 부드러운 보간
+
+3. `addFallbackGeometry` 함수 추가
+   - GLB 로드 실패 시 기본 형태 생성
 
 ---
 
