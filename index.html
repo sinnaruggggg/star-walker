@@ -28753,18 +28753,19 @@ function createOtherPlayerShip(player) {
     }
 
     try {
-        // ★★★ 크기를 크게 늘림 (기존 0.3, 1 → 5, 15) ★★★
-        const geometry = new THREE.ConeGeometry(5, 15, 8);
+        // ★★★ 크기를 아주 크게 (50, 150) - 거리 2000에서도 보이도록 ★★★
+        const geometry = new THREE.ConeGeometry(50, 150, 8);
         geometry.rotateX(Math.PI / 2);
 
         // ★★★ 플레이어의 ship_color 사용 ★★★
-        const shipColor = player.ship_color || '#00ffff';
+        const shipColor = player.ship_color || '#ff00ff';  // 기본색 마젠타 (눈에 잘 띔)
         const colorValue = new THREE.Color(shipColor);
 
         const material = new THREE.MeshBasicMaterial({
             color: colorValue,
-            transparent: true,
-            opacity: 0.9
+            transparent: false,
+            depthTest: true,
+            side: THREE.DoubleSide  // 양면 렌더링
         });
 
         const mesh = new THREE.Mesh(geometry, material);
@@ -28775,18 +28776,22 @@ function createOtherPlayerShip(player) {
         );
         console.log('📍 메시 위치 설정됨:', mesh.position);
 
-        // ★★★ 글로우도 크게 ★★★
-        const glowGeometry = new THREE.SphereGeometry(8, 16, 16);
+        // ★★★ 빛나는 구체 추가 (더 잘 보이게) ★★★
+        const glowGeometry = new THREE.SphereGeometry(80, 16, 16);
         const glowMaterial = new THREE.MeshBasicMaterial({
-            color: colorValue,
+            color: 0xff0000,  // 빨간색 (눈에 확 띔)
             transparent: true,
-            opacity: 0.3
+            opacity: 0.6
         });
         const glow = new THREE.Mesh(glowGeometry, glowMaterial);
         mesh.add(glow);
 
+        // ★★★ 포인트 라이트 추가 (주변 조명) ★★★
+        const light = new THREE.PointLight(0xff0000, 1, 500);
+        mesh.add(light);
+
         scene.add(mesh);
-        console.log('✅ 메시 scene에 추가됨');
+        console.log('✅ 메시 scene에 추가됨, scene.children:', scene.children.length);
 
         // CSS2DObject 체크
         if (typeof CSS2DObject === 'undefined') {
