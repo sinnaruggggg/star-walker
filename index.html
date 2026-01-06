@@ -28679,10 +28679,20 @@ function updateOtherPlayers(players) {
 
     players.forEach(player => {
         activeIds.add(player.user_id);
-        console.log('🔄 처리 중:', player.user_id, '이미 존재?', !!mpOtherPlayers[player.user_id]);
 
-        if (!mpOtherPlayers[player.user_id]) {
-            console.log('🔄 createOtherPlayerShip 호출 시도:', player.user_id);
+        const existing = mpOtherPlayers[player.user_id];
+        // ★★★ 기존 메시가 없거나, 구버전(marker 없음)이면 재생성 ★★★
+        const needsRecreate = !existing || !existing.marker || !existing.targetPosition;
+
+        console.log('🔄 처리 중:', player.user_id, '존재?', !!existing, '재생성필요?', needsRecreate);
+
+        if (needsRecreate) {
+            // 기존 메시 제거
+            if (existing && existing.mesh && window.scene) {
+                window.scene.remove(existing.mesh);
+                delete mpOtherPlayers[player.user_id];
+            }
+            console.log('🔄 createOtherPlayerShip 호출:', player.user_id);
             createOtherPlayerShip(player);
         } else {
             const ship = mpOtherPlayers[player.user_id];
