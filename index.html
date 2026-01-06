@@ -28753,7 +28753,8 @@ function createOtherPlayerShip(player) {
     }
 
     try {
-        const geometry = new THREE.ConeGeometry(0.3, 1, 8);
+        // ★★★ 크기를 크게 늘림 (기존 0.3, 1 → 5, 15) ★★★
+        const geometry = new THREE.ConeGeometry(5, 15, 8);
         geometry.rotateX(Math.PI / 2);
 
         // ★★★ 플레이어의 ship_color 사용 ★★★
@@ -28763,7 +28764,7 @@ function createOtherPlayerShip(player) {
         const material = new THREE.MeshBasicMaterial({
             color: colorValue,
             transparent: true,
-            opacity: 0.8
+            opacity: 0.9
         });
 
         const mesh = new THREE.Mesh(geometry, material);
@@ -28772,8 +28773,10 @@ function createOtherPlayerShip(player) {
             parseFloat(player.pos_y) || 0,
             parseFloat(player.pos_z) || 0
         );
+        console.log('📍 메시 위치 설정됨:', mesh.position);
 
-        const glowGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        // ★★★ 글로우도 크게 ★★★
+        const glowGeometry = new THREE.SphereGeometry(8, 16, 16);
         const glowMaterial = new THREE.MeshBasicMaterial({
             color: colorValue,
             transparent: true,
