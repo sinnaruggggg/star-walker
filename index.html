@@ -11136,7 +11136,10 @@ window.MissionSystem = MissionSystem;
                 unlocked: false
             }
         ];
-        
+
+        // 전역 노출 (멀티플레이어에서 사용)
+        window.SHIP_TYPES = SHIP_TYPES;
+
         // ★ 무기 시스템 (30종)
         const WEAPONS = [
             // Tier 1 - 기본 무기 (셔틀~탐사정)
