@@ -36,18 +36,29 @@
 
 #### 추가 문제: 다른 플레이어가 멀리 보임 (좌표는 가까운데)
 - 좌표상 거리 ~2000인데 화면에서는 훨씬 멀리 보임
-- **테스트**: `mpInterpolateOtherPlayers`에서 강제로 내 옆 200 거리에 배치하는 코드 추가
-- 테스트 목적: Floating Origin 문제인지 좌표 문제인지 구분
+- 원인 추정: 스케일 불일치 (플레이어 우주선 0.08 스케일 vs 다른 플레이어 메시 크기)
+
+#### 테스트 시도 (2024-01-06)
+1. **첫 번째 시도**: 200 단위 거리 테스트 → 결과 대기 중
+2. **두 번째 시도**: 메시 크기 및 거리 조정
+   - 메시 크기: `ConeGeometry(0.1, 0.3)` + `SphereGeometry(0.15)` 글로우
+   - 테스트 거리: 0.5 단위 (우주선 바로 옆)
+   - 색상: 초록색 (#00ff00) - 내 우주선과 구분
 
 ```javascript
-// 테스트 코드 (mpInterpolateOtherPlayers 내부)
-const testPos = new THREE.Vector3(
-    myShip.mesh.position.x + 200,  // 내 옆 200 거리
-    myShip.mesh.position.y,
-    myShip.mesh.position.z
-);
-ship.mesh.position.lerp(testPos, lerpFactor);
+// 현재 테스트 코드 (mpInterpolateOtherPlayers 내부)
+const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(myShip.mesh.quaternion);
+const right = new THREE.Vector3(1, 0, 0).applyQuaternion(myShip.mesh.quaternion);
+const testPos = myShip.mesh.position.clone()
+    .add(right.multiplyScalar(0.5))  // 오른쪽 0.5 단위
+    .add(forward.multiplyScalar(0.3));  // 전방 0.3 단위
+ship.mesh.position.copy(testPos);
 ```
+
+#### 다음 단계
+- 테스트 결과에 따라:
+  - 보이면 → 실제 좌표 적용 시 스케일 변환 필요
+  - 안 보이면 → 렌더링 레이어/카메라 문제
 
 ---
 
