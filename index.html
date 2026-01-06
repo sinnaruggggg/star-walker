@@ -8656,6 +8656,7 @@ window.MissionSystem = MissionSystem;
         
         window.THREE = THREE;  // ★ 망원경 모드에서 사용
         window.GLTFLoader = GLTFLoader;  // ★ 멀티플레이어에서 사용
+        window.CSS2DObject = CSS2DObject;  // ★ 멀티플레이어 닉네임 라벨
         
         // ★★★ 시네마틱 인트로 시스템 ★★★
         (function initIntro() {
@@ -28755,8 +28756,8 @@ function createOtherPlayerShip(player) {
 
     // ★★★ GLB 모델 로드 시도 ★★★
     const shipTypeId = player.ship_type || 'shuttle';
-    const shipType = (typeof SHIP_TYPES !== 'undefined')
-        ? SHIP_TYPES.find(s => s.id === shipTypeId) : null;
+    const shipType = window.SHIP_TYPES
+        ? window.SHIP_TYPES.find(s => s.id === shipTypeId) : null;
 
     if (shipType && shipType.model && window.GLTFLoader) {
         const loader = new window.GLTFLoader();
@@ -28787,12 +28788,12 @@ function createOtherPlayerShip(player) {
 
     // ★★★ 닉네임 라벨 ★★★
     let label = null;
-    if (typeof CSS2DObject !== 'undefined') {
+    if (window.CSS2DObject) {
         const labelDiv = document.createElement('div');
         labelDiv.className = 'mp-player-label';
         labelDiv.textContent = player.nickname || 'Player';
         labelDiv.style.cssText = 'color:#00ffff; font-size:12px; font-family:Orbitron,sans-serif; text-shadow:0 0 5px #00ffff; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px;';
-        label = new CSS2DObject(labelDiv);
+        label = new window.CSS2DObject(labelDiv);
         label.position.set(0, 2, 0);
         shipGroup.add(label);
     }
