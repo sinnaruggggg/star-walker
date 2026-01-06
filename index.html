@@ -28718,11 +28718,24 @@ function updateOtherPlayers(players) {
 
 // ★★★ 프레임마다 호출되는 부드러운 보간 함수 ★★★
 function mpInterpolateOtherPlayers(deltaTime) {
-    const lerpFactor = Math.min(1, deltaTime * 5); // 더 부드러운 보간 (0.3 → 동적)
+    const lerpFactor = Math.min(1, deltaTime * 5);
+    const myShip = window.playerShip;
 
     Object.values(mpOtherPlayers).forEach(ship => {
-        if (ship.targetPosition) {
-            ship.mesh.position.lerp(ship.targetPosition, lerpFactor);
+        if (myShip && myShip.mesh) {
+            // ★★★ 테스트: 강제로 내 우주선 옆에 배치 ★★★
+            const testPos = new THREE.Vector3(
+                myShip.mesh.position.x + 200,  // 내 옆 200 거리
+                myShip.mesh.position.y,
+                myShip.mesh.position.z
+            );
+            ship.mesh.position.lerp(testPos, lerpFactor);
+
+            // 거리 로그
+            if (!ship.lastLogTime || Date.now() - ship.lastLogTime > 2000) {
+                console.log('📏 테스트: 내 위치', myShip.mesh.position, '다른 플레이어', ship.mesh.position);
+                ship.lastLogTime = Date.now();
+            }
         }
         if (ship.targetRotation) {
             ship.mesh.rotation.x += (ship.targetRotation.x - ship.mesh.rotation.x) * lerpFactor;
