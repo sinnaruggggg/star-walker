@@ -89,3 +89,55 @@ ship.mesh.position.copy(testPos);
 - 테이블: `player_positions`
 - PRIMARY KEY: `user_id` (UUID 타입)
 - 주요 컬럼: `x`, `y`, `z`, `rot_x`, `rot_y`, `rot_z`, `nickname`, `ship_type`, `ship_color`, `status`
+
+---
+
+## 2024-01-07 작업 내용
+
+### 문제: 멀티플레이어 우주선이 꼬깔(Cone) 형태로만 표시됨
+
+#### 원인 분석
+1. `SHIP_TYPES` 배열이 함수 스코프 내에 정의되어 전역 접근 불가
+2. `GLTFLoader`가 ES6 모듈로 import되어 `window.GLTFLoader`로 접근 불가
+3. `createOtherPlayerShip`에서 `typeof SHIP_TYPES !== 'undefined'` 체크 실패
+4. GLB 모델 로드 조건문 통과 못하여 기본 Cone 형태만 표시
+
+#### 수정 내용
+1. **SHIP_TYPES 전역 노출** (index.html:11141)
+   ```javascript
+   window.SHIP_TYPES = SHIP_TYPES;
+   ```
+
+2. **GLTFLoader 전역 노출** (index.html:8658)
+   ```javascript
+   window.GLTFLoader = GLTFLoader;
+   ```
+
+#### 리소스 경로 정리
+
+**행성 텍스처** - Supabase Storage `assets/`:
+```
+https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/
+├── earth_1765901958.jpeg
+├── mars_1765902547.jpg
+├── venus_1765902007.jpg
+├── saturn_1765902576.jpg
+├── jupiter_1765902587.jpg
+├── mercury_1765902026.jpg
+├── moon_1765907677.jpg
+├── neptune_1765907700.jpeg
+├── uranus_1765903664.jpg
+└── saturn_ring_1765903886.png
+```
+
+**GLB 우주선 모델** - Supabase Storage `assets/ships/`:
+```
+https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/
+├── shuttle_model_1767450908791.glb
+├── explorer_model_1766457987.glb
+├── interceptor_model_1765905786.glb
+└── freighter_model_1765906618.glb
+```
+
+#### 남은 작업
+- [ ] 중복 접속 감지 및 강제 로그아웃 구현
