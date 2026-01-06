@@ -28734,17 +28734,28 @@ function mpInterpolateOtherPlayers(deltaTime) {
             ship.mesh.rotation.z += (ship.targetRotation.z - ship.mesh.rotation.z) * lerpFactor;
         }
 
+        // ★★★ 디버그: 실제 위치 확인 ★★★
+        if (!ship._lastDebugLog || Date.now() - ship._lastDebugLog > 3000) {
+            console.log('🔍 다른 플레이어 위치 확인:');
+            console.log('   targetPosition:', ship.targetPosition ?
+                `(${ship.targetPosition.x.toFixed(2)}, ${ship.targetPosition.y.toFixed(2)}, ${ship.targetPosition.z.toFixed(2)})` : 'null');
+            console.log('   mesh.position:',
+                `(${ship.mesh.position.x.toFixed(2)}, ${ship.mesh.position.y.toFixed(2)}, ${ship.mesh.position.z.toFixed(2)})`);
+            if (myShip && myShip.mesh) {
+                console.log('   내 우주선:',
+                    `(${myShip.mesh.position.x.toFixed(2)}, ${myShip.mesh.position.y.toFixed(2)}, ${myShip.mesh.position.z.toFixed(2)})`);
+                const dist = myShip.mesh.position.distanceTo(ship.mesh.position);
+                console.log('   거리:', dist.toFixed(2), '단위');
+            }
+            ship._lastDebugLog = Date.now();
+        }
+
         // ★★★ 거리 기반 마커 크기 조절 (멀수록 크게) ★★★
         if (myShip && myShip.mesh && ship.marker) {
             const dist = myShip.mesh.position.distanceTo(ship.mesh.position);
             // 거리에 비례하여 마커 크기 조절 (최소 0.03, 최대 50)
             const markerScale = Math.max(0.03, Math.min(50, dist * 0.005));
             ship.marker.scale.setScalar(markerScale);
-        }
-
-        // ★★★ 레이블이 항상 카메라를 향하도록 ★★★
-        if (ship.label && window.camera) {
-            // CSS2DObject는 자동으로 카메라를 향함
         }
     });
 }
