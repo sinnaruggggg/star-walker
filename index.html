@@ -28719,33 +28719,14 @@ function updateOtherPlayers(players) {
 // ★★★ 프레임마다 호출되는 부드러운 보간 함수 ★★★
 function mpInterpolateOtherPlayers(deltaTime) {
     const lerpFactor = Math.min(1, deltaTime * 5);
-    const myShip = window.playerShip;
 
     Object.values(mpOtherPlayers).forEach(ship => {
-        if (myShip && myShip.mesh) {
-            // ★★★ 테스트: 우주선 바로 옆에 배치 (0.5 단위 = 조종석에서 보임) ★★★
-            // 우주선 전방 및 오른쪽 벡터 계산
-            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(myShip.mesh.quaternion);
-            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(myShip.mesh.quaternion);
-
-            // 우주선 오른쪽 0.5단위 + 전방 0.3단위 위치 (조종석에서 잘 보이는 위치)
-            const testPos = myShip.mesh.position.clone()
-                .add(right.multiplyScalar(0.5))
-                .add(forward.multiplyScalar(0.3));
-
-            ship.mesh.position.copy(testPos);  // 즉시 배치
-
-            // 매 초 로그
-            if (!ship.lastLogTime || Date.now() - ship.lastLogTime > 1000) {
-                const dist = myShip.mesh.position.distanceTo(ship.mesh.position);
-                console.log('🚀 테스트 위치 (0.5 단위 옆):');
-                console.log('   내 우주선:', myShip.mesh.position.x.toFixed(4), myShip.mesh.position.y.toFixed(4), myShip.mesh.position.z.toFixed(4));
-                console.log('   다른 플레이어:', ship.mesh.position.x.toFixed(4), ship.mesh.position.y.toFixed(4), ship.mesh.position.z.toFixed(4));
-                console.log('   거리:', dist.toFixed(4), '단위');
-                console.log('   visible:', ship.mesh.visible, 'parent:', ship.mesh.parent ? 'scene' : 'null');
-                ship.lastLogTime = Date.now();
-            }
+        // ★★★ 위치 보간 (부드러운 이동) ★★★
+        if (ship.targetPosition) {
+            ship.mesh.position.lerp(ship.targetPosition, lerpFactor);
         }
+
+        // ★★★ 회전 보간 ★★★
         if (ship.targetRotation) {
             ship.mesh.rotation.x += (ship.targetRotation.x - ship.mesh.rotation.x) * lerpFactor;
             ship.mesh.rotation.y += (ship.targetRotation.y - ship.mesh.rotation.y) * lerpFactor;
@@ -28758,10 +28739,9 @@ function mpInterpolateOtherPlayers(deltaTime) {
 window.mpInterpolateOtherPlayers = mpInterpolateOtherPlayers;
 
 function createOtherPlayerShip(player) {
-    console.log('🎮 다른 플레이어 생성 시도:', player.user_id, player.nickname);
-    console.log('   위치:', player.pos_x, player.pos_y, player.pos_z);
+    console.log('🎮 다른 플레이어 생성 시도:', player.user_id, player.nickname, 'ship:', player.ship_type);
 
-    // scene 체크 (window.scene 사용)
+    // scene 체크
     if (!window.scene) {
         console.error('❌ window.scene이 정의되지 않음!');
         return;
@@ -28775,75 +28755,174 @@ function createOtherPlayerShip(player) {
     }
 
     try {
-        // ★★★ 테스트용 - 확실히 보이는 큰 메시 ★★★
-        // 우주선 옆 0.5단위 거리에 배치할 예정이므로, 0.1 크기면 충분히 보임
-        const geometry = new THREE.ConeGeometry(0.1, 0.3, 8);  // 적당한 크기
-        geometry.rotateX(Math.PI / 2);
+        // ★★★ 우주선 타입 찾기 ★★★
+        const shipTypeId = player.ship_type || 'shuttle';
+        const shipType = (typeof SHIP_TYPES !== 'undefined')
+            ? SHIP_TYPES.find(s => s.id === shipTypeId) || SHIP_TYPES[0]
+            : null;
 
-        // ★★★ 플레이어의 ship_color 사용 ★★★
-        const shipColor = player.ship_color || '#00ff00';  // 기본색 초록 (눈에 잘 띔)
-        const colorValue = new THREE.Color(shipColor);
+        console.log('🚀 우주선 타입:', shipTypeId, shipType ? '찾음' : '못찾음');
 
-        const material = new THREE.MeshBasicMaterial({
-            color: colorValue,
-            transparent: false,
-            depthTest: true,
-            side: THREE.DoubleSide  // 양면 렌더링
-        });
+        // ★★★ 메인 그룹 생성 (플레이어 우주선과 동일 구조) ★★★
+        const shipGroup = new THREE.Group();
+        const shipVisualGroup = new THREE.Group();
+        shipVisualGroup.name = 'shipVisual';
+        shipVisualGroup.rotation.y = Math.PI;  // 180도 회전
 
-        const mesh = new THREE.Mesh(geometry, material);
+        // 멀티모드 스케일 (플레이어 우주선과 동일)
+        const SHIP_VISUAL_SCALE = 0.08;
+        shipVisualGroup.scale.setScalar(SHIP_VISUAL_SCALE);
 
-        mesh.position.set(
+        // 크기 배율
+        const sizeScale = shipType ? ({
+            'small': 1.0, 'medium': 1.3, 'large': 1.6, 'huge': 2.0
+        }[shipType.size] || 1.0) : 1.0;
+
+        // ★★★ GLB 모델 로드 시도 ★★★
+        if (shipType && shipType.model && shipType.model.length > 0 && typeof GLTFLoader !== 'undefined') {
+            const gltfLoader = new GLTFLoader();
+
+            // Draco 지원
+            try {
+                if (typeof DRACOLoader !== 'undefined') {
+                    const dracoLoader = new DRACOLoader();
+                    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+                    gltfLoader.setDRACOLoader(dracoLoader);
+                }
+            } catch(e) { }
+
+            const modelUrl = (typeof convertToSupabaseUrl !== 'undefined')
+                ? convertToSupabaseUrl(shipType.model)
+                : shipType.model;
+
+            console.log('📦 다른 플레이어 GLB 로드:', modelUrl);
+
+            gltfLoader.load(modelUrl, (gltf) => {
+                console.log('✅ 다른 플레이어 GLB 로드 성공');
+                const model = gltf.scene;
+                model.scale.setScalar(sizeScale * 0.5);
+
+                // 메탈릭 재질 설정
+                model.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        if (child.material.isMeshStandardMaterial) {
+                            child.material.metalness = Math.max(child.material.metalness || 0, 0.7);
+                            child.material.roughness = Math.min(child.material.roughness || 1, 0.35);
+                        }
+                    }
+                });
+
+                model.name = 'glbModel';
+                shipVisualGroup.add(model);
+            }, undefined, (err) => {
+                console.warn('⚠️ GLB 로드 실패, 기본 형태 사용:', err.message);
+                addFallbackGeometry(shipVisualGroup, shipType, sizeScale);
+            });
+        } else {
+            // GLB 없으면 기본 형태
+            addFallbackGeometry(shipVisualGroup, shipType, sizeScale);
+        }
+
+        shipGroup.add(shipVisualGroup);
+
+        // ★★★ 위치 설정 ★★★
+        shipGroup.position.set(
             parseFloat(player.pos_x) || 0,
             parseFloat(player.pos_y) || 0,
             parseFloat(player.pos_z) || 0
         );
-        console.log('📍 메시 생성됨 - 위치:', mesh.position);
 
-        // ★★★ 빛나는 구체 추가 (테스트용 - 크고 밝게) ★★★
-        const glowGeometry = new THREE.SphereGeometry(0.15, 16, 16);  // 눈에 띄는 크기
-        const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,  // 초록색 (내 우주선과 구분)
-            transparent: true,
-            opacity: 0.8
-        });
-        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-        mesh.add(glow);
+        // ★★★ 회전 설정 ★★★
+        if (player.rot_x !== undefined) {
+            shipGroup.rotation.set(
+                parseFloat(player.rot_x) || 0,
+                parseFloat(player.rot_y) || 0,
+                parseFloat(player.rot_z) || 0
+            );
+        }
 
-        // ★★★ 포인트 라이트 추가 (가까운 거리용) ★★★
-        const light = new THREE.PointLight(0x00ff00, 2, 2);  // 초록빛, 강도 2, 범위 2
-        mesh.add(light);
-
-        scene.add(mesh);
-        console.log('✅ 메시 scene에 추가됨, scene.children:', scene.children.length);
-
-        // CSS2DObject 체크
-        if (typeof CSS2DObject === 'undefined') {
-            console.warn('⚠️ CSS2DObject 없음, 레이블 스킵');
-            mpOtherPlayers[player.user_id] = { mesh, label: null };
-        } else {
+        // ★★★ 닉네임 레이블 ★★★
+        let label = null;
+        if (typeof CSS2DObject !== 'undefined') {
             const labelDiv = document.createElement('div');
             labelDiv.className = 'mp-player-label';
             labelDiv.textContent = player.nickname || '익명';
-            labelDiv.style.color = '#0f0';  // 초록색 (메시와 일치)
-            labelDiv.style.fontSize = '14px';  // 좀 더 크게
-            labelDiv.style.fontWeight = 'bold';
-            labelDiv.style.background = 'rgba(0,0,0,0.8)';
-            labelDiv.style.padding = '4px 8px';
-            labelDiv.style.borderRadius = '4px';
-            labelDiv.style.border = '1px solid #0f0';  // 테두리 추가
-            const label = new CSS2DObject(labelDiv);
-            label.position.set(0, 0.25, 0);  // 메시 위 0.25 단위 (메시 높이 0.3 기준)
-            mesh.add(label);
-            console.log('✅ 레이블 추가됨:', player.nickname);
-
-            mpOtherPlayers[player.user_id] = { mesh, label };
+            labelDiv.style.cssText = `
+                color: #0ff;
+                font-size: 12px;
+                font-weight: bold;
+                background: rgba(0,20,40,0.85);
+                padding: 3px 8px;
+                border-radius: 4px;
+                border: 1px solid #0ff;
+                text-shadow: 0 0 4px #0ff;
+                white-space: nowrap;
+            `;
+            label = new CSS2DObject(labelDiv);
+            label.position.set(0, 0.15 / SHIP_VISUAL_SCALE, 0);  // 스케일 보정
+            shipGroup.add(label);
         }
 
-        console.log('🎮 플레이어 생성 완료! 현재 mpOtherPlayers:', Object.keys(mpOtherPlayers).length);
+        // ★★★ 위치 마커 (멀리서도 보이게) ★★★
+        const markerGeo = new THREE.SphereGeometry(0.03, 8, 8);
+        const markerMat = new THREE.MeshBasicMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.9
+        });
+        const marker = new THREE.Mesh(markerGeo, markerMat);
+        shipGroup.add(marker);
+
+        scene.add(shipGroup);
+
+        // ★★★ 저장 ★★★
+        mpOtherPlayers[player.user_id] = {
+            mesh: shipGroup,
+            label: label,
+            shipType: shipTypeId,
+            targetPosition: new THREE.Vector3(
+                parseFloat(player.pos_x) || 0,
+                parseFloat(player.pos_y) || 0,
+                parseFloat(player.pos_z) || 0
+            ),
+            targetRotation: new THREE.Euler(
+                parseFloat(player.rot_x) || 0,
+                parseFloat(player.rot_y) || 0,
+                parseFloat(player.rot_z) || 0
+            )
+        };
+
+        console.log('✅ 다른 플레이어 생성 완료:', player.nickname);
     } catch (e) {
         console.error('❌ createOtherPlayerShip 에러:', e);
     }
+}
+
+// ★★★ GLB 없을 때 기본 형태 생성 ★★★
+function addFallbackGeometry(group, shipType, sizeScale) {
+    const color = shipType ? shipType.color : 0x00ffff;
+
+    // 본체 (콘)
+    const bodyGeo = new THREE.ConeGeometry(0.3, 1.0, 8);
+    bodyGeo.rotateX(Math.PI / 2);
+    const bodyMat = new THREE.MeshStandardMaterial({
+        color: color,
+        metalness: 0.7,
+        roughness: 0.3
+    });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.scale.setScalar(sizeScale);
+    group.add(body);
+
+    // 글로우
+    const glowGeo = new THREE.SphereGeometry(0.4, 16, 16);
+    const glowMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.3
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    group.add(glow);
 }
 
 function removeOtherPlayer(userId) {
