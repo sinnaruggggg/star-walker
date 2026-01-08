@@ -171,6 +171,15 @@ ship.mesh.position.copy(testPos);
      - 연료정거장 궤도: 120~1200 → 1200~12000 (10배)
      - 연료정거장 크기: 0.05 → 0.5 (10배)
 
+10. **위성 궤도 실제 거리 모드 버그 수정** (2024-01-08)
+    - 문제: 멀티모드에서 목성 위성들이 목성 안에 들어감 (스크린샷 확인)
+    - 원인: 실제 거리 모드(`CONFIG.distScale > 1.0`)에서 `visualScale` 누락
+    - 수정 위치:
+      - `initMoonOrbit` (line 15263): `parentScale` 추가
+      - 애니메이션 루프 (line 23892): `parentScale` 추가
+      - 스폰 전 동기화 (line 18742): `parentScale` 추가
+    - 수정 공식: `r = realOrbitRadius * parentRadius * parentVisualScale`
+
 #### 리소스 경로 정리
 
 **행성 텍스처** - Supabase Storage `assets/`:
