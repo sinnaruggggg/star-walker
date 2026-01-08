@@ -14906,7 +14906,9 @@ window.MissionSystem = MissionSystem;
 
         function createSatellite(parentBody, typeData, distRatio, speed, name, isSpaceStation = false) {
             let mesh;
-            const dist = parentBody.radius * distRatio;
+            // ★ 부모의 visualScale 가져오기 (10배 스케일 적용)
+            const parentVisualScale = parentBody.visualScale || 1;
+            const dist = parentBody.radius * distRatio * parentVisualScale;  // ★ 궤도도 스케일 적용
             if (isSpaceStation) {
                 // ========== SF 거대 우주정거장 모델링 ==========
                 const group = new THREE.Group();
@@ -15196,6 +15198,9 @@ window.MissionSystem = MissionSystem;
                 }
                 mesh = new THREE.Mesh(geo, mat);
                 mesh.castShadow = true; mesh.receiveShadow = true;
+                // ★ 위성도 VISUAL_SCALE 적용 (10배)
+                const moonScale = getVisualScale('moon');
+                mesh.scale.setScalar(moonScale);
             }
             const div = document.createElement('div');
             div.className = 'label';
@@ -15280,9 +15285,9 @@ window.MissionSystem = MissionSystem;
                 // ISS: 달(6) 바깥 궤도 → 12로 더 멀리
                 const iss = createSatellite(earth, null, 12, 0.5, "ISS 우주정거장", true);  // 속도 2.5 → 0.5 (5배 감소)
                 iss.realOrbitRadius = 15;
-                iss.stationSize = 0.05;  // 지구 정거장 (1/20 크기)
+                iss.stationSize = 0.5;  // 지구 정거장 - 10배 확대
                 iss.hasFuel = true;  // 연료 충전 가능
-                if (iss.mesh) iss.mesh.scale.setScalar(0.05);  // 20분의 1
+                if (iss.mesh) iss.mesh.scale.setScalar(0.5);  // 10배 확대
             }
             
             // ★ 금성 정거장 (위성 없음 → 넓은 궤도)
@@ -15290,9 +15295,9 @@ window.MissionSystem = MissionSystem;
             if (venus) {
                 const venusStation = createSatellite(venus, null, 7, 0.6, "비너스 플랫폼", true);  // 속도 3.0 → 0.6
                 venusStation.realOrbitRadius = 8;
-                venusStation.stationSize = 0.025;  // 1/20 크기
+                venusStation.stationSize = 0.25;  // 10배 확대
                 venusStation.hasFuel = true;
-                if (venusStation.mesh) venusStation.mesh.scale.setScalar(0.025);
+                if (venusStation.mesh) venusStation.mesh.scale.setScalar(0.25);  // 10배 확대
             }
             
             const mars = bodies.find(b => b.name === "화성");
@@ -15310,9 +15315,9 @@ window.MissionSystem = MissionSystem;
                 // ★ 화성 정거장: 데이모스(4.0) 바깥 궤도 → 7
                 const marsStation = createSatellite(mars, null, 7, 0.6, "마스 스테이션", true);  // 속도 3.0 → 0.6
                 marsStation.realOrbitRadius = 8;
-                marsStation.stationSize = 0.025;  // 1/20 크기
+                marsStation.stationSize = 0.25;  // 10배 확대
                 marsStation.hasFuel = true;
-                if (marsStation.mesh) marsStation.mesh.scale.setScalar(0.025);
+                if (marsStation.mesh) marsStation.mesh.scale.setScalar(0.25);  // 10배 확대
             }
             const jupiter = bodies.find(b => b.name === "목성");
             if (jupiter) { 
@@ -15339,9 +15344,9 @@ window.MissionSystem = MissionSystem;
                 // ★ 목성 정거장: 칼리스토(7.0) 바깥 궤도 → 12
                 const jupiterStation = createSatellite(jupiter, null, 12, 0.3, "주피터 아웃포스트", true);  // 속도 1.5 → 0.3
                 jupiterStation.realOrbitRadius = 35;
-                jupiterStation.stationSize = 0.025;  // 1/20 크기
+                jupiterStation.stationSize = 0.25;  // 10배 확대
                 jupiterStation.hasFuel = true;
-                if (jupiterStation.mesh) jupiterStation.mesh.scale.setScalar(0.025);
+                if (jupiterStation.mesh) jupiterStation.mesh.scale.setScalar(0.25);  // 10배 확대
             }
             const saturn = bodies.find(b => b.name === "토성");
             if (saturn) { 
@@ -15358,9 +15363,9 @@ window.MissionSystem = MissionSystem;
                 // ★ 토성 정거장: 타이탄(4.0) 바깥 궤도 → 8
                 const saturnStation = createSatellite(saturn, null, 8, 0.4, "새턴 베이스", true);  // 속도 2.0 → 0.4
                 saturnStation.realOrbitRadius = 30;
-                saturnStation.stationSize = 0.025;  // 1/20 크기
+                saturnStation.stationSize = 0.25;  // 10배 확대
                 saturnStation.hasFuel = true;
-                if (saturnStation.mesh) saturnStation.mesh.scale.setScalar(0.025);
+                if (saturnStation.mesh) saturnStation.mesh.scale.setScalar(0.25);  // 10배 확대
             }
             const uranus = bodies.find(b => b.name === "천왕성");
             if (uranus) { 
@@ -15377,9 +15382,9 @@ window.MissionSystem = MissionSystem;
                 // ★ 천왕성 정거장: 오베론(4.5) 바깥 궤도 → 8
                 const uranusStation = createSatellite(uranus, null, 8, 0.3, "우라노스 릴레이", true);  // 속도 1.5 → 0.3
                 uranusStation.realOrbitRadius = 30;
-                uranusStation.stationSize = 0.025;  // 1/20 크기
+                uranusStation.stationSize = 0.25;  // 10배 확대
                 uranusStation.hasFuel = true;
-                if (uranusStation.mesh) uranusStation.mesh.scale.setScalar(0.025);
+                if (uranusStation.mesh) uranusStation.mesh.scale.setScalar(0.25);  // 10배 확대
             }
             const neptune = bodies.find(b => b.name === "해왕성");
             if (neptune) { 
@@ -15391,9 +15396,9 @@ window.MissionSystem = MissionSystem;
                 // ★ 해왕성 정거장: 트리톤(3.5) 바깥 궤도 → 8
                 const neptuneStation = createSatellite(neptune, null, 8, 0.2, "넵튠 터미널", true);  // 속도 1.0 → 0.2
                 neptuneStation.realOrbitRadius = 25;
-                neptuneStation.stationSize = 0.025;  // 1/20 크기
+                neptuneStation.stationSize = 0.25;  // 10배 확대
                 neptuneStation.hasFuel = true;
-                if (neptuneStation.mesh) neptuneStation.mesh.scale.setScalar(0.025);
+                if (neptuneStation.mesh) neptuneStation.mesh.scale.setScalar(0.25);  // 10배 확대
             }
             
             // ★★★ 중간 궤도 연료 정거장 생성 ★★★
@@ -15407,12 +15412,12 @@ window.MissionSystem = MissionSystem;
             const sun = bodies.find(b => b.name === "태양");
             if (!sun) return;
             
-            // 연료 정거장 데이터 (태양 기준 절대 위치)
+            // 연료 정거장 데이터 (태양 기준 절대 위치) - 10배 확대
             const depots = [
-                { name: "연료정거장 알파", orbit: 120, desc: "지구-화성 중간" },  // 지구~화성
-                { name: "연료정거장 베타", orbit: 350, desc: "화성-목성 중간 (소행성대)" },  // 화성~목성
-                { name: "연료정거장 감마", orbit: 650, desc: "목성-토성 중간" },  // 목성~토성
-                { name: "연료정거장 델타", orbit: 1200, desc: "토성-천왕성 중간" }  // 토성~천왕성
+                { name: "연료정거장 알파", orbit: 1200, desc: "지구-화성 중간" },  // 지구~화성 (10배)
+                { name: "연료정거장 베타", orbit: 3500, desc: "화성-목성 중간 (소행성대)" },  // 화성~목성 (10배)
+                { name: "연료정거장 감마", orbit: 6500, desc: "목성-토성 중간" },  // 목성~토성 (10배)
+                { name: "연료정거장 델타", orbit: 12000, desc: "토성-천왕성 중간" }  // 토성~천왕성 (10배)
             ];
             
             depots.forEach((depot, i) => {
@@ -15426,7 +15431,7 @@ window.MissionSystem = MissionSystem;
                 });
                 const mesh = new THREE.Mesh(torusGeo, torusMat);
                 mesh.rotation.x = Math.PI / 2;
-                mesh.scale.setScalar(0.05);  // 20분의 1 크기
+                mesh.scale.setScalar(0.5);  // 10배 확대
                 
                 // 태양 주위 궤도 위치
                 const angle = (i * Math.PI / 2) + Math.PI / 4;  // 균등 분포
@@ -15458,7 +15463,7 @@ window.MissionSystem = MissionSystem;
                     orbitSpeed: 0.01 / Math.sqrt(depot.orbit),  // 케플러 법칙
                     angle: angle,
                     parentBody: sun,
-                    stationSize: 0.015,  // 1/20 크기
+                    stationSize: 0.15,  // 10배 확대
                     hasFuel: true,
                     mass: 0.0001,
                     velocity: new THREE.Vector3(0, 0, 0),
@@ -15839,8 +15844,8 @@ window.MissionSystem = MissionSystem;
             
             geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); 
             geom.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); 
-            const galaxyMat = new THREE.PointsMaterial({ 
-                size: 1000,
+            const galaxyMat = new THREE.PointsMaterial({
+                size: 10000,  // 10배 확대
                 vertexColors: true, 
                 transparent: true, 
                 opacity: 0.9, 
@@ -15902,7 +15907,7 @@ window.MissionSystem = MissionSystem;
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             
             const material = new THREE.PointsMaterial({
-                size: 5000,
+                size: 50000,  // 10배 확대
                 vertexColors: true,
                 transparent: true,
                 opacity: 1.0,
@@ -15910,11 +15915,11 @@ window.MissionSystem = MissionSystem;
                 sizeAttenuation: true,
                 depthWrite: false
             });
-            
+
             const stars = new THREE.Points(geometry, material);
             scene.add(stars);
         }
-        
+
         // 태양계 주변 로컬 별들 (태양에서 수백~수천 광년 내 별들)
         // 태양계는 은하 안에 있으므로, 이 별들은 은하 원반의 일부
         
@@ -15960,10 +15965,10 @@ window.MissionSystem = MissionSystem;
             starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             
             const starMaterial = new THREE.PointsMaterial({
-                size: 30000,  // 고정 크기
+                size: 300000,  // 10배 확대
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.1,  // 밝기 5배 감소
+                opacity: 0.3,  // 밝기 증가
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
                 sizeAttenuation: true
@@ -16082,7 +16087,7 @@ window.MissionSystem = MissionSystem;
             nearGeometry.setAttribute('color', new THREE.BufferAttribute(nearColors, 3));
             
             const nearMaterial = new THREE.PointsMaterial({
-                size: 100000,  // 2배 크게
+                size: 1000000,  // 10배 확대
                 vertexColors: true,
                 transparent: true,
                 opacity: 1.0,
@@ -16129,7 +16134,7 @@ window.MissionSystem = MissionSystem;
             midGeometry.setAttribute('color', new THREE.BufferAttribute(midColors, 3));
             
             const midMaterial = new THREE.PointsMaterial({
-                size: 80000,  // 2배 크게
+                size: 800000,  // 10배 확대
                 vertexColors: true,
                 transparent: true,
                 opacity: 1.0,
