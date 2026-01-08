@@ -131,6 +131,15 @@ ship.mesh.position.copy(testPos);
    - 문제: collapsed 상태에서 clip-path로 인해 각진 모서리
    - 해결: `#cockpit-radio.collapsed`에 `clip-path: none` 추가
 
+7. **전체 스케일 10배 증가**
+   - 목적: 큰 우주선 도입 대비, depth buffer 정밀도 개선
+   - 수정 내용:
+     - `VISUAL_SCALE`: star 3→30, planet/gas/moon 5→50, blackhole 3→30
+     - `SHIP_VISUAL_SCALE`: 0.08 → 0.8
+     - 다른 플레이어 우주선: 0.04 → 0.4
+     - 기본 Cone: (0.5, 1.5) → (5, 15)
+     - 닉네임 레이블 높이: 2 → 20
+
 #### 리소스 경로 정리
 
 **행성 텍스처** - Supabase Storage `assets/`:
