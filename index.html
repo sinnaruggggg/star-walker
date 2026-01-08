@@ -14343,12 +14343,13 @@ window.MissionSystem = MissionSystem;
         }
 
         // ★★★ 멀티모드 시각적 스케일 (물리 계산은 그대로) ★★★
+        // ★★★ 전체 스케일 10배 (2024-01-07) ★★★
         const VISUAL_SCALE = {
-            star: 3.0,      // 태양: 3배
-            planet: 5.0,    // 행성: 5배
-            gas: 5.0,       // 가스 행성: 5배
-            moon: 5.0,      // 위성: 5배
-            blackhole: 3.0  // 블랙홀: 3배
+            star: 30.0,      // 태양: 30배 (3*10)
+            planet: 50.0,    // 행성: 50배 (5*10)
+            gas: 50.0,       // 가스 행성: 50배 (5*10)
+            moon: 50.0,      // 위성: 50배 (5*10)
+            blackhole: 30.0  // 블랙홀: 30배 (3*10)
         };
         
         function getVisualScale(type) {
@@ -18270,7 +18271,7 @@ window.MissionSystem = MissionSystem;
             
             // ★★★ 외형 스케일 (정거장과 비슷하게) ★★★
             const isMultiMode = (typeof window.gameMode !== 'undefined' && window.gameMode === 'multi');
-            const SHIP_VISUAL_SCALE = isMultiMode ? 0.08 : 1.0;  // 멀티모드: 12.5배 축소
+            const SHIP_VISUAL_SCALE = isMultiMode ? 0.8 : 1.0;  // 멀티모드: 0.08→0.8 (10배 증가)
             
             // 크기 배율 결정
             const sizeScale = {
@@ -28748,7 +28749,7 @@ function createOtherPlayerShip(player) {
     shipGroup.renderOrder = -100;
 
     // ★★★ 백업 스타일: 기본 형태 먼저 추가 ★★★
-    const geometry = new THREE.ConeGeometry(0.5, 1.5, 8);
+    const geometry = new THREE.ConeGeometry(5, 15, 8);  // 0.5→5, 1.5→15 (10배 증가)
     geometry.rotateX(Math.PI / 2);
     const material = new THREE.MeshBasicMaterial({
         color: 0x00ffff,
@@ -28769,7 +28770,7 @@ function createOtherPlayerShip(player) {
         const loader = new window.GLTFLoader();
         loader.load(shipType.model, (gltf) => {
             const model = gltf.scene;
-            model.scale.setScalar(0.04);
+            model.scale.setScalar(0.4);  // 0.04→0.4 (10배 증가)
             model.rotation.y = Math.PI;
 
             // 청록색 틴트
@@ -28800,7 +28801,7 @@ function createOtherPlayerShip(player) {
         labelDiv.textContent = player.nickname || 'Player';
         labelDiv.style.cssText = 'color:#00ffff; font-size:12px; font-family:Orbitron,sans-serif; text-shadow:0 0 5px #00ffff; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px;';
         label = new window.CSS2DObject(labelDiv);
-        label.position.set(0, 2, 0);
+        label.position.set(0, 20, 0);  // 2→20 (10배 증가)
         shipGroup.add(label);
     }
 
