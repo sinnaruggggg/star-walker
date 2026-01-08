@@ -122,6 +122,11 @@ ship.mesh.position.copy(testPos);
    - `SHIP_TYPES` → `window.SHIP_TYPES`
    - `CSS2DObject` → `window.CSS2DObject`
 
+5. **렌더링 순서 문제 해결**
+   - 문제: 다른 플레이어 우주선이 내 조종실 안에 렌더링됨
+   - 해결: `shipGroup.renderOrder = -100` 설정
+   - material에 `depthWrite: true`, `depthTest: true` 명시
+
 #### 리소스 경로 정리
 
 **행성 텍스처** - Supabase Storage `assets/`:
