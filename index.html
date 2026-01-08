@@ -24164,17 +24164,41 @@ window.MissionSystem = MissionSystem;
                             // ★ shipVisualGroup 숨김 (1인칭에서는 우주선 본체 안보임)
                             const shipVisual = playerShip?.mesh?.getObjectByName('shipVisual');
                             if (shipVisual) shipVisual.visible = false;
-                            
+
                             // 1단계: 조종석 숨기고 우주/천체 렌더링
                             cockpit.visible = false;
                             renderer.render(scene, camera);
-                            
+
                             // 2단계: 깊이 버퍼 클리어 후 조종석만 렌더링
+                            // ★ playerShip 외 모든 메시 숨기기
+                            const hiddenObjects = [];
+                            scene.traverse(obj => {
+                                // playerShip의 자식이 아니고 visible인 메시만 숨김
+                                if (obj.isMesh && obj.visible) {
+                                    let isPartOfShip = false;
+                                    let parent = obj.parent;
+                                    while (parent) {
+                                        if (parent === playerShip.mesh) {
+                                            isPartOfShip = true;
+                                            break;
+                                        }
+                                        parent = parent.parent;
+                                    }
+                                    if (!isPartOfShip) {
+                                        obj.visible = false;
+                                        hiddenObjects.push(obj);
+                                    }
+                                }
+                            });
+
                             cockpit.visible = true;
                             renderer.autoClear = false;
                             renderer.clearDepth();
                             renderer.render(scene, camera);
                             renderer.autoClear = true;
+
+                            // ★ 숨긴 객체 복원
+                            hiddenObjects.forEach(obj => obj.visible = true);
                         } else {
                             // 3인칭 뷰 - 우주선 본체만 표시 (조종석 숨김)
                             cockpit.visible = false;  // ★ 조종석 숨김
