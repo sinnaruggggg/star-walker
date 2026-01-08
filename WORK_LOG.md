@@ -206,5 +206,46 @@ https://sfirzuqngdbpwvdoyero.supabase.co/storage/v1/object/public/assets/ships/
 └── freighter_model_1765906618.glb
 ```
 
+11. **우주정거장 크기 축소** (2024-01-08)
+    - 문제: 스케일 10배 적용 후 우주정거장이 너무 큼
+    - 수정: 원래 크기의 1/5로 축소
+      - ISS: 0.5 → 0.1
+      - 일반 정거장: 0.25 → 0.05
+      - 연료정거장: 0.5 → 0.1, stationSize 0.15 → 0.03
+
+12. **조종실 렌더링 문제 해결** (2024-01-08)
+    - 문제: 다른 플레이어 우주선이 내 조종실 안에 렌더링됨
+    - 원인: 2-pass 렌더링에서 두 번째 패스가 전체 씬을 렌더링
+    - 해결: 2-pass 렌더링 시 playerShip 외 모든 메시 숨기기
+    - 수정 위치: 렌더 루프 (line 24172-24201)
+    ```javascript
+    // 2단계: 깊이 버퍼 클리어 후 조종석만 렌더링
+    // playerShip 외 모든 메시 숨기기
+    const hiddenObjects = [];
+    scene.traverse(obj => {
+        if (obj.isMesh && obj.visible) {
+            let isPartOfShip = false;
+            let parent = obj.parent;
+            while (parent) {
+                if (parent === playerShip.mesh) {
+                    isPartOfShip = true;
+                    break;
+                }
+                parent = parent.parent;
+            }
+            if (!isPartOfShip) {
+                obj.visible = false;
+                hiddenObjects.push(obj);
+            }
+        }
+    });
+    cockpit.visible = true;
+    renderer.autoClear = false;
+    renderer.clearDepth();
+    renderer.render(scene, camera);
+    renderer.autoClear = true;
+    hiddenObjects.forEach(obj => obj.visible = true);
+    ```
+
 #### 남은 작업
 - [ ] 중복 접속 감지 및 강제 로그아웃 구현
