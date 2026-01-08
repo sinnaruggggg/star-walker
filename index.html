@@ -13114,35 +13114,49 @@ window.MissionSystem = MissionSystem;
         function updateKeplerOrbits(dt) {
             const baseUnit = 2200;  // 10배 증가
 
-            // ★★★ 멀티모드: 서버 동기화 시간 기준 (공전 + 동기화) ★★★
+            // ★★★ 멀티모드: J2000 기준 고정 계산 (모든 클라이언트 동일) ★★★
+            // J2000.0 = 2000년 1월 1일 12:00 TT (천문학 표준 기준점)
+            const J2000_EPOCH = Date.UTC(2000, 0, 1, 12, 0, 0);  // 밀리초
+
+            let elapsedDays;
             if (window.gameMode === 'multi') {
-                // getSyncedTime()으로 서버 시간 동기화
+                // 서버 동기화 시간 사용 (fallback: 로컬 시간)
                 const syncedTime = typeof getSyncedTime === 'function' ? getSyncedTime() : Date.now();
-                keplerTime = syncedTime * 0.00000001;  // 느린 공전 속도
+                elapsedDays = (syncedTime - J2000_EPOCH) / (1000 * 60 * 60 * 24);
             } else {
                 // 싱글모드: 기존 방식 (상대적 누적, timeScale 적용)
                 keplerTime += dt * 0.0001 * CONFIG.timeScale;
             }
-            
+
             bodies.forEach(body => {
                 if (!body || !body.mesh || !body.name) return;
-                
+
                 const orbitData = REAL_ORBIT_DATA[body.name];
                 if (!orbitData) return;  // 태양이나 다른 천체는 제외
-                
+
                 // NASA JPL 궤도 요소
                 const a = baseUnit * orbitData.au * CONFIG.distScale;  // 장반경 (스케일 적용)
                 const e = orbitData.e;  // 이심률
                 const I = orbitData.i * Math.PI / 180;  // 경사각 (라디안)
                 const varpi = orbitData.omega * Math.PI / 180;  // 근일점 경도 (라디안)
                 const Omega = (orbitData.node || 0) * Math.PI / 180;  // 승교점 경도 (라디안)
-                
+
                 // 근일점 편각 (argument of perihelion)
                 const omega_arg = varpi - Omega;
-                
-                // 평균 근점이각 (Mean Anomaly) - 시간에 따라 변화
-                const periodFactor = 1 / Math.pow(orbitData.au, 1.5);  // 케플러 제3법칙
-                let M = (keplerTime * periodFactor * 2) % (2 * Math.PI);
+
+                // ★★★ 평균 근점이각 (Mean Anomaly) 계산 ★★★
+                let M;
+                if (window.gameMode === 'multi' && orbitData.period && orbitData.L0 !== undefined) {
+                    // 멀티모드: J2000 기준 정확한 계산
+                    // 현재 평균경도 = L0 + (360 / period) * elapsedDays
+                    const meanLongitude = orbitData.L0 + (360 / orbitData.period) * elapsedDays;
+                    // 평균근점이각 = 평균경도 - 근일점경도
+                    M = (meanLongitude - orbitData.omega) * Math.PI / 180;
+                } else {
+                    // 싱글모드: 기존 방식
+                    const periodFactor = 1 / Math.pow(orbitData.au, 1.5);
+                    M = (keplerTime * periodFactor * 2) % (2 * Math.PI);
+                }
                 
                 // M을 -π ~ +π 범위로 조정
                 while (M > Math.PI) M -= 2 * Math.PI;
