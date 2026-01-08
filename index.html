@@ -28743,13 +28743,18 @@ function createOtherPlayerShip(player) {
         parseFloat(player.pos_z) || 0
     );
 
+    // ★★★ 다른 플레이어는 내 우주선보다 뒤에 렌더링 ★★★
+    shipGroup.renderOrder = -100;
+
     // ★★★ 백업 스타일: 기본 형태 먼저 추가 ★★★
     const geometry = new THREE.ConeGeometry(0.5, 1.5, 8);
     geometry.rotateX(Math.PI / 2);
     const material = new THREE.MeshBasicMaterial({
         color: 0x00ffff,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.8,
+        depthWrite: true,
+        depthTest: true
     });
     const defaultMesh = new THREE.Mesh(geometry, material);
     shipGroup.add(defaultMesh);
