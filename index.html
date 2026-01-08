@@ -28782,11 +28782,34 @@ function createOtherPlayerShip(player) {
     // ★★★ 다른 플레이어는 내 우주선보다 뒤에 렌더링 ★★★
     shipGroup.renderOrder = -100;
 
+    // ★★★ 플레이어 우주선 색상 결정 ★★★
+    const shipTypeId = player.ship_type || 'shuttle';
+    const shipType = window.SHIP_TYPES
+        ? window.SHIP_TYPES.find(s => s.id === shipTypeId) : null;
+
+    // 우선순위: player.ship_color > shipType.color > 기본값
+    let shipColorHex = 0x4fc3f7; // 기본 하늘색
+    if (player.ship_color) {
+        // ship_color가 문자열이면 파싱
+        if (typeof player.ship_color === 'string') {
+            shipColorHex = parseInt(player.ship_color.replace('#', ''), 16);
+        } else {
+            shipColorHex = player.ship_color;
+        }
+    } else if (shipType && shipType.color) {
+        if (typeof shipType.color === 'string') {
+            shipColorHex = parseInt(shipType.color.replace('#', ''), 16);
+        } else {
+            shipColorHex = shipType.color;
+        }
+    }
+    const shipColor = new THREE.Color(shipColorHex);
+
     // ★★★ 백업 스타일: 기본 형태 먼저 추가 ★★★
     const geometry = new THREE.ConeGeometry(5, 15, 8);  // 0.5→5, 1.5→15 (10배 증가)
     geometry.rotateX(Math.PI / 2);
     const material = new THREE.MeshBasicMaterial({
-        color: 0x00ffff,
+        color: shipColor,
         transparent: true,
         opacity: 0.8,
         depthWrite: true,
@@ -28796,10 +28819,6 @@ function createOtherPlayerShip(player) {
     shipGroup.add(defaultMesh);
 
     // ★★★ GLB 모델 로드 시도 ★★★
-    const shipTypeId = player.ship_type || 'shuttle';
-    const shipType = window.SHIP_TYPES
-        ? window.SHIP_TYPES.find(s => s.id === shipTypeId) : null;
-
     if (shipType && shipType.model && window.GLTFLoader) {
         const loader = new window.GLTFLoader();
         loader.load(shipType.model, (gltf) => {
@@ -28807,11 +28826,11 @@ function createOtherPlayerShip(player) {
             model.scale.setScalar(0.4);  // 0.04→0.4 (10배 증가)
             model.rotation.y = Math.PI;
 
-            // 청록색 틴트
+            // 플레이어 우주선 색상으로 틴트
             model.traverse((child) => {
                 if (child.isMesh && child.material) {
                     child.material = child.material.clone();
-                    child.material.emissive = new THREE.Color(0x00ffff);
+                    child.material.emissive = shipColor;
                     child.material.emissiveIntensity = 0.3;
                 }
             });
@@ -28819,7 +28838,7 @@ function createOtherPlayerShip(player) {
             // 기본 형태 제거
             shipGroup.remove(defaultMesh);
             shipGroup.add(model);
-            console.log('✅ 모델 로드 완료:', player.nickname);
+            console.log('✅ 모델 로드 완료:', player.nickname, '색상:', shipColorHex.toString(16));
         }, undefined, (err) => {
             console.log('⚠️ 모델 로드 실패, 기본 형태 유지');
         });
@@ -28833,7 +28852,9 @@ function createOtherPlayerShip(player) {
         const labelDiv = document.createElement('div');
         labelDiv.className = 'mp-player-label';
         labelDiv.textContent = player.nickname || 'Player';
-        labelDiv.style.cssText = 'color:#00ffff; font-size:12px; font-family:Orbitron,sans-serif; text-shadow:0 0 5px #00ffff; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px;';
+        // 우주선 색상을 CSS hex로 변환
+        const labelColorHex = '#' + shipColor.getHexString();
+        labelDiv.style.cssText = `color:${labelColorHex}; font-size:12px; font-family:Orbitron,sans-serif; text-shadow:0 0 5px ${labelColorHex}; background:rgba(0,0,0,0.5); padding:2px 6px; border-radius:3px;`;
         label = new window.CSS2DObject(labelDiv);
         label.position.set(0, 20, 0);  // 2→20 (10배 증가)
         shipGroup.add(label);
