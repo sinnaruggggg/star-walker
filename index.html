@@ -13393,10 +13393,19 @@ window.MissionSystem = MissionSystem;
         
         function goToActiveShip() {
             if (!savedActiveShipData) return;
-            
+
             const popup = document.getElementById('active-ship-popup');
             popup.style.display = 'none';
-            
+
+            // ★★★ 기존 주차 우주선이 있으면 먼저 제거 ★★★
+            if (parkedShipMesh) {
+                scene.remove(parkedShipMesh);
+                const parkedBodyIdx = bodies.findIndex(b => b.isParkedShip);
+                if (parkedBodyIdx >= 0) bodies.splice(parkedBodyIdx, 1);
+                parkedShipMesh = null;
+                parkedShip = null;
+            }
+
             // ★★★ 로컬 변수로 복사 (비동기 콜백에서 사용) ★★★
             const shipData = { ...savedActiveShipData };
             const savedFuel = shipData.fuel || 100;
@@ -28608,7 +28617,8 @@ function mpSendMyPosition(forceUpdate = false) {
     if (typeof SHIP_TYPES !== 'undefined' && window.selectedShipIndex !== undefined) {
         var shipData = SHIP_TYPES[window.selectedShipIndex];
         if (shipData && shipData.color) {
-            shipColor = '#' + shipData.color;
+            // ★ hex 숫자를 올바른 hex 문자열로 변환
+            shipColor = '#' + shipData.color.toString(16).padStart(6, '0');
         }
     }
 
