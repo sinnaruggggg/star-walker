@@ -12841,7 +12841,7 @@ window.MissionSystem = MissionSystem;
         let obsCamera;
         let obsCamRotation = { theta: 0, phi: Math.PI / 2 };
         let obsDragging = false, obsLastPos = { x: 0, y: 0 };
-        const galaxyCenter = new THREE.Vector3(-5000000, 0, 0);  // 은하 중심 (태양에서 500만 단위 떨어짐)
+        const galaxyCenter = new THREE.Vector3(-50000000, 0, 0);  // 은하 중심 (태양에서 5000만 단위 떨어짐) - 10배 증가
         const clock = new THREE.Clock();
 
         // 천체 실제 이미지 URL (NASA/Wikimedia)
@@ -13112,7 +13112,7 @@ window.MissionSystem = MissionSystem;
         // ★★★ NASA JPL 공식 공식으로 케플러 궤도 계산 ★★★
         // 출처: https://ssd.jpl.nasa.gov/planets/approx_pos.html
         function updateKeplerOrbits(dt) {
-            const baseUnit = 220;
+            const baseUnit = 2200;  // 10배 증가
 
             // ★★★ 멀티모드: Date.now() 기준 (공전 + 동기화) ★★★
             if (window.gameMode === 'multi') {
@@ -13207,7 +13207,7 @@ window.MissionSystem = MissionSystem;
         function createAllOrbitLines() {
             clearOrbitLines();
             
-            const baseUnit = 220;  // 기본 단위 (지구 궤도 = 220)
+            const baseUnit = 2200;  // 기본 단위 (지구 궤도) - 10배 증가
             
             Object.entries(REAL_ORBIT_DATA).forEach(([name, data]) => {
                 const semiMajor = baseUnit * data.au * CONFIG.distScale;  // 장반경
@@ -15659,7 +15659,7 @@ window.MissionSystem = MissionSystem;
             scene.add(blackHole); 
             
             // 은하 중심 벌지 글로우
-            const bulgeSize = 500000;
+            const bulgeSize = 5000000;  // 10배 증가
             const bulgeGeo = new THREE.SphereGeometry(bulgeSize, 32, 32);
             const bulgeMat = new THREE.MeshBasicMaterial({
                 color: 0xfffde8,
@@ -15691,8 +15691,8 @@ window.MissionSystem = MissionSystem;
             const diskLayers = [];
             const numLayers = 8;
             for (let i = 0; i < numLayers; i++) {
-                const innerR = 10000 + i * 2000;
-                const outerR = 12000 + i * 2000;
+                const innerR = 100000 + i * 20000;
+                const outerR = 120000 + i * 20000;
                 const ringGeo = new THREE.RingGeometry(innerR, outerR, 128, 1);
                 
                 // 안쪽일수록 더 밝고 뜨거운 색
@@ -15726,7 +15726,7 @@ window.MissionSystem = MissionSystem;
             
             // 메인 글로우 디스크
             const mainDisk = new THREE.Mesh(
-                new THREE.RingGeometry(10000, 35000, 128), 
+                new THREE.RingGeometry(100000, 350000, 128),
                 new THREE.MeshBasicMaterial({ 
                     map: generateAccretionDiskTexture(), 
                     side: THREE.DoubleSide, 
@@ -15741,7 +15741,7 @@ window.MissionSystem = MissionSystem;
             
             // 내부 글로우
             const innerGlow = new THREE.Mesh(
-                new THREE.RingGeometry(8500, 11000, 64),
+                new THREE.RingGeometry(85000, 110000, 64),
                 new THREE.MeshBasicMaterial({
                     color: 0xffffee,
                     side: THREE.DoubleSide,
@@ -15765,9 +15765,9 @@ window.MissionSystem = MissionSystem;
             blackHole.userData.innerGlow = innerGlow;
             blackHole.userData.accretionDiskGroup = accretionDiskGroup;
             
-            // 제트
-            const jetGeo = new THREE.CylinderGeometry(1000, 6000, 80000, 32, 1, true); 
-            jetGeo.translate(0, 40000, 0); 
+            // 제트 (10배 확대)
+            const jetGeo = new THREE.CylinderGeometry(10000, 60000, 800000, 32, 1, true);
+            jetGeo.translate(0, 400000, 0); 
             const jetMat = new THREE.MeshBasicMaterial({ map: generateJetTexture(), side: THREE.DoubleSide, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false }); 
             const jetGroup = new THREE.Group(); 
             const jetUp = new THREE.Mesh(jetGeo, jetMat); 
@@ -15790,18 +15790,18 @@ window.MissionSystem = MissionSystem;
             const geom = new THREE.BufferGeometry(); const pos=[], col=[]; const c=new THREE.Color(); 
             
             // 은하 크기 10배 확대
-            const galaxyRadius = 8000000;  // 800만 단위
-            const clearZone = 500000;  // 태양계 실제거리 모드 반경 (해왕성 약 33만 + 여유)
+            const galaxyRadius = 80000000;  // 8000만 단위 (10배 확대)
+            const clearZone = 5000000;  // 태양계 실제거리 모드 반경 (10배 확대)
             
             // ===== 1. 나선팔 별들 (80,000개) =====
             for(let i=0; i<80000; i++){ 
-                const r = Math.pow(Math.random(), 2) * galaxyRadius + 50000;
+                const r = Math.pow(Math.random(), 2) * galaxyRadius + 500000;
                 // 4개 나선팔 + 강한 나선 감김(15) + 약간의 랜덤
                 const ang = (i % 4) * (Math.PI * 2 / 4) + (r / galaxyRadius) * 15 + (Math.random() - 0.5) * 0.5; 
                 const x = Math.cos(ang) * r; 
                 const z = Math.sin(ang) * r; 
-                // 원반 두께 (바깥으로 갈수록 얇아짐)
-                const y = (Math.random() - 0.5) * 150000 * (1 - r / galaxyRadius); 
+                // 원반 두께 (바깥으로 갈수록 얇아짐) - 10배 확대
+                const y = (Math.random() - 0.5) * 1500000 * (1 - r / galaxyRadius); 
                 
                 const gx = x + galaxyCenter.x; 
                 const gy = y + galaxyCenter.y; 
@@ -15822,8 +15822,8 @@ window.MissionSystem = MissionSystem;
                 const ang = Math.random() * Math.PI * 2; 
                 const x = Math.cos(ang) * r; 
                 const z = Math.sin(ang) * r; 
-                // 더 얇은 원반
-                const y = (Math.random() - 0.5) * 80000 * (1 - r / galaxyRadius); 
+                // 더 얇은 원반 - 10배 확대
+                const y = (Math.random() - 0.5) * 800000 * (1 - r / galaxyRadius); 
                 
                 const gx = x + galaxyCenter.x; 
                 const gy = y + galaxyCenter.y; 
@@ -15877,7 +15877,7 @@ window.MissionSystem = MissionSystem;
                 // 구형으로 사방에 배치
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
-                const r = 9000000 + Math.random() * 10000000;  // 900만~1900만 (은하 바로 바깥)
+                const r = 90000000 + Math.random() * 100000000;  // 9000만~19000만 (은하 바로 바깥) - 10배 확대
                 
                 positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
                 positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
@@ -15921,8 +15921,8 @@ window.MissionSystem = MissionSystem;
         // 안드로메다 은하 (뿌옇지만 은하 형태 + 별 점들)
         function createAndromedaGalaxy() {
             const galaxyGroup = new THREE.Group();
-            const position = new THREE.Vector3(8000000, 2000000, -5000000);  // y를 높여서 은하 원반 위로
-            const size = 600000;  // 5배 작게 (3000000 / 5)
+            const position = new THREE.Vector3(80000000, 20000000, -50000000);  // 10배 확대
+            const size = 6000000;  // 10배 확대
             
             galaxyGroup.position.copy(position);
             galaxyGroup.rotation.x = 0.3;
@@ -16054,7 +16054,7 @@ window.MissionSystem = MissionSystem;
             for (let i = 0; i < nearGalaxyCount; i++) {
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
-                const r = 9000000 + Math.random() * 6000000;  // 900만~1500만 (은하 바로 바깥)
+                const r = 90000000 + Math.random() * 60000000;  // 9000만~15000만 (은하 바로 바깥) - 10배 확대
                 
                 nearPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
                 nearPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
@@ -16101,7 +16101,7 @@ window.MissionSystem = MissionSystem;
             for (let i = 0; i < midGalaxyCount; i++) {
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
-                const r = 15000000 + Math.random() * 10000000;  // 1500만~2500만
+                const r = 150000000 + Math.random() * 100000000;  // 1억5천만~2억5천만 - 10배 확대
                 
                 midPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
                 midPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
@@ -16143,12 +16143,13 @@ window.MissionSystem = MissionSystem;
         
         // 성운 생성 (뿌연 구름만) - 은하 내부에 위치
         function createNebulae() {
+            // 성운 데이터 - 10배 확대
             const nebulaData = [
-                { pos: new THREE.Vector3(5000000, 2000000, -3000000), size: 800000, color: 0xff6688, name: '장미 성운' },
-                { pos: new THREE.Vector3(-4000000, -1000000, 6000000), size: 600000, color: 0x66aaff, name: '오리온 성운' },
-                { pos: new THREE.Vector3(3000000, -2500000, -5000000), size: 1000000, color: 0x88ff88, name: '독수리 성운' },
-                { pos: new THREE.Vector3(-6000000, 1500000, -2000000), size: 500000, color: 0xffaa66, name: '게 성운' },
-                { pos: new THREE.Vector3(7000000, 500000, 4000000), size: 700000, color: 0xaa88ff, name: '고리 성운' }
+                { pos: new THREE.Vector3(50000000, 20000000, -30000000), size: 8000000, color: 0xff6688, name: '장미 성운' },
+                { pos: new THREE.Vector3(-40000000, -10000000, 60000000), size: 6000000, color: 0x66aaff, name: '오리온 성운' },
+                { pos: new THREE.Vector3(30000000, -25000000, -50000000), size: 10000000, color: 0x88ff88, name: '독수리 성운' },
+                { pos: new THREE.Vector3(-60000000, 15000000, -20000000), size: 5000000, color: 0xffaa66, name: '게 성운' },
+                { pos: new THREE.Vector3(70000000, 5000000, 40000000), size: 7000000, color: 0xaa88ff, name: '고리 성운' }
             ];
             
             nebulaData.forEach(nebula => {
@@ -16645,7 +16646,7 @@ window.MissionSystem = MissionSystem;
             createBody(types.SUN, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), "태양", null);
             
             // 실제 궤도 데이터 기반 행성 배치
-            const baseUnit = 220;  // 기본 단위 (지구 궤도)
+            const baseUnit = 2200;  // 기본 단위 (지구 궤도) - 220→2200 (10배 증가)
             const planets = [
                 { type: types.MERCURY, name: "수성", tex: "MERCURY" }, 
                 { type: types.VENUS, name: "금성", tex: "VENUS" }, 
@@ -24282,7 +24283,7 @@ window.MissionSystem = MissionSystem;
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.05;
                 controls.minDistance = 0.05;  // ★ 최소 거리 줄임 (줌인 가능)
-                controls.maxDistance = 30000000;  // 3000만 단위 (은하 바깥까지 볼 수 있게) 
+                controls.maxDistance = 300000000;  // 3억 단위 (은하 바깥까지 볼 수 있게) - 10배 확대 
                 window.controls = controls;  // ★ 망원경 모드에서 사용 
 
                 const ambient = new THREE.AmbientLight(0xffffff, 0.4);  // ★ 0.05 → 0.4 (밝기 증가)
