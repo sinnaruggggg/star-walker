@@ -127,6 +127,10 @@ ship.mesh.position.copy(testPos);
    - 해결: `shipGroup.renderOrder = -100` 설정
    - material에 `depthWrite: true`, `depthTest: true` 명시
 
+6. **라디오 아이콘 모서리 둥글게**
+   - 문제: collapsed 상태에서 clip-path로 인해 각진 모서리
+   - 해결: `#cockpit-radio.collapsed`에 `clip-path: none` 추가
+
 #### 리소스 경로 정리
 
 **행성 텍스처** - Supabase Storage `assets/`:
