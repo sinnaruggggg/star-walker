@@ -15260,7 +15260,9 @@ window.MissionSystem = MissionSystem;
                 // 초기 위치 설정 - 실제 모드면 realOrbitRadius 사용
                 let r;
                 if (isRealMode && moon.realOrbitRadius) {
-                    r = moon.realOrbitRadius * (parent.radius || 1);
+                    // ★ visualScale 적용 (10배 스케일 반영)
+                    const parentScale = parent.visualScale || 1;
+                    r = moon.realOrbitRadius * (parent.radius || 1) * parentScale;
                 } else {
                     r = moon.orbitRadius;
                 }
@@ -18735,8 +18737,9 @@ window.MissionSystem = MissionSystem;
                         station.angle = (seed * 0.1 + baseTime * station.orbitSpeed) % (Math.PI * 2);
 
                         const isRealMode = CONFIG.distScale > 1.0;
+                        const parentScale = station.parentBody.visualScale || 1;
                         const r = isRealMode && station.realOrbitRadius
-                            ? station.realOrbitRadius * (station.parentBody.radius || 1)
+                            ? station.realOrbitRadius * (station.parentBody.radius || 1) * parentScale
                             : station.orbitRadius;
 
                         station.mesh.position.x = station.parentBody.mesh.position.x + Math.cos(station.angle) * r;
@@ -23884,9 +23887,10 @@ window.MissionSystem = MissionSystem;
                     // 실제 거리 모드에서는 실제 비율 사용, 체험 모드에서는 기본 비율
                     const isRealMode = CONFIG.distScale > 1.0;
                     let r;
-                    if (isRealMode) {
-                        // 실제 모드: 모행성 반지름 × 실제 비율
-                        r = sat.realOrbitRadius * (sat.parentBody.radius || 1);
+                    if (isRealMode && sat.realOrbitRadius) {
+                        // 실제 모드: 모행성 반지름 × 실제 비율 × visualScale
+                        const parentScale = sat.parentBody.visualScale || 1;
+                        r = sat.realOrbitRadius * (sat.parentBody.radius || 1) * parentScale;
                     } else {
                         // 체험 모드: 이미 계산된 orbitRadius 사용
                         r = sat.orbitRadius;
