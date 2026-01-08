@@ -15938,7 +15938,7 @@ window.MissionSystem = MissionSystem;
         function createAndromedaGalaxy() {
             const galaxyGroup = new THREE.Group();
             const position = new THREE.Vector3(26000000, 6500000, -16250000);  // ★ 30% 더 멀리
-            const size = 3000000;  // ★ 절반 크기
+            const size = 1500000;  // ★ 다시 절반 크기
 
             galaxyGroup.position.copy(position);
             galaxyGroup.rotation.x = 0.3;
@@ -15976,7 +15976,7 @@ window.MissionSystem = MissionSystem;
             starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
             const starMaterial = new THREE.PointsMaterial({
-                size: 300000,
+                size: 80000,  // ★ 점 크기 축소
                 vertexColors: true,
                 transparent: true,
                 opacity: 0.6,  // ★ 밝기 2배 증가
