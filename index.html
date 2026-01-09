@@ -18775,10 +18775,10 @@ window.MissionSystem = MissionSystem;
                             thrustGroup.name = 'glbThrustFlames';
                             
                             cfg.thrust.forEach(function(eng, idx) {
-                                // 불꽃 크기는 고정 스케일 사용
+                                // 불꽃 크기도 모델 스케일 적용
                                 var flameGroup = createConfiguredFlame(
-                                    eng, cfg.size || 1, cfg.length || 1, 
-                                    cfg.thrustColor || '#00aaff', 1, idx
+                                    eng, cfg.size || 1, cfg.length || 1,
+                                    cfg.thrustColor || '#00aaff', modelScale, idx
                                 );
                                 // 위치는 모델 스케일 적용
                                 flameGroup.position.set(
@@ -18809,9 +18809,10 @@ window.MissionSystem = MissionSystem;
                             reverseGroup.name = 'glbReverseFlames';
                             
                             cfg.reverse.forEach(function(eng, idx) {
+                                // 불꽃 크기도 모델 스케일 적용
                                 var flameGroup = createConfiguredFlame(
-                                    eng, cfg.size || 1, cfg.length || 1, 
-                                    cfg.reverseColor || '#ffaa00', 1, idx
+                                    eng, cfg.size || 1, cfg.length || 1,
+                                    cfg.reverseColor || '#ffaa00', modelScale, idx
                                 );
                                 flameGroup.position.set(
                                     eng.x * modelScale,
