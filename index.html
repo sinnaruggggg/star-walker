@@ -16427,13 +16427,13 @@ window.MissionSystem = MissionSystem;
             galaxyGroup.frustumCulled = false;  // ★ 멀리서도 보이게
             scene.add(galaxyGroup);
 
-            // ★ 안드로메다 은하 라벨 추가
+            // ★ 안드로메다 은하 라벨 추가 (은하 위에 표시)
             const andromedaDiv = document.createElement('div');
             andromedaDiv.className = 'galaxy-label';
             andromedaDiv.dataset.bodyName = '안드로메다은하';
             andromedaDiv.textContent = t('andromeda');
             const andromedaLabel = new CSS2DObject(andromedaDiv);
-            andromedaLabel.position.set(0, size * 0.02, 0);
+            andromedaLabel.position.set(0, size * 0.8, 0);  // ★ 은하 위로 올림
             galaxyGroup.add(andromedaLabel);
         }
         
