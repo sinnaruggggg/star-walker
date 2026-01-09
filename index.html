@@ -17145,10 +17145,11 @@ window.MissionSystem = MissionSystem;
                 }
             });
             satellites = [];
-            
-            // 모든 천체 제거 (태양 포함)
+
+            // 모든 천체 제거 (태양 포함, 은하 중심 블랙홀 제외)
+            const galaxyCenterBH = bodies.find(b => b.name === '은하 중심');
             bodies.forEach(b => {
-                if (b && b.mesh) {
+                if (b && b.mesh && b.name !== '은하 중심') {
                     scene.remove(b.mesh);
                     b.mesh.traverse(c => {
                         if (c.isCSS2DObject && c.element && c.element.parentNode) {
@@ -17156,14 +17157,14 @@ window.MissionSystem = MissionSystem;
                         }
                     });
                 }
-                if (b && b.trail) scene.remove(b.trail);
+                if (b && b.trail && b.name !== '은하 중심') scene.remove(b.trail);
             });
-            bodies = [];
-            
+            bodies = galaxyCenterBH ? [galaxyCenterBH] : [];
+
             // 파티클 제거
             particles.forEach(p => { if(p && p.mesh) scene.remove(p.mesh); });
             particles = [];
-            
+
             // 새로운 distScale로 태양계 재생성
             initSolarSystem(DEFAULT_TYPES);
             
