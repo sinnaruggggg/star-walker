@@ -17344,9 +17344,10 @@ window.MissionSystem = MissionSystem;
                 hullInterior: new THREE.MeshStandardMaterial({ 
                     map: hexTex, color: 0x444444, roughness: 0.5, metalness: 0.7, side: THREE.BackSide 
                 }),
-                glass: new THREE.MeshStandardMaterial({ 
-                    color: 0x88ccff, metalness: 0.1, roughness: 0.0, 
-                    transparent: true, opacity: 0.15, side: THREE.DoubleSide
+                glass: new THREE.MeshStandardMaterial({
+                    color: 0x88ccff, metalness: 0.1, roughness: 0.0,
+                    transparent: true, opacity: 0.05, side: THREE.DoubleSide,  // ★ 투명도 감소
+                    depthWrite: false  // ★ 깊이 쓰기 비활성화로 천체 가리지 않음
                 }),
                 frame: new THREE.MeshStandardMaterial({ 
                     color: 0x222222, roughness: 0.2, metalness: 0.9
