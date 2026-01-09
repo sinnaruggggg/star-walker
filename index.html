@@ -3614,24 +3614,25 @@
         /* UI 설정 버튼 */
         #ui-settings-btn {
             position: fixed;
-            top: 50px;
-            left: 10px;
-            width: 36px;
-            height: 36px;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid #666;
-            border-radius: 8px;
-            color: #aaa;
-            font-size: 1.2em;
+            top: 10px;
+            right: 10px;
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 40, 80, 0.95);
+            border: 2px solid #0ff;
+            border-radius: 50%;
+            color: #0ff;
+            font-size: 1.4em;
             cursor: pointer;
-            z-index: 1002;
+            z-index: 10000;
             display: none;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
         #ui-settings-btn:hover {
-            border-color: #0ff;
-            color: #0ff;
+            background: rgba(0, 80, 120, 0.95);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            transform: scale(1.1);
         }
-        #cockpit-hud.active ~ #ui-settings-btn,
         body.pilot-mode #ui-settings-btn {
             display: flex;
             align-items: center;
@@ -3798,6 +3799,18 @@
         }
         #ui-rearrange-overlay.active {
             display: flex;
+        }
+        /* ★ 그리드 가이드 라인 (20px 스냅) */
+        #ui-rearrange-overlay.active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
         }
         .rearrange-header {
             position: fixed;
@@ -4533,77 +4546,6 @@
             #mobile-mini-hud {
                 display: none !important;
             }
-        }
-
-        /* ★★★ 드래그 가능 UI 시스템 ★★★ */
-        .ui-draggable {
-            cursor: move;
-            user-select: none;
-            touch-action: none;
-        }
-        .ui-draggable.dragging {
-            opacity: 0.8;
-            z-index: 10000 !important;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-        }
-        #ui-rearrange-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 9998;
-            pointer-events: none;
-        }
-        #ui-rearrange-overlay.active {
-            display: block;
-        }
-        /* 그리드 가이드 라인 */
-        #ui-rearrange-overlay.active::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-image:
-                linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        #ui-settings-btn {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 40px;
-            height: 40px;
-            background: rgba(0, 40, 80, 0.9);
-            border: 1px solid #0ff;
-            border-radius: 50%;
-            color: #0ff;
-            font-size: 18px;
-            cursor: pointer;
-            z-index: 9999;
-            display: none;
-        }
-        body.pilot-mode #ui-settings-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #ui-settings-btn:hover {
-            background: rgba(0, 100, 150, 0.9);
-        }
-        #ui-settings-btn.active {
-            background: rgba(0, 150, 200, 0.9);
-            box-shadow: 0 0 10px #0ff;
-        }
-        /* 스냅 인디케이터 */
-        .snap-indicator {
-            position: fixed;
-            background: rgba(0, 255, 255, 0.3);
-            border: 1px dashed #0ff;
-            pointer-events: none;
-            z-index: 9999;
-            display: none;
         }
 
         /* ★★★ 시네마틱 인트로 스타일 ★★★ */
@@ -7702,16 +7644,35 @@ window.MissionSystem = MissionSystem;
         </div>
     </div>
 
-    <!-- UI 설정 버튼 (조종 모드에서만 표시) -->
-    <button id="ui-settings-btn" title="UI Settings" data-i18n-title="uiSettings">⚙️</button>
-    
+    <!-- UI 설정 버튼 -->
+    <button id="ui-settings-btn" title="UI Settings" style="display:flex !important; align-items:center; justify-content:center; position:fixed !important; top:10px !important; right:10px !important; z-index:9999999 !important; width:50px; height:50px; background:#0066aa; border:3px solid #0ff; border-radius:50%; color:#0ff; font-size:24px; cursor:pointer;">⚙️</button>
+
+    <script>
+    // ★★★ UI 설정 버튼 즉시 초기화 ★★★
+    (function() {
+        var btn = document.getElementById('ui-settings-btn');
+        var panel = document.getElementById('ui-settings-panel');
+        if (btn) {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                console.log('⚙️ 버튼 클릭!');
+                alert('버튼 클릭됨!'); // 테스트용
+                if (panel) {
+                    panel.classList.toggle('open');
+                }
+            };
+            console.log('⚙️ UI 설정 버튼 초기화 완료');
+        }
+    })();
+    </script>
+
     <!-- UI 설정 패널 -->
     <div id="ui-settings-panel">
-        <button id="ui-settings-close">✕</button>
+        <button id="ui-settings-close" onclick="this.parentElement.classList.remove('open');">✕</button>
         <h3 data-i18n="uiSettings">🎛️ UI 설정</h3>
         
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:15px;">
-            <button class="ui-preset-btn" id="ui-rearrange-mode" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);" data-i18n="uiReposition">
+            <button class="ui-preset-btn" id="ui-rearrange-mode" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);" data-i18n="uiReposition" onclick="document.getElementById('ui-settings-panel').classList.remove('open'); if(window.uiRearrangeSystem) uiRearrangeSystem.start();">
                 🔧 UI 재배치 모드
             </button>
             <p style="font-size:10px;color:#888;text-align:center;margin:0;" data-i18n="uiDragToMove">
@@ -7726,16 +7687,16 @@ window.MissionSystem = MissionSystem;
             </div>
         </div>
         
-        <button class="ui-preset-btn danger" id="ui-reset-default" data-i18n="resetDefault">🔄 기본값으로 리셋</button>
+        <button class="ui-preset-btn danger" id="ui-reset-default" data-i18n="resetDefault" onclick="if(window.draggableUISystem) draggableUISystem.resetToDefault(); document.getElementById('ui-settings-panel').classList.remove('open');">🔄 기본값으로 리셋</button>
     </div>
-    
+
     <!-- UI 재배치 모드 오버레이 -->
     <div id="ui-rearrange-overlay">
         <div class="rearrange-header">
             <span data-i18n="uiReposition">🔧 UI 재배치 모드</span>
             <span style="font-size:12px;color:#aaa;" data-i18n="uiDragToMove">UI를 드래그하여 이동하세요</span>
         </div>
-        <button id="ui-rearrange-done" data-i18n="done">✓ 완료</button>
+        <button id="ui-rearrange-done" data-i18n="done" onclick="if(window.uiRearrangeSystem) uiRearrangeSystem.stop();">✓ 완료</button>
     </div>
 
     <!-- 조종석 HUD -->
@@ -7775,10 +7736,6 @@ window.MissionSystem = MissionSystem;
             <div class="radio-now-playing" id="radio-now-playing" data-i18n="selectChannel">📡 Select a channel</div>
         </div>
     </div>
-
-    <!-- ★★★ UI 재배치 시스템 ★★★ -->
-    <button id="ui-settings-btn" title="UI 위치 편집">⚙️</button>
-    <div id="ui-rearrange-overlay"></div>
 
     <div id="cockpit-hud">
         <!-- 콕핏 프레임 (1인칭 뷰) -->
@@ -25932,9 +25889,12 @@ window.MissionSystem = MissionSystem;
                 const btn = document.getElementById('ui-settings-btn');
                 const panel = document.getElementById('ui-settings-panel');
                 const closeBtn = document.getElementById('ui-settings-close');
-                
+
+                console.log('⚙️ initSettingsPanel - btn:', !!btn, 'panel:', !!panel);
+
                 if (btn) {
                     btn.onclick = () => {
+                        console.log('⚙️ Settings btn clicked, toggling panel');
                         panel?.classList.toggle('open');
                         if (panel?.classList.contains('open')) {
                             this.renderSlots();
@@ -25975,6 +25935,7 @@ window.MissionSystem = MissionSystem;
             isDragging: false,
             startPos: { x: 0, y: 0 },
             elementStartPos: { x: 0, y: 0 },
+            gridSize: 20,  // ★ 그리드 스냅 크기 (px)
             
             // 재배치 가능한 UI 요소 ID 목록
             rearrangeableIds: [
@@ -26071,22 +26032,26 @@ window.MissionSystem = MissionSystem;
             
             onDragMove(e) {
                 if (!this.isDragging || !this.activeElement) return;
-                
+
                 e.preventDefault();
-                
+
                 const touch = e.touches ? e.touches[0] : e;
                 const dx = touch.clientX - this.startPos.x;
                 const dy = touch.clientY - this.startPos.y;
-                
+
                 let newX = this.elementStartPos.x + dx;
                 let newY = this.elementStartPos.y + dy;
-                
+
+                // ★ 그리드 스냅 (20px)
+                newX = Math.round(newX / this.gridSize) * this.gridSize;
+                newY = Math.round(newY / this.gridSize) * this.gridSize;
+
                 // 화면 경계 체크
                 const el = this.activeElement;
                 const rect = el.getBoundingClientRect();
                 newX = Math.max(0, Math.min(window.innerWidth - rect.width, newX));
                 newY = Math.max(0, Math.min(window.innerHeight - rect.height, newY));
-                
+
                 el.style.position = 'fixed';
                 el.style.left = newX + 'px';
                 el.style.top = newY + 'px';
@@ -26150,17 +26115,42 @@ window.MissionSystem = MissionSystem;
         
         // 조종 모드 진입 시 초기화
         window.initDraggableUI = () => {
+            console.log('🔧 initDraggableUI 호출됨');
             // 약간의 지연 후 초기화 (DOM이 준비되도록)
             setTimeout(() => {
+                console.log('🔧 draggableUISystem.init() 호출 시작');
                 draggableUISystem.initialized = false; // 재초기화 허용
                 draggableUISystem.elements = [];
                 draggableUISystem.init();
-                
+
                 // ★ 저장된 UI 위치 로드
                 uiRearrangeSystem.loadPositions();
+                console.log('🔧 initDraggableUI 완료');
             }, 100);
         };
-        
+
+        // ★★★ UI 설정 버튼 백업 초기화 (DOMContentLoaded) ★★★
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const btn = document.getElementById('ui-settings-btn');
+                const panel = document.getElementById('ui-settings-panel');
+                console.log('🔧 백업 초기화 - btn:', !!btn, 'panel:', !!panel);
+
+                if (btn && !btn._settingsInitialized) {
+                    btn._settingsInitialized = true;
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('⚙️ UI 설정 버튼 클릭됨');
+                        if (panel) {
+                            panel.classList.toggle('open');
+                            console.log('⚙️ 패널 상태:', panel.classList.contains('open') ? '열림' : '닫힘');
+                        }
+                    });
+                    console.log('⚙️ UI 설정 버튼 이벤트 등록 완료');
+                }
+            }, 1000);
+        });
+
         // ========== 통합 채팅 시스템 ==========
         const unifiedChatSystem = {
             currentTab: 'aria',
@@ -26612,200 +26602,6 @@ window.MissionSystem = MissionSystem;
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => cockpitRadio.init(), 1000);
         });
-        
-        // ========== ★★★ UI 드래그 재배치 시스템 ★★★ ==========
-        const uiDragSystem = {
-            isEditMode: false,
-            gridSize: 20,  // 스냅 그리드 크기 (px)
-            draggingEl: null,
-            startX: 0,
-            startY: 0,
-            elStartX: 0,
-            elStartY: 0,
-            savedPositions: {},
-
-            // 드래그 가능한 UI 요소 ID 목록
-            draggableIds: [
-                'pilot-left-console',
-                'pilot-center-console',
-                'pilot-right-console',
-                'pilot-radar',
-                'pilot-target-info',
-                'pilot-autopilot-info',
-                'pilot-warning-panel',
-                'pilot-eta-box',
-                'pilot-coords-panel',
-                'cockpit-radio',
-                'unified-chat-panel'
-            ],
-
-            init() {
-                // 설정 버튼 이벤트
-                const settingsBtn = document.getElementById('ui-settings-btn');
-                if (settingsBtn) {
-                    settingsBtn.addEventListener('click', () => this.toggleEditMode());
-                }
-
-                // 저장된 위치 로드
-                this.loadPositions();
-
-                // 이벤트 리스너
-                document.addEventListener('mousemove', (e) => this.onDrag(e));
-                document.addEventListener('mouseup', () => this.onDragEnd());
-                document.addEventListener('touchmove', (e) => this.onDrag(e), { passive: false });
-                document.addEventListener('touchend', () => this.onDragEnd());
-            },
-
-            toggleEditMode() {
-                this.isEditMode = !this.isEditMode;
-                const overlay = document.getElementById('ui-rearrange-overlay');
-                const btn = document.getElementById('ui-settings-btn');
-
-                if (this.isEditMode) {
-                    overlay?.classList.add('active');
-                    btn?.classList.add('active');
-                    this.enableDragging();
-                } else {
-                    overlay?.classList.remove('active');
-                    btn?.classList.remove('active');
-                    this.disableDragging();
-                    this.savePositions();
-                }
-            },
-
-            enableDragging() {
-                this.draggableIds.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.classList.add('ui-draggable');
-                        // 현재 위치를 fixed로 변환
-                        const rect = el.getBoundingClientRect();
-                        el.style.position = 'fixed';
-                        el.style.left = rect.left + 'px';
-                        el.style.top = rect.top + 'px';
-                        el.style.bottom = 'auto';
-                        el.style.right = 'auto';
-                        el.style.transform = 'none';
-
-                        el.addEventListener('mousedown', this.onDragStart.bind(this));
-                        el.addEventListener('touchstart', this.onDragStart.bind(this), { passive: false });
-                    }
-                });
-            },
-
-            disableDragging() {
-                this.draggableIds.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.classList.remove('ui-draggable');
-                    }
-                });
-            },
-
-            onDragStart(e) {
-                if (!this.isEditMode) return;
-                e.preventDefault();
-                e.stopPropagation();
-
-                const el = e.currentTarget;
-                this.draggingEl = el;
-                el.classList.add('dragging');
-
-                const touch = e.touches ? e.touches[0] : e;
-                this.startX = touch.clientX;
-                this.startY = touch.clientY;
-                this.elStartX = parseInt(el.style.left) || 0;
-                this.elStartY = parseInt(el.style.top) || 0;
-            },
-
-            onDrag(e) {
-                if (!this.draggingEl) return;
-                e.preventDefault();
-
-                const touch = e.touches ? e.touches[0] : e;
-                const dx = touch.clientX - this.startX;
-                const dy = touch.clientY - this.startY;
-
-                let newX = this.elStartX + dx;
-                let newY = this.elStartY + dy;
-
-                // 그리드 스냅
-                newX = Math.round(newX / this.gridSize) * this.gridSize;
-                newY = Math.round(newY / this.gridSize) * this.gridSize;
-
-                // 화면 경계 체크
-                const rect = this.draggingEl.getBoundingClientRect();
-                newX = Math.max(0, Math.min(newX, window.innerWidth - rect.width));
-                newY = Math.max(0, Math.min(newY, window.innerHeight - rect.height));
-
-                this.draggingEl.style.left = newX + 'px';
-                this.draggingEl.style.top = newY + 'px';
-            },
-
-            onDragEnd() {
-                if (this.draggingEl) {
-                    this.draggingEl.classList.remove('dragging');
-                    this.draggingEl = null;
-                }
-            },
-
-            savePositions() {
-                const positions = {};
-                this.draggableIds.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el && el.style.left && el.style.top) {
-                        positions[id] = {
-                            left: el.style.left,
-                            top: el.style.top
-                        };
-                    }
-                });
-                localStorage.setItem('cockpit-ui-positions', JSON.stringify(positions));
-                this.savedPositions = positions;
-                console.log('✅ UI 위치 저장됨');
-            },
-
-            loadPositions() {
-                try {
-                    const saved = localStorage.getItem('cockpit-ui-positions');
-                    if (saved) {
-                        this.savedPositions = JSON.parse(saved);
-                        // 약간의 딜레이 후 적용 (DOM 준비 대기)
-                        setTimeout(() => this.applyPositions(), 500);
-                    }
-                } catch (e) {
-                    console.warn('UI 위치 로드 실패:', e);
-                }
-            },
-
-            applyPositions() {
-                Object.entries(this.savedPositions).forEach(([id, pos]) => {
-                    const el = document.getElementById(id);
-                    if (el && pos.left && pos.top) {
-                        el.style.position = 'fixed';
-                        el.style.left = pos.left;
-                        el.style.top = pos.top;
-                        el.style.bottom = 'auto';
-                        el.style.right = 'auto';
-                        el.style.transform = 'none';
-                    }
-                });
-            },
-
-            resetPositions() {
-                localStorage.removeItem('cockpit-ui-positions');
-                this.savedPositions = {};
-                // 페이지 새로고침으로 원래 위치 복원
-                location.reload();
-            }
-        };
-
-        // UI 드래그 시스템 초기화
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => uiDragSystem.init(), 1000);
-        });
-
-        window.uiDragSystem = uiDragSystem;
 
         // ========== 모바일 탭 바 시스템 (비활성화) ==========
         const mobileTabSystem = {
