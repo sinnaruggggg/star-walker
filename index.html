@@ -16011,13 +16011,13 @@ window.MissionSystem = MissionSystem;
             starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
             const starMaterial = new THREE.PointsMaterial({
-                size: 300000,  // ★ 모바일에서도 보이게 크기 증가
+                size: 80000,  // ★ 점 크기 축소
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.8,  // ★ 밝기 증가
+                opacity: 0.6,  // ★ 밝기 2배 증가
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
-                sizeAttenuation: false  // ★ 거리에 따른 크기 감소 비활성화
+                sizeAttenuation: true
             });
 
             const stars = new THREE.Points(starGeometry, starMaterial);
@@ -16025,11 +16025,11 @@ window.MissionSystem = MissionSystem;
             galaxyGroup.add(stars);
             
             // ===== 2. 뿌연 중심 벌지 (밝게) =====
-            const bulgeGeo = new THREE.SphereGeometry(size * 0.2, 32, 32);
+            const bulgeGeo = new THREE.SphereGeometry(size * 0.15, 32, 32);
             const bulgeMat = new THREE.MeshBasicMaterial({
                 color: 0xffeedd,
                 transparent: true,
-                opacity: 0.4,  // ★ 모바일 가시성 증가
+                opacity: 0.2,  // ★ 밝기 2배 증가
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
@@ -16038,11 +16038,11 @@ window.MissionSystem = MissionSystem;
             galaxyGroup.add(bulge);
 
             // 중간 벌지
-            const midBulgeGeo = new THREE.SphereGeometry(size * 0.35, 32, 32);
+            const midBulgeGeo = new THREE.SphereGeometry(size * 0.3, 32, 32);
             const midBulgeMat = new THREE.MeshBasicMaterial({
                 color: 0xddccbb,
                 transparent: true,
-                opacity: 0.25,  // ★ 모바일 가시성 증가
+                opacity: 0.12,  // ★ 밝기 2배 증가
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
@@ -16061,7 +16061,7 @@ window.MissionSystem = MissionSystem;
                 const diskMat = new THREE.MeshBasicMaterial({
                     color: 0xaabbdd,
                     transparent: true,
-                    opacity: 0.18 - layer * 0.03,  // ★ 모바일 가시성 증가
+                    opacity: 0.1 - layer * 0.02,  // ★ 밝기 2배 증가
                     blending: THREE.AdditiveBlending,
                     side: THREE.DoubleSide,
                     depthWrite: false
@@ -16074,11 +16074,11 @@ window.MissionSystem = MissionSystem;
             }
 
             // 외곽 뿌연 헤일로
-            const haloGeo = new THREE.SphereGeometry(size * 0.8, 32, 32);
+            const haloGeo = new THREE.SphereGeometry(size * 0.7, 32, 32);
             const haloMat = new THREE.MeshBasicMaterial({
                 color: 0x8899aa,
                 transparent: true,
-                opacity: 0.15,  // ★ 모바일 가시성 증가
+                opacity: 0.08,  // ★ 밝기 2배 증가
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
