@@ -133,7 +133,8 @@
             "size": 0.7,
             "length": 1,
             "thrustColor": "#00aaff",
-            "reverseColor": "#ffaa00"
+            "reverseColor": "#ffaa00",
+            "modelForward": "-Z"
         }
     },
     {
@@ -193,7 +194,8 @@
             "size": 0.9,
             "length": 1.6,
             "thrustColor": "#00aaff",
-            "reverseColor": "#ffaa00"
+            "reverseColor": "#ffaa00",
+            "modelForward": "-Z"
         }
     },
     {
