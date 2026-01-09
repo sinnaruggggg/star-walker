@@ -85,7 +85,7 @@
                     "z": -0.457,
                     "dirX": 0,
                     "dirY": 0,
-                    "dirZ": -1
+                    "dirZ": 1
                 },
                 {
                     "x": 0.191,
@@ -93,7 +93,7 @@
                     "z": -0.458,
                     "dirX": 0,
                     "dirY": 0,
-                    "dirZ": -1
+                    "dirZ": 1
                 }
             ],
             "reverse": [
@@ -133,8 +133,7 @@
             "size": 0.7,
             "length": 1,
             "thrustColor": "#00aaff",
-            "reverseColor": "#ffaa00",
-            "modelForward": "-Z"
+            "reverseColor": "#ffaa00"
         }
     },
     {
@@ -162,7 +161,7 @@
                     "z": -0.394,
                     "dirX": 0,
                     "dirY": 0,
-                    "dirZ": -1
+                    "dirZ": 1
                 },
                 {
                     "x": -0.089,
@@ -170,7 +169,7 @@
                     "z": -0.394,
                     "dirX": 0,
                     "dirY": 0,
-                    "dirZ": -1
+                    "dirZ": 1
                 }
             ],
             "reverse": [
@@ -194,8 +193,7 @@
             "size": 0.9,
             "length": 1.6,
             "thrustColor": "#00aaff",
-            "reverseColor": "#ffaa00",
-            "modelForward": "-Z"
+            "reverseColor": "#ffaa00"
         }
     },
     {
