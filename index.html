@@ -26127,28 +26127,6 @@ window.MissionSystem = MissionSystem;
             }, 100);
         };
 
-        // ★★★ UI 설정 버튼 백업 초기화 (DOMContentLoaded) ★★★
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const btn = document.getElementById('ui-settings-btn');
-                const panel = document.getElementById('ui-settings-panel');
-                console.log('🔧 백업 초기화 - btn:', !!btn, 'panel:', !!panel);
-
-                if (btn && !btn._settingsInitialized) {
-                    btn._settingsInitialized = true;
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        console.log('⚙️ UI 설정 버튼 클릭됨');
-                        if (panel) {
-                            panel.classList.toggle('open');
-                            console.log('⚙️ 패널 상태:', panel.classList.contains('open') ? '열림' : '닫힘');
-                        }
-                    });
-                    console.log('⚙️ UI 설정 버튼 이벤트 등록 완료');
-                }
-            }, 1000);
-        });
-
         // ========== 통합 채팅 시스템 ==========
         const unifiedChatSystem = {
             currentTab: 'aria',
