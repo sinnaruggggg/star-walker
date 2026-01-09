@@ -4451,35 +4451,24 @@
             cursor: pointer;
         }
         
-        /* 모바일에서 기존 UI 숨기기 */
+        /* ★★★ 모바일 전용 UI 완전 제거 - 데스크톱 UI 사용 ★★★ */
+        #mobile-tab-bar,
+        #mobile-tab-panel,
+        #mobile-mini-hud {
+            display: none !important;
+        }
+
+        /* 모바일에서도 데스크톱 UI 표시 (크기 조정) */
         @media (max-width: 768px) {
-            body.pilot-mode #mobile-tab-bar {
-                display: flex;
-            }
-            
             body.pilot-mode #pilot-bottom {
-                display: none !important;  /* ★ 모바일에서 숨김 (mobile-control-panel 사용) */
+                transform: scale(0.85);
+                transform-origin: center bottom;
             }
-            
-            body.pilot-mode #ai-copilot-panel {
-                display: none !important;
-            }
-            
-            body.pilot-mode #cockpit-radio {
-                display: none !important;
-            }
-            
-            body.pilot-mode #multiplayer-ui {
-                display: none !important;
-            }
-            
-            body.pilot-mode #pilot-left {
-                display: none !important;
-            }
-            
+
             body.pilot-mode #pilot-right {
                 top: 60px;
-                transform: none;
+                transform: scale(0.8);
+                transform-origin: right top;
             }
             
             /* 우측 패널 개별 분리 스타일 */
@@ -4545,7 +4534,78 @@
                 display: none !important;
             }
         }
-        
+
+        /* ★★★ 드래그 가능 UI 시스템 ★★★ */
+        .ui-draggable {
+            cursor: move;
+            user-select: none;
+            touch-action: none;
+        }
+        .ui-draggable.dragging {
+            opacity: 0.8;
+            z-index: 10000 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        #ui-rearrange-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9998;
+            pointer-events: none;
+        }
+        #ui-rearrange-overlay.active {
+            display: block;
+        }
+        /* 그리드 가이드 라인 */
+        #ui-rearrange-overlay.active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        #ui-settings-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 40, 80, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 50%;
+            color: #0ff;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 9999;
+            display: none;
+        }
+        body.pilot-mode #ui-settings-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #ui-settings-btn:hover {
+            background: rgba(0, 100, 150, 0.9);
+        }
+        #ui-settings-btn.active {
+            background: rgba(0, 150, 200, 0.9);
+            box-shadow: 0 0 10px #0ff;
+        }
+        /* 스냅 인디케이터 */
+        .snap-indicator {
+            position: fixed;
+            background: rgba(0, 255, 255, 0.3);
+            border: 1px dashed #0ff;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+
         /* ★★★ 시네마틱 인트로 스타일 ★★★ */
         #intro-overlay {
             position: fixed;
@@ -7715,6 +7775,10 @@ window.MissionSystem = MissionSystem;
             <div class="radio-now-playing" id="radio-now-playing" data-i18n="selectChannel">📡 Select a channel</div>
         </div>
     </div>
+
+    <!-- ★★★ UI 재배치 시스템 ★★★ -->
+    <button id="ui-settings-btn" title="UI 위치 편집">⚙️</button>
+    <div id="ui-rearrange-overlay"></div>
 
     <div id="cockpit-hud">
         <!-- 콕핏 프레임 (1인칭 뷰) -->
@@ -26549,7 +26613,201 @@ window.MissionSystem = MissionSystem;
             setTimeout(() => cockpitRadio.init(), 1000);
         });
         
-        // ========== 모바일 탭 바 시스템 ==========
+        // ========== ★★★ UI 드래그 재배치 시스템 ★★★ ==========
+        const uiDragSystem = {
+            isEditMode: false,
+            gridSize: 20,  // 스냅 그리드 크기 (px)
+            draggingEl: null,
+            startX: 0,
+            startY: 0,
+            elStartX: 0,
+            elStartY: 0,
+            savedPositions: {},
+
+            // 드래그 가능한 UI 요소 ID 목록
+            draggableIds: [
+                'pilot-left-console',
+                'pilot-center-console',
+                'pilot-right-console',
+                'pilot-radar',
+                'pilot-target-info',
+                'pilot-autopilot-info',
+                'pilot-warning-panel',
+                'pilot-eta-box',
+                'pilot-coords-panel',
+                'cockpit-radio',
+                'unified-chat-panel'
+            ],
+
+            init() {
+                // 설정 버튼 이벤트
+                const settingsBtn = document.getElementById('ui-settings-btn');
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', () => this.toggleEditMode());
+                }
+
+                // 저장된 위치 로드
+                this.loadPositions();
+
+                // 이벤트 리스너
+                document.addEventListener('mousemove', (e) => this.onDrag(e));
+                document.addEventListener('mouseup', () => this.onDragEnd());
+                document.addEventListener('touchmove', (e) => this.onDrag(e), { passive: false });
+                document.addEventListener('touchend', () => this.onDragEnd());
+            },
+
+            toggleEditMode() {
+                this.isEditMode = !this.isEditMode;
+                const overlay = document.getElementById('ui-rearrange-overlay');
+                const btn = document.getElementById('ui-settings-btn');
+
+                if (this.isEditMode) {
+                    overlay?.classList.add('active');
+                    btn?.classList.add('active');
+                    this.enableDragging();
+                } else {
+                    overlay?.classList.remove('active');
+                    btn?.classList.remove('active');
+                    this.disableDragging();
+                    this.savePositions();
+                }
+            },
+
+            enableDragging() {
+                this.draggableIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.add('ui-draggable');
+                        // 현재 위치를 fixed로 변환
+                        const rect = el.getBoundingClientRect();
+                        el.style.position = 'fixed';
+                        el.style.left = rect.left + 'px';
+                        el.style.top = rect.top + 'px';
+                        el.style.bottom = 'auto';
+                        el.style.right = 'auto';
+                        el.style.transform = 'none';
+
+                        el.addEventListener('mousedown', this.onDragStart.bind(this));
+                        el.addEventListener('touchstart', this.onDragStart.bind(this), { passive: false });
+                    }
+                });
+            },
+
+            disableDragging() {
+                this.draggableIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.remove('ui-draggable');
+                    }
+                });
+            },
+
+            onDragStart(e) {
+                if (!this.isEditMode) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const el = e.currentTarget;
+                this.draggingEl = el;
+                el.classList.add('dragging');
+
+                const touch = e.touches ? e.touches[0] : e;
+                this.startX = touch.clientX;
+                this.startY = touch.clientY;
+                this.elStartX = parseInt(el.style.left) || 0;
+                this.elStartY = parseInt(el.style.top) || 0;
+            },
+
+            onDrag(e) {
+                if (!this.draggingEl) return;
+                e.preventDefault();
+
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - this.startX;
+                const dy = touch.clientY - this.startY;
+
+                let newX = this.elStartX + dx;
+                let newY = this.elStartY + dy;
+
+                // 그리드 스냅
+                newX = Math.round(newX / this.gridSize) * this.gridSize;
+                newY = Math.round(newY / this.gridSize) * this.gridSize;
+
+                // 화면 경계 체크
+                const rect = this.draggingEl.getBoundingClientRect();
+                newX = Math.max(0, Math.min(newX, window.innerWidth - rect.width));
+                newY = Math.max(0, Math.min(newY, window.innerHeight - rect.height));
+
+                this.draggingEl.style.left = newX + 'px';
+                this.draggingEl.style.top = newY + 'px';
+            },
+
+            onDragEnd() {
+                if (this.draggingEl) {
+                    this.draggingEl.classList.remove('dragging');
+                    this.draggingEl = null;
+                }
+            },
+
+            savePositions() {
+                const positions = {};
+                this.draggableIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.style.left && el.style.top) {
+                        positions[id] = {
+                            left: el.style.left,
+                            top: el.style.top
+                        };
+                    }
+                });
+                localStorage.setItem('cockpit-ui-positions', JSON.stringify(positions));
+                this.savedPositions = positions;
+                console.log('✅ UI 위치 저장됨');
+            },
+
+            loadPositions() {
+                try {
+                    const saved = localStorage.getItem('cockpit-ui-positions');
+                    if (saved) {
+                        this.savedPositions = JSON.parse(saved);
+                        // 약간의 딜레이 후 적용 (DOM 준비 대기)
+                        setTimeout(() => this.applyPositions(), 500);
+                    }
+                } catch (e) {
+                    console.warn('UI 위치 로드 실패:', e);
+                }
+            },
+
+            applyPositions() {
+                Object.entries(this.savedPositions).forEach(([id, pos]) => {
+                    const el = document.getElementById(id);
+                    if (el && pos.left && pos.top) {
+                        el.style.position = 'fixed';
+                        el.style.left = pos.left;
+                        el.style.top = pos.top;
+                        el.style.bottom = 'auto';
+                        el.style.right = 'auto';
+                        el.style.transform = 'none';
+                    }
+                });
+            },
+
+            resetPositions() {
+                localStorage.removeItem('cockpit-ui-positions');
+                this.savedPositions = {};
+                // 페이지 새로고침으로 원래 위치 복원
+                location.reload();
+            }
+        };
+
+        // UI 드래그 시스템 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => uiDragSystem.init(), 1000);
+        });
+
+        window.uiDragSystem = uiDragSystem;
+
+        // ========== 모바일 탭 바 시스템 (비활성화) ==========
         const mobileTabSystem = {
             currentTab: 'control',
             panelOpen: true,
