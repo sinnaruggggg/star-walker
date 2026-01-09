@@ -24300,7 +24300,7 @@ window.MissionSystem = MissionSystem;
         function init() {
             try {
                 scene = new THREE.Scene();
-                scene.fog = new THREE.FogExp2(0x000000, 0.00000007);
+                // scene.fog 제거 - 안드로메다 은하 가시성을 위해
                 window.scene = scene;  // ★ 멀티플레이어에서 사용
 
                 camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 30000000000);
