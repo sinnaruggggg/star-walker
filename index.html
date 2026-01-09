@@ -16106,10 +16106,242 @@ window.MissionSystem = MissionSystem;
             halo.frustumCulled = false;
             galaxyGroup.add(halo);
 
+            // ===== 4. 초거대 블랙홀 (M31*) =====
+            const bhGroup = new THREE.Group();
+            bhGroup.name = 'andromedaBlackHole';
+            const bhSize = size * 0.015;  // 블랙홀 크기 (사건의 지평선)
+
+            // 사건의 지평선 (완전한 검은 구)
+            const eventHorizonGeo = new THREE.SphereGeometry(bhSize, 64, 64);
+            const eventHorizonMat = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: false
+            });
+            const eventHorizon = new THREE.Mesh(eventHorizonGeo, eventHorizonMat);
+            eventHorizon.renderOrder = 100;
+            bhGroup.add(eventHorizon);
+
+            // ★ 중력 렌즈 효과 (광자구 - Photon Sphere)
+            const lensVertexShader = `
+                varying vec2 vUv;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                void main() {
+                    vUv = uv;
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `;
+            const lensFragmentShader = `
+                uniform float time;
+                uniform float bhRadius;
+                varying vec2 vUv;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+
+                void main() {
+                    float dist = length(vPosition) / bhRadius;
+
+                    // 가장자리로 갈수록 밝아지는 링 효과
+                    float edge = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
+                    edge = pow(edge, 3.0);
+
+                    // 시간에 따른 왜곡 효과
+                    float distortion = sin(dist * 10.0 - time * 2.0) * 0.5 + 0.5;
+
+                    // 아인슈타인 링 효과
+                    float ring = smoothstep(0.85, 0.95, dist) * smoothstep(1.05, 0.95, dist);
+                    ring += smoothstep(0.7, 0.8, dist) * smoothstep(0.9, 0.8, dist) * 0.5;
+
+                    vec3 color = vec3(0.8, 0.6, 0.3) * edge;
+                    color += vec3(1.0, 0.9, 0.7) * ring * distortion;
+
+                    float alpha = edge * 0.6 + ring * 0.8;
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `;
+
+            const lensMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    bhRadius: { value: bhSize * 1.5 }
+                },
+                vertexShader: lensVertexShader,
+                fragmentShader: lensFragmentShader,
+                transparent: true,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const lensGeo = new THREE.SphereGeometry(bhSize * 1.5, 64, 64);
+            const lensSphere = new THREE.Mesh(lensGeo, lensMat);
+            lensSphere.renderOrder = 99;
+            bhGroup.add(lensSphere);
+
+            // ★ 강착원반 (Accretion Disk) - 셰이더 기반 회전
+            const diskVertexShader = `
+                varying vec2 vUv;
+                varying float vDist;
+                void main() {
+                    vUv = uv;
+                    vDist = length(position.xy);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `;
+            const diskFragmentShader = `
+                uniform float time;
+                uniform float innerRadius;
+                uniform float outerRadius;
+                varying vec2 vUv;
+                varying float vDist;
+
+                // 노이즈 함수
+                float hash(vec2 p) {
+                    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+                }
+
+                float noise(vec2 p) {
+                    vec2 i = floor(p);
+                    vec2 f = fract(p);
+                    f = f * f * (3.0 - 2.0 * f);
+                    return mix(
+                        mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                        mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+                        f.y
+                    );
+                }
+
+                void main() {
+                    vec2 center = vUv - 0.5;
+                    float dist = length(center) * 2.0;
+                    float angle = atan(center.y, center.x);
+
+                    // 거리에 따른 회전 속도 (안쪽이 빠름 - 케플러 회전)
+                    float rotSpeed = 1.0 / (dist + 0.1);
+                    float rotatedAngle = angle + time * rotSpeed * 0.5;
+
+                    // 나선 패턴
+                    float spiral = sin(rotatedAngle * 4.0 + dist * 20.0 - time * 3.0);
+                    spiral = spiral * 0.5 + 0.5;
+
+                    // 난류 노이즈
+                    vec2 noiseCoord = vec2(rotatedAngle * 2.0, dist * 10.0);
+                    float turbulence = noise(noiseCoord + time * 0.5) * 0.3;
+
+                    // 온도 그라데이션 (안쪽: 하얀색/파랑, 바깥쪽: 빨강/주황)
+                    vec3 hotColor = vec3(1.0, 1.0, 0.95);    // 가장 뜨거운 부분 (하얀색)
+                    vec3 warmColor = vec3(1.0, 0.7, 0.2);    // 따뜻한 부분 (주황)
+                    vec3 coolColor = vec3(0.8, 0.2, 0.05);   // 차가운 부분 (빨강)
+
+                    float temp = 1.0 - dist;
+                    vec3 baseColor;
+                    if (temp > 0.7) {
+                        baseColor = mix(warmColor, hotColor, (temp - 0.7) / 0.3);
+                    } else if (temp > 0.3) {
+                        baseColor = mix(coolColor, warmColor, (temp - 0.3) / 0.4);
+                    } else {
+                        baseColor = coolColor * (temp / 0.3);
+                    }
+
+                    // 나선과 난류 적용
+                    vec3 color = baseColor * (0.7 + spiral * 0.3 + turbulence);
+
+                    // 가장자리 페이드아웃
+                    float innerFade = smoothstep(0.0, 0.15, dist);
+                    float outerFade = smoothstep(1.0, 0.7, dist);
+                    float alpha = innerFade * outerFade * (0.8 + spiral * 0.2);
+
+                    // 도플러 효과 (한쪽은 밝게, 반대쪽은 어둡게)
+                    float doppler = 1.0 + sin(rotatedAngle) * 0.3 * (1.0 - dist);
+                    color *= doppler;
+
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `;
+
+            const diskInnerR = bhSize * 1.8;
+            const diskOuterR = bhSize * 8;
+            const diskMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    innerRadius: { value: diskInnerR },
+                    outerRadius: { value: diskOuterR }
+                },
+                vertexShader: diskVertexShader,
+                fragmentShader: diskFragmentShader,
+                transparent: true,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const diskGeo = new THREE.RingGeometry(diskInnerR, diskOuterR, 128, 32);
+            const accretionDisk = new THREE.Mesh(diskGeo, diskMat);
+            accretionDisk.rotation.x = Math.PI / 2;
+            accretionDisk.rotation.y = 0.3;  // 약간 기울임
+            accretionDisk.renderOrder = 98;
+            bhGroup.add(accretionDisk);
+
+            // ★ 제트 (양극 방향 분출)
+            const jetMat = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 } },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    varying vec2 vUv;
+                    void main() {
+                        float dist = abs(vUv.y - 0.5) * 2.0;
+                        float intensity = (1.0 - dist) * (1.0 - vUv.x);
+                        intensity *= 0.5 + sin(vUv.x * 20.0 - time * 5.0) * 0.3;
+                        vec3 color = mix(vec3(0.3, 0.5, 1.0), vec3(0.8, 0.9, 1.0), intensity);
+                        gl_FragColor = vec4(color, intensity * 0.6);
+                    }
+                `,
+                transparent: true,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const jetLength = bhSize * 15;
+            const jetGeo = new THREE.PlaneGeometry(bhSize * 0.8, jetLength);
+
+            // 상단 제트
+            const jetTop = new THREE.Mesh(jetGeo, jetMat);
+            jetTop.position.y = jetLength / 2 + bhSize;
+            jetTop.rotation.x = Math.PI / 2;
+            bhGroup.add(jetTop);
+
+            // 하단 제트
+            const jetBottom = new THREE.Mesh(jetGeo, jetMat.clone());
+            jetBottom.position.y = -jetLength / 2 - bhSize;
+            jetBottom.rotation.x = -Math.PI / 2;
+            bhGroup.add(jetBottom);
+
+            // 블랙홀 그룹을 은하 회전에 맞춤
+            bhGroup.rotation.x = -Math.PI / 2 + 0.3;
+            galaxyGroup.add(bhGroup);
+
+            // 애니메이션용 데이터 저장
+            galaxyGroup.userData.blackHole = {
+                lensMat: lensMat,
+                diskMat: diskMat,
+                jetMat: jetMat,
+                jetMatBottom: jetBottom.material
+            };
+
             galaxyGroup.userData.name = 'andromeda';
             galaxyGroup.frustumCulled = false;  // ★ 멀리서도 보이게
             scene.add(galaxyGroup);
-            
+
             // ★ 안드로메다 은하 라벨 추가
             const andromedaDiv = document.createElement('div');
             andromedaDiv.className = 'galaxy-label';
@@ -23931,7 +24163,18 @@ window.MissionSystem = MissionSystem;
                     if (b.mesh.userData.mainDisk) {
                         b.mesh.userData.mainDisk.rotation.z += b.mesh.userData.mainDisk.userData.rotationSpeed || 0.002;
                     }
-                } 
+                }
+            });
+
+            // ★★★ 안드로메다 은하 블랙홀 셰이더 애니메이션 ★★★
+            scene.traverse(obj => {
+                if (obj.userData && obj.userData.name === 'andromeda' && obj.userData.blackHole) {
+                    const bh = obj.userData.blackHole;
+                    if (bh.lensMat) bh.lensMat.uniforms.time.value = elapsedTime;
+                    if (bh.diskMat) bh.diskMat.uniforms.time.value = elapsedTime;
+                    if (bh.jetMat) bh.jetMat.uniforms.time.value = elapsedTime;
+                    if (bh.jetMatBottom) bh.jetMatBottom.uniforms.time.value = elapsedTime;
+                }
             });
 
             satellites.forEach(sat => {
