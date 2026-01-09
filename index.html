@@ -25379,22 +25379,31 @@ window.MissionSystem = MissionSystem;
             startPos: { x: 0, y: 0 },
             elementStartPos: { x: 0, y: 0 },
             
-            // 드래그 가능한 UI 요소 ID 목록
+            // 드래그 가능한 UI 요소 ID 목록 (모든 조종실 UI)
             draggableIds: [
-                'pilot-eta-box',
-                'pilot-warning-panel', 
-                'pilot-right',
-                'pilot-left-console',      // ★ THR/FUEL 게이지
-                'pilot-center-console',    // ★ 속도 + 버튼들 (자동, 망원경 등)
-                'pilot-right-console',     // ★ ▲▼ 버튼
-                'ai-copilot-panel',
-                'pilot-target-select',
-                'cockpit-radio',
-                'multiplayer-ui',
-                'mobile-gauge-container',  // ★ 모바일 게이지
-                'mobile-speed-container',  // ★ 모바일 속도
-                'mobile-btns-container',   // ★ 모바일 버튼들
-                'mobile-arrows-container'  // ★ 모바일 화살표
+                'pilot-top-bar',           // 상단 바 (상태, 능력)
+                'pilot-left-console',      // THR/FUEL 게이지
+                'pilot-center-console',    // 속도 + 버튼들
+                'pilot-right-console',     // ▲▼ 버튼
+                'pilot-right',             // 레이더 + TARGET + AUTOPILOT
+                'pilot-radar',             // 레이더
+                'pilot-target-info',       // 타겟 정보
+                'pilot-autopilot-info',    // 오토파일럿 정보
+                'pilot-eta-box',           // ETA 박스
+                'pilot-warning-panel',     // 경고 패널
+                'pilot-target-select',     // 목표 선택
+                'pilot-coords-panel',      // 좌표 패널
+                'pilot-bottom',            // 하단 버튼들
+                'pilot-joystick',          // 조이스틱
+                'cockpit-radio',           // 라디오
+                'unified-chat-panel',      // 통합 채팅
+                'docking-center-btn',      // 도킹 버튼
+                'docking-menu',            // 도킹 메뉴
+                'crosshair',               // 조준선
+                'status-panel',            // 상태 패널
+                'ai-copilot-panel',        // AI 코파일럿
+                'multiplayer-ui',          // 멀티플레이어 UI
+                'ui-settings-btn'          // 설정 버튼
             ],
             
             init() {
@@ -25935,20 +25944,31 @@ window.MissionSystem = MissionSystem;
             elementStartPos: { x: 0, y: 0 },
             gridSize: 20,  // ★ 그리드 스냅 크기 (px)
             
-            // 재배치 가능한 UI 요소 ID 목록
+            // 재배치 가능한 UI 요소 ID 목록 (모든 조종실 UI)
             rearrangeableIds: [
-                'unified-chat-panel',       // ★ 통합 채팅창 (ARIA + 멀티)
-                'pilot-left-console',       // THR/FUEL 게이지
-                'pilot-center-console',     // 속도 + 버튼들
-                'pilot-right-console',      // ▲▼ 버튼
-                'pilot-right',              // 레이더 + TARGET + AUTOPILOT
-                'pilot-eta-box',            // ETA 박스
-                'pilot-warning-panel',      // 경고 패널
-                'pilot-target-select',      // 목표 선택 드롭다운
-                'cockpit-radio',            // 📻 라디오
-                'docking-center-btn',       // 도킹 버튼
-                'crosshair',                // 조준선
-                'ui-settings-btn'           // ⚙️ 설정 버튼
+                'pilot-top-bar',           // 상단 바 (상태, 능력)
+                'pilot-left-console',      // THR/FUEL 게이지
+                'pilot-center-console',    // 속도 + 버튼들
+                'pilot-right-console',     // ▲▼ 버튼
+                'pilot-right',             // 레이더 + TARGET + AUTOPILOT
+                'pilot-radar',             // 레이더
+                'pilot-target-info',       // 타겟 정보
+                'pilot-autopilot-info',    // 오토파일럿 정보
+                'pilot-eta-box',           // ETA 박스
+                'pilot-warning-panel',     // 경고 패널
+                'pilot-target-select',     // 목표 선택
+                'pilot-coords-panel',      // 좌표 패널
+                'pilot-bottom',            // 하단 버튼들
+                'pilot-joystick',          // 조이스틱
+                'cockpit-radio',           // 라디오
+                'unified-chat-panel',      // 통합 채팅
+                'docking-center-btn',      // 도킹 버튼
+                'docking-menu',            // 도킹 메뉴
+                'crosshair',               // 조준선
+                'status-panel',            // 상태 패널
+                'ai-copilot-panel',        // AI 코파일럿
+                'multiplayer-ui',          // 멀티플레이어 UI
+                'ui-settings-btn'          // 설정 버튼
             ],
             
             start() {
