@@ -16121,64 +16121,149 @@ window.MissionSystem = MissionSystem;
             eventHorizon.renderOrder = 100;
             bhGroup.add(eventHorizon);
 
-            // ★ 중력 렌즈 효과 (광자구 - Photon Sphere)
+            // ★ 광자구 (Photon Sphere) - 사건의 지평선 바로 바깥 밝은 링
+            const photonRingGeo = new THREE.TorusGeometry(bhSize * 1.5, bhSize * 0.08, 32, 128);
+            const photonRingMat = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 } },
+                vertexShader: `
+                    varying vec2 vUv;
+                    varying vec3 vNormal;
+                    void main() {
+                        vUv = uv;
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    varying vec2 vUv;
+                    varying vec3 vNormal;
+                    void main() {
+                        float edge = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
+                        edge = pow(edge, 2.0);
+                        float flicker = 0.8 + sin(vUv.x * 50.0 + time * 10.0) * 0.2;
+                        vec3 color = vec3(1.0, 0.95, 0.8) * flicker;
+                        float alpha = edge * 0.9;
+                        gl_FragColor = vec4(color, alpha);
+                    }
+                `,
+                transparent: true,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const photonRing = new THREE.Mesh(photonRingGeo, photonRingMat);
+            photonRing.rotation.x = Math.PI / 2;
+            photonRing.renderOrder = 101;
+            bhGroup.add(photonRing);
+
+            // ★ 중력 렌즈 효과 - 배경 왜곡을 시뮬레이션하는 굴절 구체
             const lensVertexShader = `
-                varying vec2 vUv;
+                varying vec3 vWorldPosition;
                 varying vec3 vNormal;
-                varying vec3 vPosition;
+                varying vec2 vUv;
                 void main() {
                     vUv = uv;
                     vNormal = normalize(normalMatrix * normal);
-                    vPosition = position;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPos.xyz;
+                    gl_Position = projectionMatrix * viewMatrix * worldPos;
                 }
             `;
             const lensFragmentShader = `
                 uniform float time;
                 uniform float bhRadius;
-                varying vec2 vUv;
+                uniform vec3 bhPosition;
+                varying vec3 vWorldPosition;
                 varying vec3 vNormal;
-                varying vec3 vPosition;
+                varying vec2 vUv;
 
                 void main() {
-                    float dist = length(vPosition) / bhRadius;
+                    // 블랙홀 중심으로부터의 거리 (정규화)
+                    float dist = length(vWorldPosition - bhPosition) / bhRadius;
 
-                    // 가장자리로 갈수록 밝아지는 링 효과
-                    float edge = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
-                    edge = pow(edge, 3.0);
+                    // 프레넬 효과 - 가장자리에서 강한 굴절
+                    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 4.0);
 
-                    // 시간에 따른 왜곡 효과
-                    float distortion = sin(dist * 10.0 - time * 2.0) * 0.5 + 0.5;
+                    // 슈바르츠실트 반경 근처에서 빛이 휘는 효과
+                    float bendFactor = 1.0 / (dist * dist + 0.1);
+                    bendFactor = clamp(bendFactor, 0.0, 1.0);
 
-                    // 아인슈타인 링 효과
-                    float ring = smoothstep(0.85, 0.95, dist) * smoothstep(1.05, 0.95, dist);
-                    ring += smoothstep(0.7, 0.8, dist) * smoothstep(0.9, 0.8, dist) * 0.5;
+                    // 아인슈타인 링 (광자구 근처 밝은 링)
+                    float ringDist = abs(dist - 1.0);
+                    float einsteinRing = exp(-ringDist * ringDist * 50.0);
 
-                    vec3 color = vec3(0.8, 0.6, 0.3) * edge;
-                    color += vec3(1.0, 0.9, 0.7) * ring * distortion;
+                    // 2차 광자 링 (더 안쪽)
+                    float innerRingDist = abs(dist - 0.75);
+                    float innerRing = exp(-innerRingDist * innerRingDist * 80.0) * 0.5;
 
-                    float alpha = edge * 0.6 + ring * 0.8;
-                    gl_FragColor = vec4(color, alpha);
+                    // 배경 별빛이 휘어져 들어오는 효과
+                    float starLight = fresnel * bendFactor;
+                    starLight *= 0.5 + sin(vUv.x * 100.0 + time * 2.0) * 0.3;
+                    starLight *= 0.5 + sin(vUv.y * 80.0 - time * 1.5) * 0.3;
+
+                    // 색상: 휘어진 별빛 (약간 붉은/주황빛 - 적색편이)
+                    vec3 lensedLight = vec3(1.0, 0.9, 0.7) * starLight;
+                    vec3 ringColor = vec3(1.0, 0.95, 0.85) * (einsteinRing + innerRing);
+
+                    vec3 finalColor = lensedLight + ringColor;
+                    float alpha = starLight * 0.4 + (einsteinRing + innerRing) * 0.8;
+
+                    // 사건의 지평선 근처 어두운 영역
+                    float darkness = smoothstep(0.3, 0.6, dist);
+                    alpha *= darkness;
+
+                    gl_FragColor = vec4(finalColor, alpha);
                 }
             `;
 
             const lensMat = new THREE.ShaderMaterial({
                 uniforms: {
                     time: { value: 0 },
-                    bhRadius: { value: bhSize * 1.5 }
+                    bhRadius: { value: bhSize * 2.5 },
+                    bhPosition: { value: new THREE.Vector3(0, 0, 0) }
                 },
                 vertexShader: lensVertexShader,
                 fragmentShader: lensFragmentShader,
                 transparent: true,
-                side: THREE.DoubleSide,
+                side: THREE.BackSide,  // 안쪽에서 보이게
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
 
-            const lensGeo = new THREE.SphereGeometry(bhSize * 1.5, 64, 64);
+            const lensGeo = new THREE.SphereGeometry(bhSize * 2.5, 64, 64);
             const lensSphere = new THREE.Mesh(lensGeo, lensMat);
             lensSphere.renderOrder = 99;
             bhGroup.add(lensSphere);
+
+            // ★ 외부 중력장 왜곡 효과 (더 큰 범위)
+            const outerLensMat = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 }, bhRadius: { value: bhSize * 5 } },
+                vertexShader: lensVertexShader,
+                fragmentShader: `
+                    uniform float time;
+                    uniform float bhRadius;
+                    varying vec3 vWorldPosition;
+                    varying vec3 vNormal;
+                    varying vec2 vUv;
+                    void main() {
+                        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 5.0);
+                        float distort = sin(vUv.x * 30.0 + time) * sin(vUv.y * 30.0 - time * 0.7);
+                        distort = distort * 0.5 + 0.5;
+                        vec3 color = vec3(0.6, 0.5, 0.4) * fresnel * distort;
+                        float alpha = fresnel * 0.15 * distort;
+                        gl_FragColor = vec4(color, alpha);
+                    }
+                `,
+                transparent: true,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const outerLensGeo = new THREE.SphereGeometry(bhSize * 5, 48, 48);
+            const outerLensSphere = new THREE.Mesh(outerLensGeo, outerLensMat);
+            outerLensSphere.renderOrder = 97;
+            bhGroup.add(outerLensSphere);
 
             // ★ 강착원반 (Accretion Disk) - 셰이더 기반 회전
             const diskVertexShader = `
@@ -16261,8 +16346,8 @@ window.MissionSystem = MissionSystem;
                 }
             `;
 
-            const diskInnerR = bhSize * 1.8;
-            const diskOuterR = bhSize * 8;
+            const diskInnerR = bhSize * 1.05;  // ★ 사건의 지평선 바로 바깥 (ISCO)
+            const diskOuterR = bhSize * 6;
             const diskMat = new THREE.ShaderMaterial({
                 uniforms: {
                     time: { value: 0 },
@@ -16332,7 +16417,9 @@ window.MissionSystem = MissionSystem;
 
             // 애니메이션용 데이터 저장
             galaxyGroup.userData.blackHole = {
+                photonRingMat: photonRingMat,
                 lensMat: lensMat,
+                outerLensMat: outerLensMat,
                 diskMat: diskMat,
                 jetMat: jetMat,
                 jetMatBottom: jetBottom.material
@@ -24170,7 +24257,9 @@ window.MissionSystem = MissionSystem;
             scene.traverse(obj => {
                 if (obj.userData && obj.userData.name === 'andromeda' && obj.userData.blackHole) {
                     const bh = obj.userData.blackHole;
+                    if (bh.photonRingMat) bh.photonRingMat.uniforms.time.value = elapsedTime;
                     if (bh.lensMat) bh.lensMat.uniforms.time.value = elapsedTime;
+                    if (bh.outerLensMat) bh.outerLensMat.uniforms.time.value = elapsedTime;
                     if (bh.diskMat) bh.diskMat.uniforms.time.value = elapsedTime;
                     if (bh.jetMat) bh.jetMat.uniforms.time.value = elapsedTime;
                     if (bh.jetMatBottom) bh.jetMatBottom.uniforms.time.value = elapsedTime;
