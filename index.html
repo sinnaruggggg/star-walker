@@ -24561,49 +24561,27 @@ window.MissionSystem = MissionSystem;
                         updateCockpitView(dt);
                     }
                     
-                    // ★ 2패스 렌더링: 조종석이 천체에 가려지지 않도록
+                    // ★ 조종석 렌더링 (renderOrder 방식)
                     const cockpit = playerShip?.mesh?.getObjectByName('cockpitGroup');
                     if (cockpit) {
                         if (isCockpitView) {
-                            // 1인칭 조종석 뷰 - 2패스 렌더링
+                            // 1인칭 조종석 뷰 - 단일 패스 렌더링 (renderOrder 사용)
                             // ★ shipVisualGroup 숨김 (1인칭에서는 우주선 본체 안보임)
                             const shipVisual = playerShip?.mesh?.getObjectByName('shipVisual');
                             if (shipVisual) shipVisual.visible = false;
 
-                            // 1단계: 조종석 숨기고 우주/천체 렌더링
-                            cockpit.visible = false;
-                            renderer.render(scene, camera);
+                            // ★ 조종석 보이게 설정 (renderOrder=999로 천체 위에 렌더링됨)
+                            cockpit.visible = true;
 
-                            // 2단계: 깊이 버퍼 클리어 후 조종석만 렌더링
-                            // ★ playerShip 외 모든 메시 숨기기
-                            const hiddenObjects = [];
-                            scene.traverse(obj => {
-                                // playerShip의 자식이 아니고 visible인 메시만 숨김
-                                if (obj.isMesh && obj.visible) {
-                                    let isPartOfShip = false;
-                                    let parent = obj.parent;
-                                    while (parent) {
-                                        if (parent === playerShip.mesh) {
-                                            isPartOfShip = true;
-                                            break;
-                                        }
-                                        parent = parent.parent;
-                                    }
-                                    if (!isPartOfShip) {
-                                        obj.visible = false;
-                                        hiddenObjects.push(obj);
-                                    }
+                            // ★ 조종석 메시들의 depthTest 비활성화 (항상 위에 그려지도록)
+                            cockpit.traverse(obj => {
+                                if (obj.isMesh && obj.material) {
+                                    obj.material.depthTest = false;
+                                    obj.renderOrder = 999;
                                 }
                             });
 
-                            cockpit.visible = true;
-                            renderer.autoClear = false;
-                            renderer.clearDepth();
                             renderer.render(scene, camera);
-                            renderer.autoClear = true;
-
-                            // ★ 숨긴 객체 복원
-                            hiddenObjects.forEach(obj => obj.visible = true);
                         } else {
                             // 3인칭 뷰 - 우주선 본체만 표시 (조종석 숨김)
                             cockpit.visible = false;  // ★ 조종석 숨김
