@@ -4458,7 +4458,7 @@
             }
             
             body.pilot-mode #pilot-bottom {
-                bottom: calc(60px + env(safe-area-inset-bottom));
+                display: none !important;  /* ★ 모바일에서 숨김 (mobile-control-panel 사용) */
             }
             
             body.pilot-mode #ai-copilot-panel {
@@ -8184,6 +8184,7 @@ window.MissionSystem = MissionSystem;
             
             <div class="mobile-direction-btns" id="mobile-arrows-container">
                 <button class="mobile-dir-btn" id="mobile-accel">▲</button>
+                <button class="mobile-dir-btn emergency-brake" id="mobile-emergency-brake" style="background:linear-gradient(145deg,#cc0000,#990000);border-color:#ff3333;">🔥</button>
                 <button class="mobile-dir-btn" id="mobile-decel">▼</button>
             </div>
             
@@ -24499,7 +24500,7 @@ window.MissionSystem = MissionSystem;
                     }
                 });
 
-                // 긴급 역추진 버튼 (모바일)
+                // 긴급 역추진 버튼 (데스크톱)
                 const emergencyBrakeBtn = document.getElementById('btn-emergency-brake');
                 emergencyBrakeBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
@@ -24512,6 +24513,22 @@ window.MissionSystem = MissionSystem;
                 emergencyBrakeBtn.addEventListener('mousedown', () => { shipInputs.emergencyReverse = true; });
                 emergencyBrakeBtn.addEventListener('mouseup', () => { shipInputs.emergencyReverse = false; });
                 emergencyBrakeBtn.addEventListener('mouseleave', () => { shipInputs.emergencyReverse = false; });
+
+                // ★ 긴급 역추진 버튼 (모바일 탭 패널용)
+                const mobileEmergencyBrakeBtn = document.getElementById('mobile-emergency-brake');
+                if (mobileEmergencyBrakeBtn) {
+                    mobileEmergencyBrakeBtn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        shipInputs.emergencyReverse = true;
+                    });
+                    mobileEmergencyBrakeBtn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        shipInputs.emergencyReverse = false;
+                    });
+                    mobileEmergencyBrakeBtn.addEventListener('mousedown', () => { shipInputs.emergencyReverse = true; });
+                    mobileEmergencyBrakeBtn.addEventListener('mouseup', () => { shipInputs.emergencyReverse = false; });
+                    mobileEmergencyBrakeBtn.addEventListener('mouseleave', () => { shipInputs.emergencyReverse = false; });
+                }
 
                 window.addEventListener('resize', onResize);
                 window.addEventListener('mousemove', onMouseMove);
