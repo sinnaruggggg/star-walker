@@ -15980,16 +15980,15 @@ window.MissionSystem = MissionSystem;
             galaxyGroup.rotation.z = 0.5;
 
             // ===== 1. 나선 은하 형태의 별 점들 =====
-            const starCount = 12000;  // 별 개수 증가
+            const starCount = 4000;  // ★ 밀도 1/3로 감소
             const positions = new Float32Array(starCount * 3);
             const colors = new Float32Array(starCount * 3);
-            const sizes = new Float32Array(starCount);  // 개별 크기
+            const sizes = new Float32Array(starCount);
             const baseColor = new THREE.Color(0xaaccff);
 
             for (let i = 0; i < starCount; i++) {
                 const armIndex = Math.floor(Math.random() * 4);
                 const armAngle = (armIndex / 4) * Math.PI * 2;
-                // ★ 중심부에 별이 더 밀집되도록 (0.3 → 중심 집중)
                 const r = Math.pow(Math.random(), 0.35) * size;
 
                 const spiralAngle = armAngle + (r / size) * Math.PI * 3 + (Math.random() - 0.5) * 1.2;
@@ -16002,14 +16001,13 @@ window.MissionSystem = MissionSystem;
                 positions[i * 3 + 1] = y;
                 positions[i * 3 + 2] = z;
 
-                // ★ 중심부는 밝고 크게, 외곽은 어둡고 작게
+                // ★ 밝기 절반으로 감소
                 const distRatio = r / size;
-                const brightness = 0.4 * Math.pow(1 - distRatio, 1.5) + 0.05;
+                const brightness = (0.4 * Math.pow(1 - distRatio, 1.5) + 0.05) * 0.5;
                 colors[i * 3] = baseColor.r * brightness;
                 colors[i * 3 + 1] = baseColor.g * brightness;
                 colors[i * 3 + 2] = baseColor.b * brightness;
 
-                // ★ 중심부 별은 크게, 외곽은 작게
                 sizes[i] = 120000 * (1 - distRatio * 0.7);
             }
 
@@ -16021,7 +16019,7 @@ window.MissionSystem = MissionSystem;
                 size: 100000,
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.7,
+                opacity: 0.35,  // ★ 밝기 절반
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
                 sizeAttenuation: true
@@ -16036,7 +16034,7 @@ window.MissionSystem = MissionSystem;
             const coreMat = new THREE.MeshBasicMaterial({
                 color: 0xffffee,
                 transparent: true,
-                opacity: 0.5,  // 밝은 핵
+                opacity: 0.25,  // ★ 밝기 절반
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
@@ -16049,7 +16047,7 @@ window.MissionSystem = MissionSystem;
             const bulgeMat = new THREE.MeshBasicMaterial({
                 color: 0xffeedd,
                 transparent: true,
-                opacity: 0.3,
+                opacity: 0.15,  // ★ 밝기 절반
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
@@ -16063,7 +16061,7 @@ window.MissionSystem = MissionSystem;
             const midBulgeMat = new THREE.MeshBasicMaterial({
                 color: 0xddccbb,
                 transparent: true,
-                opacity: 0.15,
+                opacity: 0.07,  // ★ 밝기 절반
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
@@ -16080,7 +16078,7 @@ window.MissionSystem = MissionSystem;
                 const diskMat = new THREE.MeshBasicMaterial({
                     color: 0xaabbdd,
                     transparent: true,
-                    opacity: 0.12 * Math.pow(0.6, layer),  // 외곽으로 급격히 희미해짐
+                    opacity: 0.06 * Math.pow(0.6, layer),  // ★ 밝기 절반
                     blending: THREE.AdditiveBlending,
                     side: THREE.DoubleSide,
                     depthWrite: false
@@ -16097,7 +16095,7 @@ window.MissionSystem = MissionSystem;
             const haloMat = new THREE.MeshBasicMaterial({
                 color: 0x8899aa,
                 transparent: true,
-                opacity: 0.04,  // 매우 희미하게
+                opacity: 0.02,  // ★ 밝기 절반
                 blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
