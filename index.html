@@ -3639,6 +3639,76 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* ★★★ 조종석 모드 우측 버튼 컨테이너 (통일) ★★★ */
+        #pilot-right-btns {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 999999;
+        }
+        body.pilot-mode #pilot-right-btns {
+            display: flex !important;
+        }
+
+        /* ★★★ 통일된 조종석 버튼 스타일 ★★★ */
+        .pilot-unified-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 50, 80, 0.95), rgba(0, 30, 50, 0.95));
+            border: 2px solid #0ff;
+            color: #0ff;
+            font-size: 1.3em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        .pilot-unified-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 80, 120, 0.95), rgba(0, 50, 80, 0.95));
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            transform: scale(1.1);
+        }
+        .pilot-unified-btn.active {
+            background: linear-gradient(135deg, rgba(0, 150, 100, 0.95), rgba(0, 100, 80, 0.95));
+            border-color: #0f0;
+            color: #0f0;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+        }
+
+        /* ★ 개별 버튼이 컨테이너 안에 있을 때 위치 초기화 */
+        #pilot-right-btns #ui-settings-btn,
+        #pilot-right-btns #radio-toggle-btn,
+        #pilot-right-btns #ad-menu-toggle,
+        #pilot-right-btns #mission-float-btn {
+            position: static !important;
+            transform: none !important;
+            animation: none !important;
+        }
+
+        /* ★★★ 조종 모드에서 기존 개별 버튼 숨기기 (통일된 버튼으로 대체) ★★★ */
+        body.pilot-mode #ad-rewards-panel,
+        body.pilot-mode #mission-float-btn {
+            display: none !important;
+        }
+        /* 조종 모드에서 라디오 패널의 토글 버튼 숨김 (통일 버튼 사용) */
+        body.pilot-mode #cockpit-radio.collapsed {
+            display: none !important;
+        }
+        body.pilot-mode #cockpit-radio:not(.collapsed) {
+            display: block !important;
+        }
+        body.pilot-mode #cockpit-radio #radio-toggle-btn {
+            display: none !important;
+        }
+
         /* 조종 모드에서 통합 채팅 패널 표시 */
         body.pilot-mode #unified-chat-panel {
             display: block;
@@ -4270,7 +4340,58 @@
         .mobile-action-btn.autopilot.engaged {
             background: rgba(0, 255, 136, 0.3);
         }
-        
+
+        /* ★ 발사 버튼 */
+        #mobile-fire-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 180px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff3300, #cc2200);
+            border: 3px solid #ff6600;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1100;
+            box-shadow: 0 0 15px rgba(255, 100, 0, 0.5);
+            display: none;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #mobile-fire-btn:active, #mobile-fire-btn.firing {
+            background: linear-gradient(145deg, #ff6600, #ff3300);
+            box-shadow: 0 0 30px rgba(255, 100, 0, 0.9);
+            transform: scale(0.95);
+        }
+
+        body.pilot-mode #mobile-fire-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ★ 투사체/빔 피격 플래시 */
+        #weapon-hit-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,100,0,0.4), transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 2000;
+            transition: opacity 0.1s;
+        }
+
+        #weapon-hit-overlay.active {
+            opacity: 1;
+        }
+
         /* 모바일 상태 패널 */
         #mobile-status-panel {
             display: grid;
@@ -4472,6 +4593,40 @@
             display: none !important;
         }
 
+        /* ★ 조종석 모드에서 2D HUD 숨기기 (3D 유리 HUD로 대체) */
+        body.pilot-mode #pilot-right,
+        body.pilot-mode #pilot-radar,
+        body.pilot-mode #pilot-target-info,
+        body.pilot-mode #pilot-autopilot-info,
+        body.pilot-mode #pilot-coords-panel,
+        body.pilot-mode #pilot-target-select,
+        body.pilot-mode #mobile-mini-hud,
+        body.pilot-mode #touch-area-left,
+        body.pilot-mode #pilot-joystick,
+        body.pilot-mode #pilot-left-console,
+        body.pilot-mode #pilot-main-speed {
+            display: none !important;
+        }
+
+        /* ★ 조종석 모드에서 유지할 UI */
+        body.pilot-mode #cockpit-radio,
+        body.pilot-mode #ui-settings-btn,
+        body.pilot-mode #global-header-btns,
+        body.pilot-mode #unified-chat-panel,
+        body.pilot-mode #pilot-right-console,
+        body.pilot-mode #pilot-center-console,
+        body.pilot-mode #pilot-btn-row {
+            display: flex !important;
+        }
+
+        /* ★ 조종석 모드에서 하단 버튼 레이아웃 조정 */
+        body.pilot-mode #pilot-bottom {
+            justify-content: center;
+        }
+        body.pilot-mode #pilot-center-console {
+            flex: 0 0 auto;
+        }
+
         /* 모바일에서도 데스크톱 UI 표시 (크기 조정) */
         @media (max-width: 768px) {
             body.pilot-mode #pilot-bottom {
@@ -4479,19 +4634,12 @@
                 transform-origin: center bottom;
             }
 
-            body.pilot-mode #pilot-right {
-                top: 60px;
-                transform: scale(0.8);
-                transform-origin: right top;
-            }
-            
-            /* 우측 패널 개별 분리 스타일 */
+            /* 2D HUD 숨김 (모바일에서도) */
+            body.pilot-mode #pilot-right,
             body.pilot-mode #pilot-radar,
             body.pilot-mode #pilot-target-info,
             body.pilot-mode #pilot-autopilot-info {
-                background: rgba(0, 20, 40, 0.9);
-                border: 1px solid #0ff;
-                border-radius: 8px;
+                display: none !important;
             }
             
             /* 미니 HUD - 상단 */
@@ -6475,7 +6623,7 @@ window.MissionSystem = MissionSystem;
         justify-content: center;
         box-shadow: 0 0 15px rgba(255, 150, 0, 0.5);
         animation: giftPulse 2s ease-in-out infinite;
-    ">🎁</button>
+    ">📋</button>
 </div>
 <style>
 @keyframes giftPulse {
@@ -7645,19 +7793,71 @@ window.MissionSystem = MissionSystem;
         </div>
     </div>
 
-    <!-- UI 설정 버튼 (조종 모드에서만 표시) -->
-    <button id="ui-settings-btn" title="UI Settings">⚙️</button>
+    <!-- ★★★ 조종석 모드 우측 통일 버튼 컨테이너 ★★★ -->
+    <div id="pilot-right-btns">
+        <button id="ui-settings-btn" class="pilot-unified-btn" title="UI Settings">⚙️</button>
+        <button id="radio-btn-unified" class="pilot-unified-btn" title="Radio">📻</button>
+        <button id="ad-btn-unified" class="pilot-unified-btn" title="Ad Rewards">📋</button>
+        <button id="ssil-btn-unified" class="pilot-unified-btn" title="SSIL Mission">🚀</button>
+    </div>
 
     <script>
-    // ★★★ UI 설정 버튼 즉시 초기화 ★★★
+    // ★★★ 조종석 통일 버튼 초기화 ★★★
     (function() {
-        var btn = document.getElementById('ui-settings-btn');
+        // 설정 버튼
+        var settingsBtn = document.getElementById('ui-settings-btn');
         var panel = document.getElementById('ui-settings-panel');
-        if (btn) {
-            btn.onclick = function(e) {
+        if (settingsBtn) {
+            settingsBtn.onclick = function(e) {
                 e.stopPropagation();
                 if (panel) {
                     panel.classList.toggle('open');
+                }
+            };
+        }
+
+        // 라디오 버튼
+        var radioBtn = document.getElementById('radio-btn-unified');
+        if (radioBtn) {
+            radioBtn.onclick = function(e) {
+                e.stopPropagation();
+                var radioPanel = document.getElementById('cockpit-radio');
+                if (radioPanel) {
+                    radioPanel.classList.toggle('collapsed');
+                    // 패널 열림 시 버튼 활성화 표시
+                    if (!radioPanel.classList.contains('collapsed')) {
+                        radioBtn.classList.add('active');
+                    } else {
+                        radioBtn.classList.remove('active');
+                    }
+                }
+            };
+        }
+
+        // 광고 보상 버튼
+        var adBtn = document.getElementById('ad-btn-unified');
+        if (adBtn) {
+            adBtn.onclick = function(e) {
+                e.stopPropagation();
+                var adModal = document.getElementById('ad-modal-menu');
+                if (adModal) {
+                    adModal.style.display = adModal.style.display === 'flex' ? 'none' : 'flex';
+                }
+            };
+        }
+
+        // SSIL 미션 버튼
+        var ssilBtn = document.getElementById('ssil-btn-unified');
+        if (ssilBtn) {
+            ssilBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (typeof openMissionPanel === 'function') {
+                    openMissionPanel();
+                } else {
+                    var ssilPanel = document.getElementById('ssil-mission-panel');
+                    if (ssilPanel) {
+                        ssilPanel.classList.toggle('open');
+                    }
                 }
             };
         }
@@ -8215,7 +8415,13 @@ window.MissionSystem = MissionSystem;
                 <button class="mobile-action-btn" id="mobile-space-mode" style="padding:6px 10px; font-size:11px;">🌌 Space</button>
             </div>
         </div>
-        
+
+        <!-- ★ 무기 발사 버튼 -->
+        <button id="mobile-fire-btn">🔥</button>
+
+        <!-- ★ 피격 플래시 오버레이 -->
+        <div id="weapon-hit-overlay"></div>
+
         <!-- 상태 패널 -->
         <div class="mobile-panel-content" id="mobile-status-panel">
             <div class="mobile-status-item">
@@ -11448,7 +11654,30 @@ window.MissionSystem = MissionSystem;
         var configuredReverseFlames = null;
         var hasEngineConfig = false;
         let audioContext = null;
-        
+
+        // ★★★ 무기 발사 시스템 ★★★
+        const weaponSystem = {
+            projectiles: [],        // 발사된 투사체들
+            beams: [],              // 빔 레이저들
+            lastFireTime: 0,        // 마지막 발사 시간
+            isFiring: false,        // 발사 버튼 누르는 중
+            fireRate: 0.15,         // 발사 간격 (초)
+            projectileSpeed: 500,   // 투사체 속도
+            projectileRange: 1000,  // 투사체 사거리
+            damage: 15,             // 기본 데미지
+            maxProjectiles: 50      // 최대 투사체 수
+        };
+
+        // ★★★ 우주정거장 반격 시스템 ★★★
+        const stationDefense = {
+            beams: [],              // 반격 빔들
+            lastFireTime: {},       // 정거장별 마지막 발사 시간
+            fireRate: 2.0,          // 반격 간격 (초)
+            beamDuration: 0.5,      // 빔 지속 시간 (초)
+            damage: 10,             // 반격 데미지
+            range: 200              // 반격 사거리
+        };
+
         // ★ 도킹 해제 연출 시스템
         let undockingState = {
             active: false,
@@ -12787,7 +13016,18 @@ window.MissionSystem = MissionSystem;
         // ===== 1인칭 조종석 시스템 =====
         let cockpitGroup;
         let cockpitFloatGroup;  // 플로팅 플랫폼 (애니메이션용)
-        let cockpitMainHUD, cockpitSubHUD;  // 홀로그램 HUD
+        let cockpitMainHUD, cockpitSubHUD;  // 홀로그램 HUD (레거시)
+        // ★ 새로운 유리 투영 HUD 시스템
+        let glassHUD = {
+            reticle: null,          // 중앙 조준선 (선회 조작용)
+            leftPanel: null,        // 좌측 상단: 속도
+            leftBottomPanel: null,  // 좌측 하단: 연료, 헐
+            rightPanel: null,       // 우측 상단: 좌표, 목표
+            rightBottomPanel: null, // 우측 하단: 오토파일럿
+            bottomPanel: null,      // 하단: 레이더
+            isDragging: false,      // 조준선 드래그 중
+            dragStart: { x: 0, y: 0 }
+        };
         let cockpitLookRotY = 0, cockpitLookRotX = 0;
         let cockpitTargetRotY = 0, cockpitTargetRotX = 0;
         let cockpitDragging = false, cockpitPrevMouse = { x: 0, y: 0 };
@@ -17531,40 +17771,69 @@ window.MissionSystem = MissionSystem;
             cockpitStickGroup.add(createYokeHandle(-1));  // 왼쪽
             cockpitStickGroup.add(createYokeHandle(1));   // 오른쪽
             
-            // --- 구형 곡면 홀로그램 HUD (유리창 곡률 따라감) ---
-            function createSphericalHUD(radius, phiCenter, phiWidth, thetaCenter, thetaHeight) {
-                // 유리창과 동일한 구형 곡면 사용
-                const phiStart = phiCenter - phiWidth / 2;
-                const thetaStart = thetaCenter - thetaHeight / 2;
-                const geometry = new THREE.SphereGeometry(
-                    radius,        // 유리 안쪽에 위치
-                    32, 16,        // 세그먼트
-                    phiStart,      // 수평 시작 각도
-                    phiWidth,      // 수평 범위
-                    thetaStart,    // 수직 시작 각도
-                    thetaHeight    // 수직 범위
-                );
-                geometry.scale(-1, 1, 1);  // 안쪽에서 보이도록
+            // --- ★ 새로운 유리 투영 HUD 시스템 ---
+            function createGlassHUDPanel(posX, posY, posZ, width, height, canvasW, canvasH, curveAmount = 0.15) {
+                // 곡면 PlaneGeometry 생성
+                const geometry = new THREE.PlaneGeometry(width, height, 32, 16);
+                // 정점을 곡면으로 변형 (유리 곡률 시뮬레이션)
+                const pos = geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    const x = pos.getX(i);
+                    const y = pos.getY(i);
+                    // 중앙에서 멀어질수록 뒤로 밀림 (구면 효과)
+                    const distFromCenter = Math.sqrt(x * x + y * y);
+                    const z = -distFromCenter * distFromCenter * curveAmount;
+                    pos.setZ(i, z);
+                }
+                geometry.computeVertexNormals();
 
                 const canvas = document.createElement('canvas');
-                canvas.width = 512; canvas.height = 256;
+                canvas.width = canvasW; canvas.height = canvasH;
                 const tex = new THREE.CanvasTexture(canvas);
+                tex.minFilter = THREE.LinearFilter;
                 const mat = new THREE.MeshBasicMaterial({
-                    map: tex, transparent: true, opacity: 0.7,
+                    map: tex, transparent: true, opacity: 0.9,
                     side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
                 });
                 const mesh = new THREE.Mesh(geometry, mat);
-                mesh.rotation.x = -Math.PI / 2;  // 유리와 같은 방향
-                return { ctx: canvas.getContext('2d'), tex, mesh, canvas };
+                mesh.position.set(posX, posY, posZ);
+                mesh.renderOrder = 100;
+                return { ctx: canvas.getContext('2d'), tex, mesh, canvas, width, height };
             }
 
-            // 메인 HUD - 정면 중앙 (phi=PI가 정면, theta=PI/4가 약간 위쪽)
-            cockpitMainHUD = createSphericalHUD(1.8, Math.PI, Math.PI * 0.4, Math.PI * 0.25, Math.PI * 0.15);
-            floatGroup.add(cockpitMainHUD.mesh);
+            // ★ 중앙 조준선 (정면 중앙, 선회 조작용) - 크기 유지, 속도 표시 포함
+            glassHUD.reticle = createGlassHUDPanel(0, 0.05, -1.7, 0.6, 0.7, 256, 320, 0.02);
+            glassHUD.reticle.mesh.material.opacity = 0.8;
+            cockpitGroup.add(glassHUD.reticle.mesh);
 
-            // 서브 HUD - 정면 아래쪽
-            cockpitSubHUD = createSphericalHUD(1.8, Math.PI, Math.PI * 0.3, Math.PI * 0.38, Math.PI * 0.1);
-            floatGroup.add(cockpitSubHUD.mesh);
+            // ★ 좌측 상단 패널 (속도) - 유리 좌측 곡면 (2배 크기, 위치 조정)
+            glassHUD.leftPanel = createGlassHUDPanel(-1.1, 0.35, -1.4, 0.7, 0.9, 512, 768, 0.25);
+            glassHUD.leftPanel.mesh.rotation.y = 0.35;  // 곡면 따라 회전
+            cockpitGroup.add(glassHUD.leftPanel.mesh);
+
+            // ★ 좌측 하단 패널 (연료, 헐) - 유리 좌측 하단 곡면 (2배 크기, 위치 조정)
+            glassHUD.leftBottomPanel = createGlassHUDPanel(-1.0, -0.35, -1.45, 0.65, 0.8, 512, 640, 0.2);
+            glassHUD.leftBottomPanel.mesh.rotation.y = 0.3;
+            cockpitGroup.add(glassHUD.leftBottomPanel.mesh);
+
+            // ★ 우측 상단 패널 (좌표, 목표) - 유리 우측 곡면 (2배 크기, 위치 조정)
+            glassHUD.rightPanel = createGlassHUDPanel(1.1, 0.35, -1.4, 0.7, 0.9, 512, 768, 0.25);
+            glassHUD.rightPanel.mesh.rotation.y = -0.35;  // 곡면 따라 회전
+            cockpitGroup.add(glassHUD.rightPanel.mesh);
+
+            // ★ 우측 하단 패널 (오토파일럿) - 유리 우측 하단 곡면 (2배 크기, 위치 조정)
+            glassHUD.rightBottomPanel = createGlassHUDPanel(1.0, -0.35, -1.45, 0.65, 0.8, 512, 640, 0.2);
+            glassHUD.rightBottomPanel.mesh.rotation.y = -0.3;
+            cockpitGroup.add(glassHUD.rightBottomPanel.mesh);
+
+            // ★ 하단 중앙 패널 (레이더) - 유리 하단 곡면 (2배 크기, 위치 조정)
+            glassHUD.bottomPanel = createGlassHUDPanel(0, -0.6, -1.5, 1.1, 0.7, 768, 512, 0.12);
+            glassHUD.bottomPanel.mesh.rotation.x = -0.2;  // 약간 위를 향함
+            cockpitGroup.add(glassHUD.bottomPanel.mesh);
+
+            // 레거시 HUD 제거 (호환성 유지)
+            cockpitMainHUD = null;
+            cockpitSubHUD = null;
             
             // 버튼 깜빡임용 (기존 호환)
             cockpitBtnMesh = null;
@@ -17613,77 +17882,359 @@ window.MissionSystem = MissionSystem;
         
         function updateCockpitMonitors(time) {
             if (!playerShip) return;
-            
-            // 메인 HUD (속도, 고도, 자세)
-            if (cockpitMainHUD && cockpitMainHUD.ctx) {
-                const ctx = cockpitMainHUD.ctx;
-                ctx.clearRect(0, 0, 512, 256);
+
+            // ★ 새로운 유리 HUD 시스템 업데이트
+
+            // === 중앙 조준선 (256x320) + 속도 표시 ===
+            if (glassHUD.reticle && glassHUD.reticle.ctx) {
+                const ctx = glassHUD.reticle.ctx;
+                const W = 256, H = 320;
+                const cx = W / 2, cy = 110;  // 원의 중심을 위로
+                ctx.clearRect(0, 0, W, H);
+
+                ctx.strokeStyle = '#00ffff';
+                ctx.fillStyle = '#00ffff';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 8;
+
+                // 외부 원만 (내부 원 제거)
+                ctx.beginPath();
+                ctx.arc(cx, cy, 70, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 십자선
+                ctx.beginPath();
+                ctx.moveTo(cx - 100, cy); ctx.lineTo(cx - 50, cy);
+                ctx.moveTo(cx + 50, cy); ctx.lineTo(cx + 100, cy);
+                ctx.moveTo(cx, cy - 100); ctx.lineTo(cx, cy - 50);
+                ctx.moveTo(cx, cy + 50); ctx.lineTo(cx, cy + 100);
+                ctx.stroke();
+
+                // 중앙 점 (타점)
+                ctx.fillStyle = '#00ffff';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 피치 라인 (자세 표시)
+                const pitch = (shipInputs.pitch || 0) * 40;
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.4)';
+                ctx.lineWidth = 1;
+                for (let i = -2; i <= 2; i++) {
+                    if (i === 0) continue;
+                    const y = cy + i * 25 + pitch;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 35, y); ctx.lineTo(cx - 18, y);
+                    ctx.moveTo(cx + 18, y); ctx.lineTo(cx + 35, y);
+                    ctx.stroke();
+                }
+
+                // ★ 속도 표시 (원 아래)
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#00ffff';
+                ctx.font = 'bold 36px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                const speed = playerShip.speed || 0;
+                ctx.fillText(`${speed.toFixed(0)}`, cx, 230);
+                ctx.font = '14px Orbitron, sans-serif';
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+                ctx.fillText('km/s', cx, 252);
+
+                // km/h 변환 표시
+                ctx.font = '11px Orbitron, sans-serif';
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+                const kmh = speed * 3600;
+                if (kmh >= 1e9) {
+                    ctx.fillText(`(${(kmh / 1e9).toFixed(1)}B km/h)`, cx, 272);
+                } else if (kmh >= 1e6) {
+                    ctx.fillText(`(${(kmh / 1e6).toFixed(1)}M km/h)`, cx, 272);
+                } else if (kmh >= 1e3) {
+                    ctx.fillText(`(${(kmh / 1e3).toFixed(0)}K km/h)`, cx, 272);
+                } else {
+                    ctx.fillText(`(${kmh.toFixed(0)} km/h)`, cx, 272);
+                }
+
+                glassHUD.reticle.tex.needsUpdate = true;
+            }
+
+            // === 좌측 상단 패널 (512x768) - 스로틀 표시 (2배 크기) ===
+            if (glassHUD.leftPanel && glassHUD.leftPanel.ctx) {
+                const ctx = glassHUD.leftPanel.ctx;
+                const W = 512, H = 768;
+                ctx.clearRect(0, 0, W, H);
+
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 10;
+
+                // 타이틀
+                ctx.fillStyle = '#00ffff';
+                ctx.font = 'bold 28px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('ENGINE STATUS', W/2, 60);
+
+                // 스로틀 바 (가로)
+                const throttle = shipInputs.throttle || 0;
+                ctx.fillStyle = '#00ffff';
+                ctx.font = '22px Orbitron, sans-serif';
+                ctx.fillText('THROTTLE', W/2, 130);
                 ctx.strokeStyle = '#00ffff';
                 ctx.lineWidth = 2;
-                
-                // 중앙 십자선
-                ctx.beginPath();
-                ctx.arc(256, 128, 40, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(216, 128);
-                ctx.lineTo(180, 128);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(296, 128);
-                ctx.lineTo(332, 128);
-                ctx.stroke();
-                
-                // 자세 라인 (피치)
-                const pitch = Math.sin(time * 0.5) * 30 + (shipInputs.pitch || 0) * 30;
-                ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
-                ctx.beginPath();
-                ctx.moveTo(100, 128 + pitch);
-                ctx.lineTo(412, 128 + pitch);
-                ctx.stroke();
-                
-                cockpitMainHUD.tex.needsUpdate = true;
-            }
-            
-            // 서브 HUD (레이더)
-            if (cockpitSubHUD && cockpitSubHUD.ctx) {
-                const ctx = cockpitSubHUD.ctx;
-                ctx.clearRect(0, 0, 512, 256);
-                ctx.strokeStyle = '#ffaa00';
+                ctx.strokeRect(60, 160, W - 120, 36);
+                ctx.fillStyle = throttle > 0 ? '#00ffaa' : '#ff6600';
+                const barW = Math.abs(throttle) * (W - 128) / 2;
+                if (throttle > 0) {
+                    ctx.fillRect(W/2, 164, barW, 28);
+                } else {
+                    ctx.fillRect(W/2 - barW, 164, barW, 28);
+                }
+                // 중앙선
+                ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
-                
-                // 레이더 원
                 ctx.beginPath();
-                ctx.arc(256, 128, 80, 0, Math.PI * 2);
+                ctx.moveTo(W/2, 160);
+                ctx.lineTo(W/2, 196);
                 ctx.stroke();
+
+                // 스로틀 % 표시
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '18px Orbitron, sans-serif';
+                ctx.fillText(`${(throttle * 100).toFixed(0)}%`, W/2, 230);
+
+                // 자동항법 상태
+                ctx.fillStyle = autopilot.engaged ? '#00ff88' : 'rgba(0,255,255,0.3)';
+                ctx.font = '20px Orbitron, sans-serif';
+                ctx.fillText(autopilot.engaged ? '◉ AUTOPILOT ON' : '○ MANUAL', W/2, 300);
+
+                glassHUD.leftPanel.tex.needsUpdate = true;
+            }
+
+            // === 좌측 하단 패널 (512x640) - 연료, 헐 (2배 크기) ===
+            if (glassHUD.leftBottomPanel && glassHUD.leftBottomPanel.ctx) {
+                const ctx = glassHUD.leftBottomPanel.ctx;
+                const W = 512, H = 640;
+                ctx.clearRect(0, 0, W, H);
+
+                ctx.shadowColor = '#00ff88';
+                ctx.shadowBlur = 10;
+
+                // 연료
+                ctx.fillStyle = '#00ff88';
+                ctx.font = 'bold 24px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('FUEL', W/2, 50);
+                const fuel = playerShip.fuel !== undefined ? playerShip.fuel : 100;
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(50, 70, W - 100, 44);
+                ctx.fillStyle = fuel > 30 ? '#00ff88' : '#ff4444';
+                ctx.fillRect(54, 74, (W - 108) * (fuel / 100), 36);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 26px Orbitron, sans-serif';
+                ctx.fillText(`${fuel.toFixed(0)}%`, W/2, 102);
+
+                // 헐
+                ctx.fillStyle = '#ff8800';
+                ctx.font = 'bold 24px Orbitron, sans-serif';
+                ctx.fillText('HULL INTEGRITY', W/2, 180);
+                const hull = playerShip.hull !== undefined ? playerShip.hull : 100;
+                ctx.strokeStyle = '#ff8800';
+                ctx.strokeRect(50, 200, W - 100, 44);
+                ctx.fillStyle = hull > 30 ? '#ff8800' : '#ff2222';
+                ctx.fillRect(54, 204, (W - 108) * (hull / 100), 36);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 26px Orbitron, sans-serif';
+                ctx.fillText(`${hull.toFixed(0)}%`, W/2, 232);
+
+                // 상태 텍스트
+                ctx.font = '16px Orbitron, sans-serif';
+                if (hull <= 30) {
+                    ctx.fillStyle = '#ff2222';
+                    ctx.fillText('⚠ CRITICAL DAMAGE', W/2, 290);
+                } else if (fuel <= 20) {
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.fillText('⚠ LOW FUEL WARNING', W/2, 290);
+                } else {
+                    ctx.fillStyle = '#00ff88';
+                    ctx.fillText('◉ SYSTEMS NOMINAL', W/2, 290);
+                }
+
+                glassHUD.leftBottomPanel.tex.needsUpdate = true;
+            }
+
+            // === 우측 상단 패널 (512x768) - 좌표, 목표 (2배 크기) ===
+            if (glassHUD.rightPanel && glassHUD.rightPanel.ctx) {
+                const ctx = glassHUD.rightPanel.ctx;
+                const W = 512, H = 768;
+                ctx.clearRect(0, 0, W, H);
+
+                ctx.shadowColor = '#00aaff';
+                ctx.shadowBlur = 10;
+
+                // 좌표
+                ctx.fillStyle = '#00aaff';
+                ctx.font = 'bold 24px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('POSITION', W/2, 50);
+                if (playerShip.mesh) {
+                    const pos = playerShip.mesh.position;
+                    ctx.font = '18px Orbitron, sans-serif';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(`X: ${pos.x.toFixed(1)}`, W/2, 90);
+                    ctx.fillText(`Y: ${pos.y.toFixed(1)}`, W/2, 118);
+                    ctx.fillText(`Z: ${pos.z.toFixed(1)}`, W/2, 146);
+                }
+
+                // 목표
+                ctx.fillStyle = '#ff6600';
+                ctx.font = 'bold 24px Orbitron, sans-serif';
+                ctx.fillText('TARGET', W/2, 200);
+                if (shipTargetBody) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 26px Orbitron, sans-serif';
+                    ctx.fillText(shipTargetBody.name || 'Unknown', W/2, 245);
+
+                    // 거리
+                    const dist = playerShip.mesh.position.distanceTo(shipTargetBody.mesh.position);
+                    let distText;
+                    if (dist < 0.1) distText = `${(dist * 149597.87).toFixed(0)} km`;
+                    else if (dist < 10) distText = `${dist.toFixed(3)} AU`;
+                    else distText = `${dist.toFixed(1)} AU`;
+                    ctx.font = '20px Orbitron, sans-serif';
+                    ctx.fillStyle = '#00ffff';
+                    ctx.fillText(`DIST: ${distText}`, W/2, 290);
+
+                    // ETA
+                    if (playerShip.speed > 0.1) {
+                        const distKm = dist * 149597.87;
+                        const eta = distKm / playerShip.speed;
+                        let etaText;
+                        if (eta < 60) etaText = `${eta.toFixed(0)}s`;
+                        else if (eta < 3600) etaText = `${Math.floor(eta/60)}m ${Math.floor(eta%60)}s`;
+                        else etaText = `${Math.floor(eta/3600)}h ${Math.floor((eta%3600)/60)}m`;
+                        ctx.fillText(`ETA: ${etaText}`, W/2, 330);
+                    }
+                } else {
+                    ctx.fillStyle = '#666666';
+                    ctx.font = '20px Orbitron, sans-serif';
+                    ctx.fillText('No Target', W/2, 245);
+                }
+
+                glassHUD.rightPanel.tex.needsUpdate = true;
+            }
+
+            // === 우측 하단 패널 (512x640) - 오토파일럿 (2배 크기) ===
+            if (glassHUD.rightBottomPanel && glassHUD.rightBottomPanel.ctx) {
+                const ctx = glassHUD.rightBottomPanel.ctx;
+                const W = 512, H = 640;
+                ctx.clearRect(0, 0, W, H);
+
+                ctx.shadowColor = autopilot.engaged ? '#00ff00' : '#666666';
+                ctx.shadowBlur = 10;
+
+                // 오토파일럿
+                ctx.fillStyle = autopilot.engaged ? '#00ff00' : '#666666';
+                ctx.font = 'bold 26px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('NAVIGATION', W/2, 60);
+                ctx.font = 'bold 40px Orbitron, sans-serif';
+                ctx.fillText(autopilot.engaged ? 'AUTO' : 'MANUAL', W/2, 120);
+                if (autopilot.engaged && autopilot.phase) {
+                    ctx.font = '20px Orbitron, sans-serif';
+                    ctx.fillStyle = '#00ffff';
+                    ctx.fillText(autopilot.phase.toUpperCase(), W/2, 165);
+                }
+
+                // 현재 시간
+                ctx.fillStyle = 'rgba(0,255,255,0.5)';
+                ctx.font = '16px Orbitron, sans-serif';
+                const now = new Date();
+                ctx.fillText(`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')} UTC`, W/2, 220);
+
+                glassHUD.rightBottomPanel.tex.needsUpdate = true;
+            }
+
+            // === 하단 패널 (768x512) - 레이더 (2배 크기) ===
+            if (glassHUD.bottomPanel && glassHUD.bottomPanel.ctx) {
+                const ctx = glassHUD.bottomPanel.ctx;
+                const W = 768, H = 512;
+                ctx.clearRect(0, 0, W, H);
+
+                // 레이더 중앙
+                const rcx = W / 2, rcy = H / 2 - 20;
+                ctx.strokeStyle = '#ffaa00';
+                ctx.fillStyle = '#ffaa00';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#ffaa00';
+                ctx.shadowBlur = 10;
+
+                // 레이더 원 (2배 크기)
+                ctx.beginPath(); ctx.arc(rcx, rcy, 140, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(rcx, rcy, 70, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(rcx, rcy, 105, 0, Math.PI * 2); ctx.stroke();
+
+                // 십자선
+                ctx.strokeStyle = 'rgba(255, 170, 0, 0.3)';
                 ctx.beginPath();
-                ctx.arc(256, 128, 40, 0, Math.PI * 2);
+                ctx.moveTo(rcx - 140, rcy); ctx.lineTo(rcx + 140, rcy);
+                ctx.moveTo(rcx, rcy - 140); ctx.lineTo(rcx, rcy + 140);
                 ctx.stroke();
-                
+
                 // 스캔 라인
+                ctx.strokeStyle = 'rgba(255, 170, 0, 0.6)';
+                ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(256, 128);
-                ctx.lineTo(256 + Math.cos(time * 3) * 80, 128 + Math.sin(time * 3) * 80);
+                ctx.moveTo(rcx, rcy);
+                ctx.lineTo(rcx + Math.cos(time * 2) * 140, rcy + Math.sin(time * 2) * 140);
                 ctx.stroke();
-                
-                // 목표 표시
+
+                // 목표 점
                 if (shipTargetBody && playerShip.mesh) {
                     const dir = new THREE.Vector3().subVectors(shipTargetBody.mesh.position, playerShip.mesh.position);
                     dir.normalize();
                     const localDir = dir.clone().applyQuaternion(playerShip.mesh.quaternion.clone().invert());
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+                    ctx.fillStyle = '#ff3333';
                     ctx.beginPath();
-                    ctx.arc(256 + localDir.x * 60, 128 - localDir.z * 60, 6, 0, Math.PI * 2);
+                    ctx.arc(rcx + localDir.x * 110, rcy - localDir.z * 110, 10, 0, Math.PI * 2);
                     ctx.fill();
+                    // 목표 이름 표시
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '14px Orbitron, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(shipTargetBody.name || '', rcx + localDir.x * 110, rcy - localDir.z * 110 - 18);
                 }
-                
-                // 자신 표시
+
+                // 자기 위치
                 ctx.fillStyle = '#00ffff';
                 ctx.beginPath();
-                ctx.arc(256, 128, 4, 0, Math.PI * 2);
+                ctx.moveTo(rcx, rcy - 10);
+                ctx.lineTo(rcx - 8, rcy + 8);
+                ctx.lineTo(rcx + 8, rcy + 8);
+                ctx.closePath();
                 ctx.fill();
-                
-                cockpitSubHUD.tex.needsUpdate = true;
+
+                ctx.fillStyle = '#ffaa00';
+                ctx.font = 'bold 20px Orbitron, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('RADAR', rcx, H - 30);
+
+                // 방향 표시
+                ctx.font = '14px Orbitron, sans-serif';
+                ctx.fillStyle = 'rgba(255,170,0,0.6)';
+                ctx.fillText('N', rcx, rcy - 150);
+                ctx.fillText('S', rcx, rcy + 165);
+                ctx.fillText('W', rcx - 155, rcy + 5);
+                ctx.fillText('E', rcx + 155, rcy + 5);
+
+                glassHUD.bottomPanel.tex.needsUpdate = true;
+            }
+
+            // 레거시 HUD (호환성) - 이제 사용 안함
+            if (cockpitMainHUD && cockpitMainHUD.ctx) {
+                cockpitMainHUD.tex.needsUpdate = false;
+            }
+            if (cockpitSubHUD && cockpitSubHUD.ctx) {
+                cockpitSubHUD.tex.needsUpdate = false;
             }
         }
         
@@ -21465,62 +22016,8 @@ window.MissionSystem = MissionSystem;
             canvas.addEventListener('mouseup', () => { cockpitDragging = false; });
             canvas.addEventListener('mouseleave', () => { cockpitDragging = false; });
             
-            // 터치로 고개 돌리기
-            canvas.addEventListener('touchstart', (e) => {
-                if (!isPilotMode || isInteriorMode || isObservatoryMode || !isCockpitView) return;
-                // ★ UI 재배치 모드에서는 작동 안함
-                if (typeof uiRearrangeSystem !== 'undefined' && uiRearrangeSystem.isActive) return;
-                
-                const t = e.touches[0];
-                // 왼쪽 30%는 조종용, 나머지는 고개 돌리기
-                if (t.clientX < window.innerWidth * 0.3) return;
-                
-                // ★ UI 요소 위에서는 작동 안함
-                const targetEl = document.elementFromPoint(t.clientX, t.clientY);
-                if (targetEl && (
-                    targetEl.closest('#pilot-bottom') ||
-                    targetEl.closest('#mobile-tab-bar') ||
-                    targetEl.closest('#mobile-tab-panel') ||
-                    targetEl.closest('#ai-copilot-panel') ||
-                    targetEl.closest('#unified-chat-panel') ||
-                    targetEl.closest('#cockpit-radio') ||
-                    targetEl.closest('#multiplayer-ui') ||
-                    targetEl.closest('#pilot-right') ||
-                    targetEl.closest('#pilot-target-select') ||
-                    targetEl.closest('#ssil-mission-panel') ||
-                    targetEl.closest('#daily-mission-modal') ||
-                    targetEl.closest('#mobile-mini-hud') ||
-                    targetEl.closest('#pilot-left-console') ||
-                    targetEl.closest('#pilot-center-console') ||
-                    targetEl.closest('#pilot-right-console') ||
-                    targetEl.closest('#ui-settings-panel') ||
-                    targetEl.closest('#ui-rearrange-overlay') ||
-                    targetEl.id === 'ui-settings-btn' ||
-                    targetEl.tagName === 'BUTTON' ||
-                    targetEl.tagName === 'INPUT' ||
-                    targetEl.tagName === 'SELECT' ||
-                    targetEl.tagName === 'LABEL'
-                )) return;
-                
-                e.preventDefault();
-                cockpitDragging = true;
-                cockpitPrevMouse = { x: t.clientX, y: t.clientY };
-            }, { passive: false });
-            
-            canvas.addEventListener('touchmove', (e) => {
-                if (!cockpitDragging || !isPilotMode || isInteriorMode || isObservatoryMode || !isCockpitView) return;
-                e.preventDefault();
-                const t = e.touches[0];
-                const dx = t.clientX - cockpitPrevMouse.x;
-                const dy = t.clientY - cockpitPrevMouse.y;
-                cockpitTargetRotY -= dx * COCKPIT_LOOK_SPEED;
-                cockpitTargetRotX -= dy * COCKPIT_LOOK_SPEED;
-                cockpitTargetRotY = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cockpitTargetRotY));  // ±60° (쉘 가장자리 안 보이게)
-                cockpitTargetRotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3.5, cockpitTargetRotX));
-                cockpitPrevMouse = { x: t.clientX, y: t.clientY };
-            }, { passive: false });
-            
-            canvas.addEventListener('touchend', () => { cockpitDragging = false; });
+            // ★ 터치로 고개 돌리기 - initPilotJoystick에서 듀얼 터치로 통합 처리
+            // (기존 코드 제거 - 간섭 방지)
         }
         
         function initPilotControls() {
@@ -21543,12 +22040,32 @@ window.MissionSystem = MissionSystem;
             canvas.addEventListener('mouseup', () => { drag = false; shipInputs.yaw = 0; shipInputs.pitch = 0; });
             canvas.addEventListener('mouseleave', () => { drag = false; shipInputs.yaw = 0; shipInputs.pitch = 0; });
             
-            // 마우스 휠
+            // 마우스 휠 (1인칭: 스로틀, 3인칭: 줌)
             canvas.addEventListener('wheel', (e) => {
                 if (!isPilotMode || isInteriorMode || isObservatoryMode || autopilot.engaged) return;
+
                 e.preventDefault();
-                shipInputs.throttle += e.deltaY > 0 ? -0.05 : 0.05;
-                shipInputs.throttle = Math.max(-0.5, Math.min(1, shipInputs.throttle));
+
+                if (isCockpitView) {
+                    // ★ 1인칭 조종석: 스로틀 조절
+                    shipInputs.throttle += e.deltaY > 0 ? -0.05 : 0.05;
+                    shipInputs.throttle = Math.max(-0.5, Math.min(1, shipInputs.throttle));
+                } else {
+                    // ★★★ 3인칭 우주 모드: 직접 줌 구현 ★★★
+                    const zoomSpeed = 0.1;
+                    const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+                    const currentDist = camera.position.distanceTo(controls.target);
+
+                    // 줌인: deltaY < 0, 줌아웃: deltaY > 0
+                    const zoomFactor = e.deltaY > 0 ? (1 + zoomSpeed) : (1 - zoomSpeed);
+                    let newDist = currentDist * zoomFactor;
+
+                    // 최소/최대 거리 제한
+                    newDist = Math.max(controls.minDistance, Math.min(controls.maxDistance, newDist));
+
+                    // 새 카메라 위치 계산
+                    camera.position.copy(controls.target).add(direction.multiplyScalar(newDist));
+                }
             }, { passive: false });
             
             // 터치 조이스틱
@@ -21615,116 +22132,171 @@ window.MissionSystem = MissionSystem;
                 if (e.key === 'w' || e.key === 'ArrowUp') shipInputs.throttle = Math.min(1, shipInputs.throttle + 0.05);
                 if (e.key === 's' || e.key === 'ArrowDown') shipInputs.throttle = Math.max(-0.5, shipInputs.throttle - 0.05);
                 if (e.key === ' ') shipInputs.emergencyReverse = true;
+                // ★ Q키: 무기 발사
+                if (e.key === 'q' || e.key === 'Q') weaponSystem.isFiring = true;
             });
-            window.addEventListener('keyup', (e) => { if (e.key === ' ') shipInputs.emergencyReverse = false; });
-            
-            // 모바일용 동적 조이스틱 (터치 위치에 생성)
+            window.addEventListener('keyup', (e) => {
+                if (e.key === ' ') shipInputs.emergencyReverse = false;
+                if (e.key === 'q' || e.key === 'Q') weaponSystem.isFiring = false;
+            });
+
+            // ★ 마우스 좌클릭은 시야 회전용으로 유지 (발사 제거됨 - Q키 사용)
+
+            // ★★★ 모바일 듀얼 터치 컨트롤 시스템 (개선됨) ★★★
+            // 왼쪽 터치 (0-50%): 우주선 선회 (yaw, pitch) - 가상 조이스틱 방식
+            // 오른쪽 터치 (50-100%): 시야 변경 (조준용)
             const touchArea = document.getElementById('touch-area-left');
             const pilotJS = document.getElementById('pilot-joystick');
             const pilotKnob = document.getElementById('pilot-joystick-knob');
-            let pilotJSActive = false;
-            let pilotJSCenter = { x: 0, y: 0 };
-            let pilotJSTouchId = null;
-            
-            touchArea.addEventListener('touchstart', (e) => {
+            if (pilotJS) pilotJS.style.display = 'none';
+            if (touchArea) touchArea.style.display = 'none';
+
+            // 왼쪽 터치 (선회) - 가상 조이스틱
+            let leftTouchId = null;
+            let leftTouchCenter = { x: 0, y: 0 };  // 터치 시작점 = 조이스틱 중심 (고정)
+            // 오른쪽 터치 (시야)
+            let rightTouchId = null;
+            let rightTouchStart = { x: 0, y: 0 };
+
+            // ★★★ UI 요소 체크 함수 (개선됨) ★★★
+            function isUIElement(el) {
+                if (!el) return false;
+                // 발사 버튼은 별도 처리
+                if (el.id === 'mobile-fire-btn' || el.closest('#mobile-fire-btn')) return true;
+
+                return (
+                    el.closest('#ai-copilot-panel') ||
+                    el.closest('#unified-chat-panel') ||
+                    el.closest('#pilot-bottom') ||
+                    el.closest('#mobile-tab-bar') ||
+                    el.closest('#mobile-tab-panel') ||
+                    el.closest('#mobile-mini-hud') ||
+                    el.closest('#cockpit-radio') ||
+                    el.closest('#multiplayer-ui') ||
+                    el.closest('#ssil-mission-panel') ||
+                    el.closest('#daily-mission-modal') ||
+                    el.closest('#pilot-left-console') ||
+                    el.closest('#pilot-center-console') ||
+                    el.closest('#pilot-right-console') ||
+                    el.closest('#ui-settings-panel') ||
+                    el.closest('#ui-rearrange-overlay') ||
+                    el.closest('#global-header-btns') ||
+                    el.closest('#mobile-direction-btns') ||
+                    el.closest('.mobile-direction-btns') ||
+                    el.id === 'ui-settings-btn' ||
+                    el.id === 'mobile-accel' ||
+                    el.id === 'mobile-decel' ||
+                    el.id === 'mobile-emergency-brake' ||
+                    (el.tagName === 'BUTTON' && el.id !== '') ||  // ID 있는 버튼만
+                    el.tagName === 'INPUT' ||
+                    el.tagName === 'SELECT' ||
+                    el.tagName === 'LABEL'
+                );
+            }
+
+            // ★★★ 터치 시작 - 화면 전체에서 좌우 분리 (document 레벨) ★★★
+            document.addEventListener('touchstart', (e) => {
                 if (!isPilotMode || isInteriorMode || isObservatoryMode || !isCockpitView) return;
-                // ★ UI 재배치 모드에서는 작동 안함
                 if (typeof uiRearrangeSystem !== 'undefined' && uiRearrangeSystem.isActive) return;
-                
-                const touch = e.changedTouches[0];
-                
-                // ★ UI 요소 위에서는 조이스틱 동작 안함
-                const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (targetEl && (
-                    targetEl.closest('#ai-copilot-panel') ||
-                    targetEl.closest('#unified-chat-panel') ||
-                    targetEl.closest('#pilot-bottom') ||
-                    targetEl.closest('#mobile-tab-bar') ||
-                    targetEl.closest('#mobile-tab-panel') ||
-                    targetEl.closest('#mobile-mini-hud') ||
-                    targetEl.closest('#cockpit-radio') ||
-                    targetEl.closest('#multiplayer-ui') ||
-                    targetEl.closest('#ssil-mission-panel') ||
-                    targetEl.closest('#daily-mission-modal') ||
-                    targetEl.closest('#pilot-left-console') ||
-                    targetEl.closest('#pilot-center-console') ||
-                    targetEl.closest('#pilot-right-console') ||
-                    targetEl.closest('#ui-settings-panel') ||
-                    targetEl.closest('#ui-rearrange-overlay') ||
-                    targetEl.id === 'ui-settings-btn' ||
-                    targetEl.tagName === 'BUTTON' ||
-                    targetEl.tagName === 'INPUT' ||
-                    targetEl.tagName === 'SELECT' ||
-                    targetEl.tagName === 'LABEL'
-                )) return;
-                
-                e.preventDefault(); e.stopPropagation();
-                
-                pilotJSTouchId = touch.identifier;
-                pilotJSActive = true;
-                
-                // 터치 위치에 조이스틱 생성 (80x150 크기)
-                const x = touch.clientX - 40;  // 조이스틱 중심 (가로)
-                const y = touch.clientY - 75;  // 조이스틱 중심 (세로)
-                pilotJS.style.left = x + 'px';
-                pilotJS.style.top = y + 'px';
-                pilotJS.classList.add('visible');
-                
-                pilotJSCenter = { x: touch.clientX, y: touch.clientY };
-            }, { passive: false });
-            
-            touchArea.addEventListener('touchmove', (e) => {
-                if (!isPilotMode || !pilotJSActive || isInteriorMode || isObservatoryMode) return;
-                e.preventDefault(); e.stopPropagation();
-                
-                // 올바른 터치 찾기
-                let touch = null;
+
+                const screenW = window.innerWidth;
+                const screenH = window.innerHeight;
+
                 for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === pilotJSTouchId) {
-                        touch = e.changedTouches[i];
-                        break;
+                    const touch = e.changedTouches[i];
+                    const tx = touch.clientX;
+                    const ty = touch.clientY;
+
+                    // UI 위에서는 무시
+                    const targetEl = document.elementFromPoint(tx, ty);
+                    if (isUIElement(targetEl)) continue;
+
+                    // 상단 10%, 하단 5%는 무시 (더 넓은 터치 영역)
+                    if (ty < screenH * 0.10 || ty > screenH * 0.95) continue;
+
+                    // ★★★ 왼쪽 절반 (0 ~ 50%): 선회 조작 (가상 조이스틱) ★★★
+                    if (tx < screenW * 0.50 && leftTouchId === null) {
+                        leftTouchId = touch.identifier;
+                        leftTouchCenter = { x: tx, y: ty };  // 터치 시작점이 조이스틱 중심
+                        console.log('★ 왼쪽 터치 시작:', tx, ty, '화면절반:', screenW * 0.5);
+                        e.preventDefault();
                     }
-                }
-                if (!touch) return;
-                
-                let dy = touch.clientY - pilotJSCenter.y;
-                const maxR = 50;
-                
-                // 상하 범위 제한 (좌우는 무시)
-                if (dy > maxR) dy = maxR;
-                if (dy < -maxR) dy = -maxR;
-                
-                // 노브는 상하로만 이동
-                pilotKnob.style.transform = `translate(-50%, calc(-50% + ${dy}px))`;
-                
-                if (!autopilot.engaged) {
-                    // 위로 올리면 전진(+), 아래로 내리면 후진(-)
-                    const throttleValue = -dy / maxR;  // -1 ~ 1
-                    if (throttleValue > 0) {
-                        shipInputs.throttle = throttleValue;  // 전진: 0 ~ 1
-                    } else {
-                        shipInputs.throttle = throttleValue * 0.5;  // 후진: 0 ~ -0.5
+                    // ★★★ 오른쪽 절반 (50% ~ 100%): 시야 조작 ★★★
+                    else if (tx >= screenW * 0.50 && rightTouchId === null) {
+                        rightTouchId = touch.identifier;
+                        rightTouchStart = { x: tx, y: ty };
+                        console.log('★ 오른쪽 터치 시작:', tx, ty);
+                        e.preventDefault();
                     }
                 }
             }, { passive: false });
-            
-            touchArea.addEventListener('touchend', (e) => {
+
+            // ★★★ 터치 이동 - 좌우 독립 처리 (document 레벨) ★★★
+            document.addEventListener('touchmove', (e) => {
+                if (!isPilotMode || isInteriorMode || isObservatoryMode || !isCockpitView) return;
+
                 for (let i = 0; i < e.changedTouches.length; i++) {
-                    if (e.changedTouches[i].identifier === pilotJSTouchId) {
-                        pilotJSActive = false;
-                        pilotJSTouchId = null;
-                        pilotKnob.style.transform = 'translate(-50%, -50%)';
-                        pilotJS.classList.remove('visible');
-                        break;
+                    const touch = e.changedTouches[i];
+
+                    // ★★★ 왼쪽 터치: 선회 (가상 조이스틱 - 중심점 고정) ★★★
+                    if (touch.identifier === leftTouchId) {
+                        e.preventDefault();
+                        // 시작점(중심)에서 현재 위치까지의 거리
+                        const dx = touch.clientX - leftTouchCenter.x;
+                        const dy = touch.clientY - leftTouchCenter.y;
+                        const maxRadius = 100;  // 최대 반경 (증가)
+
+                        if (!autopilot.engaged) {
+                            // 중심에서 멀어질수록 선회 강도 증가 (조이스틱 방식)
+                            shipInputs.yaw = Math.max(-1, Math.min(1, dx / maxRadius));
+                            shipInputs.pitch = Math.max(-1, Math.min(1, dy / maxRadius));
+                        }
+                        // ★ 중심점은 고정 (업데이트 안함) - 버벅거림 해결
+                    }
+
+                    // ★★★ 오른쪽 터치: 시야 (카메라 회전) ★★★
+                    if (touch.identifier === rightTouchId) {
+                        e.preventDefault();
+                        const dx = touch.clientX - rightTouchStart.x;
+                        const dy = touch.clientY - rightTouchStart.y;
+
+                        // 시야 회전 (조준용)
+                        cockpitTargetRotY -= dx * COCKPIT_LOOK_SPEED;
+                        cockpitTargetRotX -= dy * COCKPIT_LOOK_SPEED;
+                        cockpitTargetRotY = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cockpitTargetRotY));
+                        cockpitTargetRotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3.5, cockpitTargetRotX));
+
+                        rightTouchStart = { x: touch.clientX, y: touch.clientY };
+                    }
+                }
+            }, { passive: false });
+
+            // ★★★ 터치 종료 - 각각 독립 해제 (document 레벨) ★★★
+            document.addEventListener('touchend', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+
+                    if (touch.identifier === leftTouchId) {
+                        leftTouchId = null;
+                        shipInputs.yaw = 0;
+                        shipInputs.pitch = 0;
+                        console.log('★ 왼쪽 터치 종료');
+                    }
+
+                    if (touch.identifier === rightTouchId) {
+                        rightTouchId = null;
+                        // 시야는 유지 (초기화 안함)
+                        console.log('★ 오른쪽 터치 종료');
                     }
                 }
             });
-            
-            touchArea.addEventListener('touchcancel', (e) => {
-                pilotJSActive = false;
-                pilotJSTouchId = null;
-                pilotKnob.style.transform = 'translate(-50%, -50%)';
-                pilotJS.classList.remove('visible');
+
+            document.addEventListener('touchcancel', (e) => {
+                leftTouchId = null;
+                rightTouchId = null;
+                shipInputs.yaw = 0;
+                shipInputs.pitch = 0;
+                console.log('★ 터치 취소');
             });
             
             // 버튼 이벤트
@@ -23402,7 +23974,636 @@ window.MissionSystem = MissionSystem;
                 }
             });
         }
-        
+
+        // ★★★ 무기 발사 시스템 함수들 ★★★
+
+        // 투사체 생성
+        function createProjectile(position, direction) {
+            const geometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
+            geometry.rotateX(Math.PI / 2);
+
+            const material = new THREE.MeshBasicMaterial({
+                color: 0xff6600,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const projectile = new THREE.Mesh(geometry, material);
+            projectile.position.copy(position);
+            projectile.lookAt(position.clone().add(direction));
+
+            // 발광 효과
+            const glowGeom = new THREE.SphereGeometry(0.06, 8, 8);
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: 0xffaa00,
+                transparent: true,
+                opacity: 0.6
+            });
+            const glow = new THREE.Mesh(glowGeom, glowMat);
+            projectile.add(glow);
+
+            scene.add(projectile);
+
+            return {
+                mesh: projectile,
+                direction: direction.clone().normalize(),
+                speed: weaponSystem.projectileSpeed,
+                startPos: position.clone(),
+                damage: weaponSystem.damage,
+                createdAt: Date.now()
+            };
+        }
+
+        // 무기 발사
+        function fireWeapon() {
+            if (!playerShip || !playerShip.mesh || !isPilotMode) return;
+            if (window.isDockedToStation || window.isDocking) return;
+
+            const now = Date.now() / 1000;
+            if (now - weaponSystem.lastFireTime < weaponSystem.fireRate) return;
+
+            weaponSystem.lastFireTime = now;
+
+            // 우주선 위치와 전방 방향
+            const shipPos = playerShip.mesh.position.clone();
+            const shipForward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerShip.mesh.quaternion);
+
+            // ★★★ 카메라가 바라보는 방향을 직접 사용 (화면 십자선과 정확히 일치) ★★★
+            const aimDirection = new THREE.Vector3();
+            camera.getWorldDirection(aimDirection);
+
+            // 투사체 발사 위치 (우주선 전방 약간 앞)
+            const firePos = shipPos.clone().add(shipForward.multiplyScalar(0.5));
+
+            // 투사체 생성
+            const projectile = createProjectile(firePos, aimDirection);
+            weaponSystem.projectiles.push(projectile);
+
+            // 최대 개수 초과 시 오래된 것 제거
+            while (weaponSystem.projectiles.length > weaponSystem.maxProjectiles) {
+                const old = weaponSystem.projectiles.shift();
+                if (old.mesh) scene.remove(old.mesh);
+            }
+
+            // 발사 효과음
+            playWeaponSound();
+        }
+
+        // 발사 효과음
+        function playWeaponSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.value = 600;
+                osc.type = 'square';
+                gain.gain.value = 0.1;
+
+                osc.start();
+                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.stop(audioCtx.currentTime + 0.15);
+            } catch (e) { }
+        }
+
+        // 투사체 업데이트 및 충돌 검사
+        function updateWeaponSystem(dt) {
+            if (!isPilotMode) return;
+
+            // 발사 버튼 누르고 있으면 연사
+            if (weaponSystem.isFiring) {
+                fireWeapon();
+            }
+
+            // 투사체 이동 및 충돌 검사
+            const toRemove = [];
+
+            weaponSystem.projectiles.forEach((proj, idx) => {
+                if (!proj.mesh) {
+                    toRemove.push(idx);
+                    return;
+                }
+
+                // 이동
+                const moveAmount = proj.direction.clone().multiplyScalar(proj.speed * dt);
+                proj.mesh.position.add(moveAmount);
+
+                // 사거리 체크
+                const traveled = proj.mesh.position.distanceTo(proj.startPos);
+                if (traveled > weaponSystem.projectileRange) {
+                    scene.remove(proj.mesh);
+                    toRemove.push(idx);
+                    return;
+                }
+
+                // 시간 초과 (5초)
+                if (Date.now() - proj.createdAt > 5000) {
+                    scene.remove(proj.mesh);
+                    toRemove.push(idx);
+                    return;
+                }
+
+                // 우주정거장 충돌 검사
+                satellites.forEach(sat => {
+                    if (!sat.mesh || !sat.isSpaceStation) return;
+
+                    const dist = proj.mesh.position.distanceTo(sat.mesh.position);
+                    const hitRadius = 3;  // 정거장 피격 반경
+
+                    if (dist < hitRadius) {
+                        // 보호막 효과 트리거
+                        triggerShieldImpact(sat, proj.mesh.position.clone(), proj.speed);
+
+                        // 투사체 제거
+                        scene.remove(proj.mesh);
+                        toRemove.push(idx);
+
+                        // 정거장 반격 트리거
+                        triggerStationCounterAttack(sat);
+                    }
+                });
+
+                // 연료 정거장 충돌 검사
+                bodies.forEach(body => {
+                    if (!body.mesh || !body.isStation) return;
+
+                    const dist = proj.mesh.position.distanceTo(body.mesh.position);
+                    const hitRadius = 1.5;
+
+                    if (dist < hitRadius) {
+                        triggerShieldImpact(body, proj.mesh.position.clone(), proj.speed);
+                        scene.remove(proj.mesh);
+                        toRemove.push(idx);
+                        triggerStationCounterAttack(body);
+                    }
+                });
+            });
+
+            // 제거할 투사체 처리 (역순으로)
+            toRemove.sort((a, b) => b - a);
+            toRemove.forEach(idx => {
+                weaponSystem.projectiles.splice(idx, 1);
+            });
+
+            // 정거장 반격 빔 업데이트
+            updateStationDefenseBeams(dt);
+        }
+
+        // ★★★ 정거장 반격 시스템 ★★★
+        function triggerStationCounterAttack(station) {
+            if (!station || !station.mesh) return;
+            if (!playerShip || !playerShip.mesh) return;
+
+            const stationId = station.name || 'unknown';
+            const now = Date.now() / 1000;
+
+            // 발사 간격 체크
+            if (stationDefense.lastFireTime[stationId] &&
+                now - stationDefense.lastFireTime[stationId] < stationDefense.fireRate) {
+                return;
+            }
+
+            stationDefense.lastFireTime[stationId] = now;
+
+            // 플레이어와의 거리 체크
+            const dist = station.mesh.position.distanceTo(playerShip.mesh.position);
+            if (dist > stationDefense.range) return;
+
+            // 반격 빔 생성
+            createStationBeam(station, playerShip.mesh.position.clone());
+        }
+
+        // 정거장 반격 빔 생성
+        function createStationBeam(station, targetPos) {
+            const stationPos = station.mesh.position.clone();
+            const direction = new THREE.Vector3().subVectors(targetPos, stationPos);
+            const length = direction.length();
+
+            // 빔 지오메트리
+            const beamGeom = new THREE.CylinderGeometry(0.05, 0.02, length, 8);
+            beamGeom.rotateX(Math.PI / 2);
+            beamGeom.translate(0, 0, length / 2);
+
+            const beamMat = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const beam = new THREE.Mesh(beamGeom, beamMat);
+            beam.position.copy(stationPos);
+            beam.lookAt(targetPos);
+
+            // 글로우 효과
+            const glowGeom = new THREE.CylinderGeometry(0.1, 0.05, length, 8);
+            glowGeom.rotateX(Math.PI / 2);
+            glowGeom.translate(0, 0, length / 2);
+
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.3
+            });
+
+            const glow = new THREE.Mesh(glowGeom, glowMat);
+            beam.add(glow);
+
+            scene.add(beam);
+
+            // 빔 데이터 저장
+            const beamData = {
+                mesh: beam,
+                station: station,
+                targetPos: targetPos.clone(),
+                createdAt: Date.now(),
+                duration: stationDefense.beamDuration * 1000,
+                damage: stationDefense.damage,
+                hitApplied: false
+            };
+
+            stationDefense.beams.push(beamData);
+
+            // 빔 발사 사운드
+            playBeamSound();
+        }
+
+        // 빔 사운드
+        function playBeamSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.frequency.value = 1200;
+                osc.type = 'sine';
+                gain.gain.value = 0.15;
+
+                osc.start();
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch (e) { }
+        }
+
+        // 정거장 반격 빔 업데이트
+        function updateStationDefenseBeams(dt) {
+            const toRemove = [];
+
+            stationDefense.beams.forEach((beamData, idx) => {
+                const elapsed = Date.now() - beamData.createdAt;
+
+                // 지속시간 종료
+                if (elapsed > beamData.duration) {
+                    if (beamData.mesh) scene.remove(beamData.mesh);
+                    toRemove.push(idx);
+                    return;
+                }
+
+                // 페이드아웃
+                const progress = elapsed / beamData.duration;
+                if (beamData.mesh && beamData.mesh.material) {
+                    beamData.mesh.material.opacity = 0.8 * (1 - progress);
+                }
+
+                // 피격 판정 (1회만)
+                if (!beamData.hitApplied && playerShip && playerShip.mesh) {
+                    const dist = beamData.targetPos.distanceTo(playerShip.mesh.position);
+                    if (dist < 2) {
+                        // 플레이어 피격
+                        applyDamageToPlayer(beamData.damage);
+                        beamData.hitApplied = true;
+                    }
+                }
+            });
+
+            // 제거
+            toRemove.sort((a, b) => b - a);
+            toRemove.forEach(idx => {
+                stationDefense.beams.splice(idx, 1);
+            });
+        }
+
+        // ★★★ 플레이어 데미지 처리 ★★★
+        function applyDamageToPlayer(damage) {
+            if (!playerShip) return;
+
+            // 내구도 감소
+            if (playerShip.hull !== undefined) {
+                playerShip.hull = Math.max(0, playerShip.hull - damage);
+            }
+
+            // 화면 플래시
+            const overlay = document.getElementById('weapon-hit-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+                setTimeout(() => overlay.classList.remove('active'), 200);
+            }
+
+            // 경고 메시지
+            showMsg(`⚠️ 피격! 내구도: ${Math.round(playerShip.hull)}%`);
+
+            // 내구도 0이면 파괴
+            if (playerShip.hull <= 0) {
+                handleShipDestruction();
+            }
+        }
+
+        // ★★★ 우주선 파괴 처리 (내구도 0) - 우주정거장 리스폰 ★★★
+        function handleShipDestruction() {
+            // 이미 파괴 처리 중이면 무시
+            if (window.isShipDestroying) return;
+            window.isShipDestroying = true;
+
+            showMsg('💥 우주선이 파괴되었습니다!');
+
+            // 파괴 효과 (폭발)
+            let explosionPos = new THREE.Vector3(0, 0, 0);
+            if (playerShip && playerShip.mesh) {
+                explosionPos = playerShip.mesh.position.clone();
+                createExplosionEffect(explosionPos);
+            }
+
+            // 파괴된 우주선 정보 저장
+            const destroyedShipName = currentShipType ? getShipName(currentShipType) : '우주선';
+
+            // 화면 플래시 (빨간색)
+            const flashOverlay = document.createElement('div');
+            flashOverlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(255, 0, 0, 0.8); z-index: 99999;
+                pointer-events: none; transition: opacity 1s;
+            `;
+            document.body.appendChild(flashOverlay);
+
+            setTimeout(() => {
+                flashOverlay.style.opacity = '0';
+                setTimeout(() => flashOverlay.remove(), 1000);
+            }, 500);
+
+            // 2초 후 리스폰 처리
+            setTimeout(() => {
+                // 조종석 제거
+                if (cockpitGroup && playerShip && playerShip.mesh) {
+                    playerShip.mesh.remove(cockpitGroup);
+                    cockpitGroup = null;
+                }
+
+                // 카메라 분리
+                if (playerShip && playerShip.mesh && camera.parent === playerShip.mesh) {
+                    playerShip.mesh.remove(camera);
+                }
+
+                // 우주선 제거
+                if (playerShip && playerShip.mesh) {
+                    scene.remove(playerShip.mesh);
+                }
+
+                // 카메라 재배치
+                scene.add(camera);
+
+                // ★ 가장 가까운 우주정거장 찾기
+                let nearestStation = null;
+                let nearestDist = Infinity;
+                window.spaceStations?.forEach(station => {
+                    if (station && station.mesh) {
+                        const dist = explosionPos.distanceTo(station.mesh.position);
+                        if (dist < nearestDist) {
+                            nearestDist = dist;
+                            nearestStation = station;
+                        }
+                    }
+                });
+
+                // 정거장 근처로 카메라 이동
+                if (nearestStation && nearestStation.mesh) {
+                    const stationPos = nearestStation.mesh.position.clone();
+                    camera.position.copy(stationPos).add(new THREE.Vector3(5, 3, 5));
+                    controls.target.copy(stationPos);
+
+                    // 정거장 포커스
+                    focusObject({ mesh: nearestStation.mesh, name: nearestStation.name, type: 'station' });
+                } else {
+                    camera.position.copy(explosionPos).add(new THREE.Vector3(10, 5, 10));
+                    controls.target.copy(explosionPos);
+                }
+
+                camera.near = 0.01;
+                camera.updateProjectionMatrix();
+
+                // 주차된 우주선 정보 삭제
+                clearParkedShip();
+
+                // 저장된 상태 초기화
+                savedShipState = null;
+                playerShip = null;
+
+                // 도킹된 우주선 다시 표시
+                if (dockedShipMesh) dockedShipMesh.visible = true;
+
+                // HUD 비활성화
+                document.getElementById('cockpit-hud')?.classList.remove('active');
+                document.getElementById('interior-hud')?.classList.remove('active');
+                document.getElementById('observatory-hud')?.classList.remove('active');
+
+                // 기본 UI 복원
+                document.getElementById('top-bar').style.display = '';
+                document.getElementById('nav-container').style.display = '';
+                if (window.gameMode !== 'multi') {
+                    document.getElementById('spawn-dock').style.display = '';
+                }
+                document.getElementById('chat-toggle').style.display = '';
+                document.getElementById('board-ship-btn').style.display = 'none';
+
+                // 경고 비활성화
+                stopGravityWarning();
+
+                // 특수능력 상태 초기화
+                shipAbility.cooldown = 0;
+                shipAbility.shieldActive = false;
+                shipAbility.afterburnerActive = false;
+
+                // 모드 초기화
+                isPilotMode = false;
+                document.body.classList.remove('pilot-mode');
+                isCockpitView = false;
+                isInteriorMode = false;
+                isObservatoryMode = false;
+                controls.enabled = true;
+
+                // 파괴 플래그 해제
+                window.isShipDestroying = false;
+
+                // 리스폰 메시지
+                showMsg(`⚠️ ${destroyedShipName}이(가) 파괴되었습니다! 우주정거장에서 새 우주선을 탑승하세요.`);
+
+                // ARIA 안내 메시지
+                if (typeof aiTypeMessage === 'function') {
+                    setTimeout(() => {
+                        aiTypeMessage('파일럿님, 안타깝게도 우주선이 파괴되었습니다. 가까운 우주정거장에서 새 우주선을 받으실 수 있습니다. 정거장을 클릭하여 도킹 메뉴에서 "탑승"을 선택하세요.');
+                    }, 2000);
+                }
+            }, 2000);
+        }
+
+        // ★★★ 폭발 효과 (개선) ★★★
+        function createExplosionEffect(position) {
+            const particleCount = 60;  // 더 많은 파티클
+            const particles = [];
+
+            // 중앙 섬광
+            const flashGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            const flashMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1
+            });
+            const flash = new THREE.Mesh(flashGeo, flashMat);
+            flash.position.copy(position);
+            scene.add(flash);
+
+            // 파티클 생성
+            for (let i = 0; i < particleCount; i++) {
+                const size = Math.random() * 0.15 + 0.05;
+                const geom = new THREE.SphereGeometry(size, 4, 4);
+
+                // 다양한 색상 (주황, 노랑, 빨강, 흰색)
+                const colors = [0xff6600, 0xffaa00, 0xff3300, 0xffff00, 0xffffff];
+                const mat = new THREE.MeshBasicMaterial({
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    transparent: true,
+                    opacity: 1
+                });
+                const particle = new THREE.Mesh(geom, mat);
+                particle.position.copy(position);
+
+                const speed = Math.random() * 8 + 3;
+                const velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2
+                ).normalize().multiplyScalar(speed);
+
+                particle.userData.velocity = velocity;
+                particle.userData.createdAt = Date.now();
+                particle.userData.lifetime = Math.random() * 1.5 + 1;  // 1~2.5초
+
+                scene.add(particle);
+                particles.push(particle);
+            }
+
+            // 파편 (잔해)
+            for (let i = 0; i < 15; i++) {
+                const geom = new THREE.BoxGeometry(
+                    Math.random() * 0.2 + 0.05,
+                    Math.random() * 0.2 + 0.05,
+                    Math.random() * 0.2 + 0.05
+                );
+                const mat = new THREE.MeshBasicMaterial({
+                    color: 0x444444,
+                    transparent: true,
+                    opacity: 1
+                });
+                const debris = new THREE.Mesh(geom, mat);
+                debris.position.copy(position);
+                debris.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
+                const velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2
+                ).normalize().multiplyScalar(Math.random() * 3 + 1);
+
+                debris.userData.velocity = velocity;
+                debris.userData.rotSpeed = new THREE.Vector3(
+                    (Math.random() - 0.5) * 5,
+                    (Math.random() - 0.5) * 5,
+                    (Math.random() - 0.5) * 5
+                );
+                debris.userData.createdAt = Date.now();
+                debris.userData.lifetime = Math.random() * 2 + 2;  // 2~4초
+
+                scene.add(debris);
+                particles.push(debris);
+            }
+
+            // 파티클 애니메이션
+            const animateExplosion = () => {
+                const now = Date.now();
+                let allDone = true;
+
+                // 섬광 애니메이션
+                const flashElapsed = (now - particles[0]?.userData.createdAt) / 1000;
+                if (flash && flashElapsed < 0.3) {
+                    flash.scale.setScalar(1 + flashElapsed * 10);
+                    flash.material.opacity = 1 - flashElapsed / 0.3;
+                } else if (flash.parent) {
+                    scene.remove(flash);
+                }
+
+                particles.forEach(p => {
+                    if (!p.userData.createdAt) return;
+                    const elapsed = (now - p.userData.createdAt) / 1000;
+                    const lifetime = p.userData.lifetime || 1;
+
+                    if (elapsed < lifetime) {
+                        allDone = false;
+                        p.position.add(p.userData.velocity.clone().multiplyScalar(0.016));
+                        p.userData.velocity.multiplyScalar(0.97);
+                        p.material.opacity = Math.max(0, 1 - elapsed / lifetime);
+
+                        // 파편 회전
+                        if (p.userData.rotSpeed) {
+                            p.rotation.x += p.userData.rotSpeed.x * 0.016;
+                            p.rotation.y += p.userData.rotSpeed.y * 0.016;
+                            p.rotation.z += p.userData.rotSpeed.z * 0.016;
+                        } else {
+                            p.scale.setScalar(1 + elapsed * 1.5);
+                        }
+                    } else {
+                        if (p.parent) scene.remove(p);
+                    }
+                });
+
+                if (!allDone) requestAnimationFrame(animateExplosion);
+            };
+
+            animateExplosion();
+
+            // 폭발음 효과
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const noise = audioCtx.createBufferSource();
+
+                // 화이트 노이즈 버퍼
+                const bufferSize = audioCtx.sampleRate * 0.5;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                noise.buffer = buffer;
+
+                const noiseGain = audioCtx.createGain();
+                noise.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+
+                noiseGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+                noise.start();
+                noise.stop(audioCtx.currentTime + 0.5);
+            } catch (e) { }
+        }
+
         // ★★★ 우주선과 정거장/오브젝트 간 충돌 물리 ★★★
         function checkStationCollisions() {
             if (!playerShip || !playerShip.mesh || !isPilotMode) return;
@@ -24627,7 +25828,10 @@ window.MissionSystem = MissionSystem;
                     }
                     
                     updatePilotMode(dt);
-                    
+
+                    // ★★★ 무기 시스템 업데이트 ★★★
+                    updateWeaponSystem(dt);
+
                     // ★★★ 정거장/오브젝트 충돌 체크 및 내구도 업데이트 ★★★
                     checkStationCollisions();
                     updateHullHUD();
@@ -24658,20 +25862,26 @@ window.MissionSystem = MissionSystem;
                         } else {
                             // 3인칭 뷰 - 우주선 본체만 표시 (조종석 숨김)
                             cockpit.visible = false;  // ★ 조종석 숨김
-                            
+
                             // ★ shipVisualGroup 표시 (우주선 본체/GLB 모델)
                             const shipVisual = playerShip?.mesh?.getObjectByName('shipVisual');
                             if (shipVisual) shipVisual.visible = true;
-                            
-                            // ★ 카메라가 우주선을 따라가되 상대 위치(거리/각도) 유지
+
+                            // ★★★ 3인칭 카메라: 우주선 따라가기 + 줌 지원 ★★★
                             const shipPos = playerShip.mesh.position.clone();
+
+                            // target을 우주선 위치로 설정
+                            controls.target.copy(shipPos);
+
+                            // 우주선 이동량 계산
                             if (lastShipPosition) {
                                 const diff = new THREE.Vector3().subVectors(shipPos, lastShipPosition);
+                                // 카메라도 같이 이동 (줌 거리 유지)
                                 camera.position.add(diff);
-                                controls.target.copy(shipPos);
                             }
                             lastShipPosition = shipPos.clone();
-                            
+
+                            // OrbitControls 업데이트 (줌/회전 적용)
                             controls.update();
                             renderer.render(scene, camera);
                         }
@@ -25809,6 +27019,7 @@ window.MissionSystem = MissionSystem;
                 'status-panel',            // 상태 패널
                 'ai-copilot-panel',        // AI 코파일럿
                 'multiplayer-ui',          // 멀티플레이어 UI
+                'pilot-right-btns',        // ★ 통일된 우측 버튼 컨테이너
                 'ui-settings-btn',         // 설정 버튼
                 'ssil-mission-panel',      // SSIL 훈련 프로그램
                 'mission-float-btn',       // 미션 플로팅 버튼
@@ -25816,7 +27027,7 @@ window.MissionSystem = MissionSystem;
                 'ad-rewards-panel',        // 광고 보상 패널
                 'ad-menu-toggle'           // 광고 메뉴 버튼
             ],
-            
+
             init() {
                 if (this.initialized) {
                     console.log('드래그 UI 이미 초기화됨');
@@ -26379,14 +27590,16 @@ window.MissionSystem = MissionSystem;
                 'status-panel',            // 상태 패널
                 'ai-copilot-panel',        // AI 코파일럿
                 'multiplayer-ui',          // 멀티플레이어 UI
+                'pilot-right-btns',        // ★ 통일된 우측 버튼 컨테이너
                 'ui-settings-btn',         // 설정 버튼
                 'ssil-mission-panel',      // SSIL 훈련 프로그램
                 'mission-float-btn',       // 미션 플로팅 버튼
                 'mission-board-modal',     // 임무 지시서
                 'ad-rewards-panel',        // 광고 보상 패널
-                'ad-menu-toggle'           // 광고 메뉴 버튼
+                'ad-menu-toggle',          // 광고 메뉴 버튼
+                'mobile-fire-btn'          // ★ 발사 버튼
             ],
-            
+
             start() {
                 this.isActive = true;
                 document.body.classList.add('ui-rearrange-mode');
@@ -27042,7 +28255,41 @@ window.MissionSystem = MissionSystem;
                 document.getElementById('mobile-decel')?.addEventListener('touchend', () => {
                     if (window.shipInputs) window.shipInputs.throttle = 0;
                 });
-                
+
+                // ★ 발사 버튼 이벤트
+                const fireBtn = document.getElementById('mobile-fire-btn');
+                if (fireBtn) {
+                    fireBtn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        weaponSystem.isFiring = true;
+                        fireBtn.classList.add('firing');
+                    });
+                    fireBtn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        weaponSystem.isFiring = false;
+                        fireBtn.classList.remove('firing');
+                    });
+                    fireBtn.addEventListener('touchcancel', (e) => {
+                        weaponSystem.isFiring = false;
+                        fireBtn.classList.remove('firing');
+                    });
+                    // 마우스 이벤트 (데스크탑)
+                    fireBtn.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        weaponSystem.isFiring = true;
+                        fireBtn.classList.add('firing');
+                    });
+                    fireBtn.addEventListener('mouseup', (e) => {
+                        e.preventDefault();
+                        weaponSystem.isFiring = false;
+                        fireBtn.classList.remove('firing');
+                    });
+                    fireBtn.addEventListener('mouseleave', () => {
+                        weaponSystem.isFiring = false;
+                        fireBtn.classList.remove('firing');
+                    });
+                }
+
                 // 기능 버튼들
                 document.getElementById('mobile-autopilot')?.addEventListener('click', () => {
                     if (typeof toggleAutopilot === 'function') toggleAutopilot();
