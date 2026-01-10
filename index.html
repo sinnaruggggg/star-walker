@@ -23967,7 +23967,8 @@ window.MissionSystem = MissionSystem;
             };
         }
 
-        // ★★★ 백그라운드 이동 보정 시스템 ★★★
+        // ★★★ 백그라운드 이동 보정 시스템 (Web Worker 사용) ★★★
+        let backgroundWorker = null;
         let backgroundState = {
             lastActiveTime: Date.now(),
             wasInPilotMode: false,
@@ -23977,24 +23978,72 @@ window.MissionSystem = MissionSystem;
             autopilotTarget: null
         };
 
+        // Web Worker 초기화
+        function initBackgroundWorker() {
+            if (backgroundWorker) return;
+            try {
+                backgroundWorker = new Worker('/background-worker.js');
+                backgroundWorker.onmessage = function(e) {
+                    const { type, data } = e.data;
+                    if (type === 'positionUpdate' && !isPageVisible) {
+                        // 백그라운드에서 위치 업데이트 수신
+                        backgroundState.lastPosition = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
+                        backgroundState.lastSpeed = data.speed;
+                    } else if (type === 'state') {
+                        // 상태 응답 처리
+                        if (data.position && playerShip && playerShip.mesh) {
+                            playerShip.mesh.position.set(data.position.x, data.position.y, data.position.z);
+                            playerShip.speed = data.speed || 0;
+                        }
+                    }
+                };
+                console.log('✅ Background Worker 초기화 완료');
+            } catch (e) {
+                console.log('⚠️ Background Worker 초기화 실패:', e);
+            }
+        }
+
+        // Worker에 상태 전송
+        function sendToWorker(type, data) {
+            if (backgroundWorker) {
+                backgroundWorker.postMessage({ type, data });
+            }
+        }
+
         // 백그라운드/포그라운드 상태 관리
         let isPageVisible = true;
         document.addEventListener('visibilitychange', () => {
             const wasVisible = isPageVisible;
             isPageVisible = !document.hidden;
-            
+
             if (!isPageVisible) {
-                // ★ 백그라운드로 전환 시 상태 저장
+                // ★ 백그라운드로 전환 시 Worker에 상태 전송
                 backgroundState.lastActiveTime = Date.now();
                 backgroundState.wasInPilotMode = isPilotMode;
-                
+
                 if (isPilotMode && playerShip && playerShip.mesh) {
                     backgroundState.lastPosition = playerShip.mesh.position.clone();
                     backgroundState.lastSpeed = playerShip.speed || 0;
-                    
+
                     // 현재 진행 방향 저장
                     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(playerShip.mesh.quaternion);
                     backgroundState.lastDirection = fwd.clone();
+
+                    // Worker에 상태 전송 및 시작
+                    const targetPos = (autopilot.engaged && shipTargetBody && shipTargetBody.mesh)
+                        ? { x: shipTargetBody.mesh.position.x, y: shipTargetBody.mesh.position.y, z: shipTargetBody.mesh.position.z }
+                        : null;
+
+                    sendToWorker('start', {
+                        position: { x: playerShip.mesh.position.x, y: playerShip.mesh.position.y, z: playerShip.mesh.position.z },
+                        speed: backgroundState.lastSpeed,
+                        direction: { x: fwd.x, y: fwd.y, z: fwd.z },
+                        autopilot: {
+                            engaged: autopilot.engaged,
+                            targetPosition: targetPos,
+                            targetName: shipTargetBody?.name || null
+                        }
+                    });
                     
                     // 자동항법 목표 저장
                     if (autopilot.engaged && shipTargetBody) {
@@ -24010,18 +24059,33 @@ window.MissionSystem = MissionSystem;
                     });
                 }
             } else if (wasVisible === false) {
-                // ★ 포그라운드 복귀 시 위치 보정
+                // ★ 포그라운드 복귀 시 Worker에서 위치 가져오기
                 const elapsedMs = Date.now() - backgroundState.lastActiveTime;
                 const elapsedSec = elapsedMs / 1000;
-                
+
                 // clock 리셋 (누적된 시간 버리기)
                 clock.getDelta();
-                
-                // 조종 모드였고 이동 중이었으면 위치 보정
-                if (backgroundState.wasInPilotMode && playerShip && playerShip.mesh && backgroundState.lastSpeed > 0.1) {
-                    compensateBackgroundMovement(elapsedSec);
+
+                // Worker 정지
+                sendToWorker('stop');
+
+                // Worker의 최신 위치 적용
+                if (backgroundState.wasInPilotMode && playerShip && playerShip.mesh && backgroundState.lastPosition) {
+                    // Worker가 계산한 위치 적용
+                    playerShip.mesh.position.copy(backgroundState.lastPosition);
+                    playerShip.speed = backgroundState.lastSpeed;
+
+                    const traveled = backgroundState.lastPosition.distanceTo(
+                        new THREE.Vector3(
+                            backgroundState.lastPosition.x - backgroundState.lastDirection.x * backgroundState.lastSpeed * elapsedSec,
+                            backgroundState.lastPosition.y - backgroundState.lastDirection.y * backgroundState.lastSpeed * elapsedSec,
+                            backgroundState.lastPosition.z - backgroundState.lastDirection.z * backgroundState.lastSpeed * elapsedSec
+                        )
+                    );
+
+                    showMsg(`📱 복귀 - ${elapsedSec.toFixed(0)}초 동안 ${Math.round(traveled)} 단위 이동`);
                 }
-                
+
                 console.log('📱 포그라운드 복귀 - 경과 시간:', elapsedSec.toFixed(1) + '초');
             }
         });
@@ -25289,6 +25353,9 @@ window.MissionSystem = MissionSystem;
                 initInteriorScene();
                 initInteriorControls();
                 initObservatoryControls();
+
+                // ===== 백그라운드 Worker 초기화 =====
+                initBackgroundWorker();
 
                 animate();
             } catch (err) {
@@ -30213,13 +30280,16 @@ const ShipPositionManager = {
         return `milkyway-ship-position-${mode}`;
     },
     
-    // 현재 우주선 위치 저장
+    // 현재 우주선 위치 저장 (방향, 자동항법 포함)
     save: function() {
         if (!playerShip || !playerShip.mesh || !window.currentUser) return;
-        
+
+        // 현재 진행 방향 계산
+        const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(playerShip.mesh.quaternion);
+
         const data = {
             userId: window.currentUser.id || window.currentUser.email,
-            gameMode: window.gameMode || 'single',  // ★ 게임 모드도 저장
+            gameMode: window.gameMode || 'single',
             position: {
                 x: playerShip.mesh.position.x,
                 y: playerShip.mesh.position.y,
@@ -30230,13 +30300,18 @@ const ShipPositionManager = {
                 y: playerShip.mesh.rotation.y,
                 z: playerShip.mesh.rotation.z
             },
+            direction: { x: fwd.x, y: fwd.y, z: fwd.z },  // ★ 방향 추가
             shipType: window.currentShipType ? window.currentShipType.id : 'shuttle',
             shipName: window.currentShipType ? window.currentShipType.name : '셔틀',
             fuel: playerShip.fuel,
             speed: playerShip.speed,
+            autopilot: {  // ★ 자동항법 상태 추가
+                engaged: window.autopilot?.engaged || false,
+                targetName: window.shipTargetBody?.name || null
+            },
             timestamp: Date.now()
         };
-        
+
         localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
         console.log(`우주선 위치 저장됨 (${data.gameMode}):`, data.position);
     },
@@ -30269,17 +30344,63 @@ const ShipPositionManager = {
         localStorage.removeItem(this.getStorageKey());
     },
     
-    // 저장된 위치에서 탑승
+    // 저장된 위치에서 탑승 (시간 기반 위치 보정 포함)
     restoreShip: function(data) {
         if (!data || !playerShip || !playerShip.mesh) return false;
-        
-        playerShip.mesh.position.set(data.position.x, data.position.y, data.position.z);
+
+        let finalPosition = { ...data.position };
+        let travelMessage = '';
+
+        // ★ 시간 기반 위치 보정 (최대 5분)
+        if (data.timestamp && data.speed > 0.1 && data.direction) {
+            const elapsedTime = (Date.now() - data.timestamp) / 1000;  // 초 단위
+            const maxCompensationTime = 5 * 60;  // 최대 5분
+            const compensationTime = Math.min(elapsedTime, maxCompensationTime);
+
+            if (compensationTime > 1) {  // 1초 이상 경과 시에만 보정
+                const travelDistance = data.speed * compensationTime;
+
+                // 자동항법 중이었으면 목표 방향으로, 아니면 마지막 방향으로
+                let dir = data.direction;
+                if (data.autopilot?.engaged && data.autopilot?.targetName) {
+                    // 목표 천체 찾기
+                    const targetBody = allBodies.find(b => b.name === data.autopilot.targetName);
+                    if (targetBody && targetBody.mesh) {
+                        const targetPos = targetBody.mesh.position;
+                        const dx = targetPos.x - data.position.x;
+                        const dy = targetPos.y - data.position.y;
+                        const dz = targetPos.z - data.position.z;
+                        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                        if (dist > 0) {
+                            dir = { x: dx/dist, y: dy/dist, z: dz/dist };
+                        }
+                    }
+                }
+
+                // 위치 보정 적용
+                finalPosition.x += dir.x * travelDistance;
+                finalPosition.y += dir.y * travelDistance;
+                finalPosition.z += dir.z * travelDistance;
+
+                const minutes = Math.floor(compensationTime / 60);
+                const seconds = Math.floor(compensationTime % 60);
+                if (minutes > 0) {
+                    travelMessage = ` (${minutes}분 ${seconds}초 동안 ${travelDistance.toFixed(0)} 이동)`;
+                } else {
+                    travelMessage = ` (${seconds}초 동안 ${travelDistance.toFixed(0)} 이동)`;
+                }
+
+                console.log(`⏱️ 시간 보정: ${compensationTime.toFixed(1)}초 경과, ${travelDistance.toFixed(0)} 이동`);
+            }
+        }
+
+        playerShip.mesh.position.set(finalPosition.x, finalPosition.y, finalPosition.z);
         playerShip.mesh.rotation.set(data.rotation.x, data.rotation.y, data.rotation.z);
         playerShip.fuel = data.fuel || SHIP_CONFIG.maxFuel;
         playerShip.speed = 0;  // 속도는 0으로 시작
-        
-        showMsg(`🚀 ${data.shipName}에 탑승했습니다!`);
-        console.log('우주선 위치 복원됨:', data.position);
+
+        showMsg(`🚀 ${data.shipName}에 탑승했습니다!${travelMessage}`);
+        console.log('우주선 위치 복원됨:', finalPosition);
         return true;
     }
 };
