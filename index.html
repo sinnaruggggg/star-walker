@@ -17531,29 +17531,39 @@ window.MissionSystem = MissionSystem;
             cockpitStickGroup.add(createYokeHandle(-1));  // 왼쪽
             cockpitStickGroup.add(createYokeHandle(1));   // 오른쪽
             
-            // --- 곡면 홀로그램 HUD ---
-            function createCurvedHUD(h, r, y, isMain) {
-                const geometry = new THREE.CylinderGeometry(r, r, h, 32, 1, true, Math.PI * 1.2, Math.PI * 0.6);
-                geometry.scale(-1, 1, 1);
+            // --- 구형 곡면 홀로그램 HUD (유리창 곡률 따라감) ---
+            function createSphericalHUD(radius, phiStart, phiLength, thetaStart, thetaLength) {
+                // 유리창과 동일한 구형 곡면 사용
+                const geometry = new THREE.SphereGeometry(
+                    radius,      // 유리 안쪽에 위치
+                    32, 16,      // 세그먼트
+                    phiStart,    // 수평 시작 각도
+                    phiLength,   // 수평 범위
+                    thetaStart,  // 수직 시작 각도
+                    thetaLength  // 수직 범위
+                );
+                geometry.scale(-1, 1, 1);  // 안쪽에서 보이도록
+
                 const canvas = document.createElement('canvas');
                 canvas.width = 512; canvas.height = 256;
                 const tex = new THREE.CanvasTexture(canvas);
-                const mat = new THREE.MeshBasicMaterial({ 
-                    map: tex, transparent: true, opacity: 0.6, 
+                const mat = new THREE.MeshBasicMaterial({
+                    map: tex, transparent: true, opacity: 0.7,
                     side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
                 });
                 const mesh = new THREE.Mesh(geometry, mat);
-                mesh.position.y = y;
-                mesh.rotation.y = Math.PI / 2;
                 return { ctx: canvas.getContext('2d'), tex, mesh, canvas };
             }
-            
-            cockpitMainHUD = createCurvedHUD(0.6, 1.1, -0.1, true);
-            floatGroup.add(cockpitMainHUD.mesh);
-            
-            cockpitSubHUD = createCurvedHUD(0.3, 0.6, -0.35, false);
-            cockpitSubHUD.mesh.rotation.x = -0.3;
-            floatGroup.add(cockpitSubHUD.mesh);
+
+            // 메인 HUD - 유리창 중앙 상단 (radius 1.85, 유리는 1.95)
+            cockpitMainHUD = createSphericalHUD(1.85, Math.PI * 0.35, Math.PI * 0.3, Math.PI * 0.15, Math.PI * 0.2);
+            cockpitMainHUD.mesh.rotation.x = -Math.PI / 2;  // 유리와 같은 방향
+            cockpitGroup.add(cockpitMainHUD.mesh);
+
+            // 서브 HUD - 유리창 하단 좌측
+            cockpitSubHUD = createSphericalHUD(1.85, Math.PI * 0.2, Math.PI * 0.25, Math.PI * 0.3, Math.PI * 0.15);
+            cockpitSubHUD.mesh.rotation.x = -Math.PI / 2;
+            cockpitGroup.add(cockpitSubHUD.mesh);
             
             // 버튼 깜빡임용 (기존 호환)
             cockpitBtnMesh = null;
