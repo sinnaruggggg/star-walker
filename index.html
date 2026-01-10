@@ -24561,26 +24561,24 @@ window.MissionSystem = MissionSystem;
                         updateCockpitView(dt);
                     }
                     
-                    // ★ 조종석 렌더링 (renderOrder 방식)
+                    // ★ 조종석 렌더링
                     const cockpit = playerShip?.mesh?.getObjectByName('cockpitGroup');
                     if (cockpit) {
                         if (isCockpitView) {
-                            // 1인칭 조종석 뷰 - 단일 패스 렌더링 (renderOrder 사용)
-                            // ★ shipVisualGroup 숨김 (1인칭에서는 우주선 본체 안보임)
+                            // 1인칭 조종석 뷰 - 단순 렌더링
                             const shipVisual = playerShip?.mesh?.getObjectByName('shipVisual');
                             if (shipVisual) shipVisual.visible = false;
-
-                            // ★ 조종석 보이게 설정 (renderOrder=999로 천체 위에 렌더링됨)
                             cockpit.visible = true;
 
-                            // ★ 조종석 메시들의 depthTest 비활성화 (항상 위에 그려지도록)
+                            // 조종석 재질 정상화
                             cockpit.traverse(obj => {
                                 if (obj.isMesh && obj.material) {
-                                    obj.material.depthTest = false;
-                                    obj.renderOrder = 999;
+                                    obj.material.depthTest = true;
+                                    obj.material.depthWrite = true;
                                 }
                             });
 
+                            // 단일 패스 렌더링 (조종실이 카메라에 가까워서 자연스럽게 앞에 렌더링됨)
                             renderer.render(scene, camera);
                         } else {
                             // 3인칭 뷰 - 우주선 본체만 표시 (조종석 숨김)
