@@ -4369,9 +4369,23 @@
         }
 
         body.pilot-mode #mobile-fire-btn {
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
+        }
+
+        /* ★ 모바일에서 발사 버튼 강제 표시 */
+        @media (max-width: 1024px) {
+            body.pilot-mode #mobile-fire-btn {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                right: 15px !important;
+                bottom: 150px !important;
+                width: 80px !important;
+                height: 80px !important;
+            }
         }
 
         /* ★ 투사체/빔 피격 플래시 */
@@ -4599,13 +4613,23 @@
         body.pilot-mode #pilot-target-info,
         body.pilot-mode #pilot-autopilot-info,
         body.pilot-mode #pilot-coords-panel,
-        body.pilot-mode #pilot-target-select,
         body.pilot-mode #mobile-mini-hud,
         body.pilot-mode #touch-area-left,
         body.pilot-mode #pilot-joystick,
         body.pilot-mode #pilot-left-console,
         body.pilot-mode #pilot-main-speed {
             display: none !important;
+        }
+
+        /* ★ 조종석 모드에서도 목표 선택 드롭다운은 표시 */
+        body.pilot-mode #pilot-target-select {
+            display: block !important;
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            left: auto !important;
+            transform: none !important;
+            z-index: 1000;
         }
 
         /* ★ 조종석 모드에서 유지할 UI */
@@ -17806,24 +17830,24 @@ window.MissionSystem = MissionSystem;
             glassHUD.reticle.mesh.material.opacity = 0.8;
             cockpitGroup.add(glassHUD.reticle.mesh);
 
-            // ★ 좌측 상단 패널 (속도) - 유리 좌측 곡면 (클리핑 방지: 중앙에 가깝게)
-            glassHUD.leftPanel = createGlassHUDPanel(-0.75, 0.4, -1.55, 0.55, 0.7, 512, 768, 0.08);
-            glassHUD.leftPanel.mesh.rotation.y = 0.2;  // 곡면 따라 약간 회전
+            // ★ 좌측 상단 패널 (속도) - 유리 좌측 곡면 (1.5배 멀리)
+            glassHUD.leftPanel = createGlassHUDPanel(-1.1, 0.4, -1.5, 0.55, 0.7, 512, 768, 0.12);
+            glassHUD.leftPanel.mesh.rotation.y = 0.32;  // 곡면 따라 회전
             cockpitGroup.add(glassHUD.leftPanel.mesh);
 
             // ★ 좌측 하단 패널 (연료, 헐) - 유리 좌측 하단 곡면
-            glassHUD.leftBottomPanel = createGlassHUDPanel(-0.7, -0.3, -1.55, 0.5, 0.6, 512, 640, 0.06);
-            glassHUD.leftBottomPanel.mesh.rotation.y = 0.18;
+            glassHUD.leftBottomPanel = createGlassHUDPanel(-1.0, -0.3, -1.5, 0.5, 0.6, 512, 640, 0.1);
+            glassHUD.leftBottomPanel.mesh.rotation.y = 0.28;
             cockpitGroup.add(glassHUD.leftBottomPanel.mesh);
 
-            // ★ 우측 상단 패널 (좌표, 목표) - 유리 우측 곡면
-            glassHUD.rightPanel = createGlassHUDPanel(0.75, 0.4, -1.55, 0.55, 0.7, 512, 768, 0.08);
-            glassHUD.rightPanel.mesh.rotation.y = -0.2;  // 곡면 따라 약간 회전
+            // ★ 우측 상단 패널 (좌표, 목표) - 유리 우측 곡면 (2배 크기)
+            glassHUD.rightPanel = createGlassHUDPanel(1.1, 0.35, -1.45, 1.1, 1.4, 768, 1024, 0.15);
+            glassHUD.rightPanel.mesh.rotation.y = -0.35;  // 곡면 따라 회전
             cockpitGroup.add(glassHUD.rightPanel.mesh);
 
-            // ★ 우측 하단 패널 (오토파일럿) - 유리 우측 하단 곡면
-            glassHUD.rightBottomPanel = createGlassHUDPanel(0.7, -0.3, -1.55, 0.5, 0.6, 512, 640, 0.06);
-            glassHUD.rightBottomPanel.mesh.rotation.y = -0.18;
+            // ★ 우측 하단 패널 (오토파일럿) - 유리 우측 하단 곡면 (2배 크기)
+            glassHUD.rightBottomPanel = createGlassHUDPanel(1.0, -0.35, -1.45, 1.0, 1.2, 768, 896, 0.12);
+            glassHUD.rightBottomPanel.mesh.rotation.y = -0.3;
             cockpitGroup.add(glassHUD.rightBottomPanel.mesh);
 
             // ★ 하단 중앙 패널 (레이더) - 유리 하단 곡면
