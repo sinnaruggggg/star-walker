@@ -17392,8 +17392,8 @@ window.MissionSystem = MissionSystem;
             dashLight.position.set(0, -0.5, -1);
             cockpitGroup.add(dashLight);
             
-            // --- 구형 쉘 (후방 반구) ---
-            const rearGeo = new THREE.SphereGeometry(2, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.55);
+            // --- 구형 쉘 (후방 반구) - 시야 끝까지 커버 ---
+            const rearGeo = new THREE.SphereGeometry(2, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.85);
             const rearShell = new THREE.Mesh(rearGeo, mats.hullInterior);
             rearShell.rotation.x = Math.PI / 2;
             cockpitGroup.add(rearShell);
