@@ -17683,8 +17683,8 @@ window.MissionSystem = MissionSystem;
             dashLight.position.set(0, -0.5, -1);
             cockpitGroup.add(dashLight);
             
-            // --- 구형 쉘 (후방 반구) ---
-            const rearGeo = new THREE.SphereGeometry(2, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.55);
+            // --- 구형 쉘 (후방 반구) --- ★ 범위 약간 축소 (0.55→0.48)
+            const rearGeo = new THREE.SphereGeometry(2, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.48);
             const rearShell = new THREE.Mesh(rearGeo, mats.hullInterior);
             rearShell.rotation.x = Math.PI / 2;
             rearShell.renderOrder = -100;  // ★ HUD보다 먼저 렌더링
@@ -21621,6 +21621,11 @@ window.MissionSystem = MissionSystem;
             if (typeof SpaceAudio !== 'undefined' && SpaceAudio.isPlaying) SpaceAudio.playCockpit();
             document.body.classList.add('pilot-mode');  // CSS용 클래스 추가
             isCockpitView = true;  // 1인칭 조종석 뷰 활성화
+            // ★ 조종실 FOV 약간 확대 (60→70) - HUD 클리핑 완화
+            if (camera) {
+                camera.fov = 70;
+                camera.updateProjectionMatrix();
+            }
             focusedBody = null;
             controls.enabled = false;
             
