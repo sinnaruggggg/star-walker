@@ -17631,8 +17631,9 @@ window.MissionSystem = MissionSystem;
             
             // 재질 정의 - ★ 모든 불투명 재질에 depthWrite 강제
             const mats = {
-                hullInterior: new THREE.MeshStandardMaterial({ 
-                    map: hexTex, color: 0x444444, roughness: 0.5, metalness: 0.7, side: THREE.BackSide 
+                hullInterior: new THREE.MeshStandardMaterial({
+                    map: hexTex, color: 0x444444, roughness: 0.5, metalness: 0.7, side: THREE.BackSide,
+                    depthWrite: false  // ★ HUD 가리지 않도록
                 }),
                 glass: new THREE.MeshStandardMaterial({
                     color: 0x88ccff, metalness: 0.1, roughness: 0.0,
