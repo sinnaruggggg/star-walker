@@ -17687,6 +17687,7 @@ window.MissionSystem = MissionSystem;
             const rearGeo = new THREE.SphereGeometry(2, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.55);
             const rearShell = new THREE.Mesh(rearGeo, mats.hullInterior);
             rearShell.rotation.x = Math.PI / 2;
+            rearShell.renderOrder = -100;  // ★ HUD보다 먼저 렌더링
             cockpitGroup.add(rearShell);
             
             // 중앙 링
@@ -17848,7 +17849,7 @@ window.MissionSystem = MissionSystem;
                 });
                 const mesh = new THREE.Mesh(geometry, mat);
                 mesh.position.set(posX, posY, posZ);
-                mesh.renderOrder = 100;
+                mesh.renderOrder = 1000;  // ★ rearShell(-100)보다 확실히 나중에 렌더링
                 return { ctx: canvas.getContext('2d'), tex, mesh, canvas, width, height };
             }
 
