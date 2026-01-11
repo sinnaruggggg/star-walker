@@ -15877,84 +15877,105 @@ window.MissionSystem = MissionSystem;
             return path;
         }
         
-        function loadShipsData() {
-            // ★ Vercel API에서 ships 데이터 로드 (Supabase)
+        // ★★★ 관리자 페이지 스탯 강제 로딩 (재시도 포함) ★★★
+        async function loadShipsData() {
             const shipsUrl = API_BASE + '/ships';
+            const MAX_RETRIES = 3;
 
-            return fetch(shipsUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error('API 응답 실패');
-                    return res.json();
-                })
-                .catch(err => {
-                    // API 실패 시 로컬 ships.json fallback
-                    console.log('⚠️ Vercel API 실패, 로컬 fallback 시도:', err);
-                    return fetch('ships.json').then(res => res.json());
-                })
-                .then(shipsData => {
-                    // 에러 응답 체크
+            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                try {
+                    console.log(`🚀 ships 데이터 로드 시도 ${attempt}/${MAX_RETRIES}...`);
+
+                    const res = await fetch(shipsUrl, {
+                        cache: 'no-store',  // 캐시 무시
+                        headers: { 'Cache-Control': 'no-cache' }
+                    });
+
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    const shipsData = await res.json();
+
                     if (shipsData.error) {
-                        console.log('⚠️ API 에러:', shipsData.error);
-                        shipsDataLoaded = true;
-                        return;
+                        throw new Error(shipsData.error);
                     }
 
-                    console.log('📦 ships 데이터 로드됨:', shipsData);
-                    console.log('📦 SHIP_TYPES ids:', SHIP_TYPES.map(s => s.id));
+                    if (!Array.isArray(shipsData) || shipsData.length === 0) {
+                        throw new Error('빈 데이터');
+                    }
 
+                    console.log('📦 ships 데이터 로드 성공:', shipsData.length, '개');
+
+                    // ★★★ 모든 스탯 강제 적용 ★★★
                     shipsData.forEach(shipData => {
-                        console.log(`  🔍 ships 항목: id="${shipData.id}", turnSpeed=${shipData.turnSpeed}`);
-
                         const ship = SHIP_TYPES.find(s => s.id === shipData.id);
                         if (ship) {
-                            // ★★★ 관리자 페이지에서 설정한 모든 스탯 적용 ★★★
-                            if (shipData.maxSpeed !== undefined) ship.maxSpeed = shipData.maxSpeed;
-                            if (shipData.acceleration !== undefined) ship.acceleration = parseFloat(shipData.acceleration);
-                            if (shipData.turnSpeed !== undefined) ship.turnSpeed = parseFloat(shipData.turnSpeed);
-                            if (shipData.maxFuel !== undefined) ship.maxFuel = shipData.maxFuel;
-                            if (shipData.maxHull !== undefined) ship.maxHull = shipData.maxHull;
-                            if (shipData.price !== undefined) ship.price = shipData.price;
-                            if (shipData.tier !== undefined) ship.tier = shipData.tier;
-                            if (shipData.size !== undefined) ship.size = shipData.size;
+                            // 숫자 스탯 적용 (undefined가 아니면 무조건 적용)
+                            if (shipData.maxSpeed != null) ship.maxSpeed = Number(shipData.maxSpeed);
+                            if (shipData.acceleration != null) ship.acceleration = Number(shipData.acceleration);
+                            if (shipData.turnSpeed != null) ship.turnSpeed = Number(shipData.turnSpeed);
+                            if (shipData.maxFuel != null) ship.maxFuel = Number(shipData.maxFuel);
+                            if (shipData.maxHull != null) ship.maxHull = Number(shipData.maxHull);
+                            if (shipData.price != null) ship.price = Number(shipData.price);
+                            if (shipData.tier != null) ship.tier = Number(shipData.tier);
+                            if (shipData.size) ship.size = shipData.size;
                             if (shipData.special !== undefined) ship.special = shipData.special;
                             if (shipData.unlocked !== undefined) ship.unlocked = shipData.unlocked;
 
-                            // 이미지와 모델 경로 업데이트 (Supabase Storage로 변환)
-                            if (shipData.image && shipData.image.length > 0) {
-                                ship.image = convertToSupabaseUrl(shipData.image);
-                            }
-                            if (shipData.model && shipData.model.length > 0) {
-                                ship.model = convertToSupabaseUrl(shipData.model);
-                            }
-                            // ★ 엔진 설정 로드
-                            if (shipData.engineConfig) {
-                                ship.engineConfig = shipData.engineConfig;
-                            }
-                            console.log(`    ✅ ${ship.id} 스탯 적용: turnSpeed=${ship.turnSpeed}, maxSpeed=${ship.maxSpeed}`);
-                        } else {
-                            console.log(`    ⚠️ SHIP_TYPES에서 id="${shipData.id}" 를 찾을 수 없음!`);
+                            // 이미지/모델 적용
+                            if (shipData.image) ship.image = convertToSupabaseUrl(shipData.image);
+                            if (shipData.model) ship.model = convertToSupabaseUrl(shipData.model);
+                            if (shipData.engineConfig) ship.engineConfig = shipData.engineConfig;
+
+                            console.log(`  ✅ ${ship.id}: turnSpeed=${ship.turnSpeed}, maxSpeed=${ship.maxSpeed}, accel=${ship.acceleration}`);
                         }
                     });
 
-                    // 최종 결과 확인
-                    console.log('📦 적용 후 SHIP_TYPES 이미지 현황:');
-                    SHIP_TYPES.forEach(s => {
-                        console.log(`    ${s.id}: image=${s.image || '없음'}, model=${s.model || '없음'}`);
-                    });
+                    // ★ 현재 선택된 우주선 스탯도 즉시 갱신
+                    if (window.currentShipType) {
+                        const updated = SHIP_TYPES.find(s => s.id === window.currentShipType.id);
+                        if (updated) {
+                            window.currentShipType = updated;
+                            console.log(`🎯 현재 우주선 갱신: ${updated.id}, turnSpeed=${updated.turnSpeed}`);
+                        }
+                    }
 
                     shipsDataLoaded = true;
-                    console.log('✅ ships 데이터 적용 완료');
-                })
-                .catch(err => {
-                    console.log('ℹ️ ships 데이터 로드 실패 (기본 설정 사용)', err);
-                    shipsDataLoaded = true;
+                    console.log('✅ ships 스탯 적용 완료!');
+                    return true;
+
+                } catch (err) {
+                    console.warn(`⚠️ 시도 ${attempt} 실패:`, err.message);
+                    if (attempt < MAX_RETRIES) {
+                        await new Promise(r => setTimeout(r, 1000));  // 1초 대기 후 재시도
+                    }
+                }
+            }
+
+            // 모든 시도 실패 - 로컬 fallback
+            console.log('⚠️ API 실패, 로컬 ships.json 시도...');
+            try {
+                const res = await fetch('ships.json');
+                const shipsData = await res.json();
+                shipsData.forEach(shipData => {
+                    const ship = SHIP_TYPES.find(s => s.id === shipData.id);
+                    if (ship && shipData.turnSpeed != null) {
+                        ship.turnSpeed = Number(shipData.turnSpeed);
+                    }
                 });
+            } catch (e) {
+                console.error('❌ 로컬 fallback도 실패:', e);
+            }
+
+            shipsDataLoaded = true;
+            return false;
         }
         
-        function loadDataAndInit() {
-            // ★ 우주선 데이터 먼저 로드
-            loadShipsData();
-            
+        async function loadDataAndInit() {
+            // ★★★ 우주선 데이터 먼저 로드하고 기다림 ★★★
+            console.log('🎮 게임 초기화 시작...');
+            await loadShipsData();
+            console.log('🎮 우주선 데이터 로드 완료, 태양계 초기화...');
+
             if (API_URL && window.location.protocol !== 'file:') {
                 fetch(API_URL)
                     .then(res => {
@@ -23128,10 +23149,10 @@ window.MissionSystem = MissionSystem;
             if (autopilot.engaged) updateShipAutopilot(dt);
             
             // 방향 조종 (자동항법 아닐 때, 1인칭 조종석 뷰에서만)
-            // ★★★ 선회 속도: 우주선별 turnSpeed 사용, dt 적용으로 프레임 독립적 ★★★
+            // ★★★ 선회 속도: 관리자 페이지 turnSpeed × 감도 계수 ★★★
             if (!autopilot.engaged && isCockpitView) {
-                // turnSpeed를 초당 라디안으로 해석 (기존 대비 약 1/3 속도)
-                const turnRate = SHIP_CONFIG.turnSpeed * dt * 20;  // 20 = 감도 조절 계수
+                // turnSpeed 값이 클수록 빠르게 회전 (감도 60 = 적당한 반응성)
+                const turnRate = SHIP_CONFIG.turnSpeed * dt * 60;
                 playerShip.euler.y += shipInputs.yaw * turnRate;
                 playerShip.euler.x += shipInputs.pitch * turnRate;
                 playerShip.euler.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, playerShip.euler.x));
