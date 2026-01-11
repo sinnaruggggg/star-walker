@@ -17830,29 +17830,29 @@ window.MissionSystem = MissionSystem;
             glassHUD.reticle.mesh.material.opacity = 0.8;
             cockpitGroup.add(glassHUD.reticle.mesh);
 
-            // ★ 좌측 상단 패널 (속도) - 유리 좌측 곡면 (1.5배 멀리)
-            glassHUD.leftPanel = createGlassHUDPanel(-1.1, 0.4, -1.5, 0.55, 0.7, 512, 768, 0.12);
-            glassHUD.leftPanel.mesh.rotation.y = 0.32;  // 곡면 따라 회전
+            // ★ 좌측 상단 패널 (속도) - 크기 확대, 곡면 감소로 모서리 클리핑 방지
+            glassHUD.leftPanel = createGlassHUDPanel(-1.1, 0.4, -1.5, 0.75, 0.95, 512, 768, 0.05);
+            glassHUD.leftPanel.mesh.rotation.y = 0.32;
             cockpitGroup.add(glassHUD.leftPanel.mesh);
 
-            // ★ 좌측 하단 패널 (연료, 헐) - 유리 좌측 하단 곡면
-            glassHUD.leftBottomPanel = createGlassHUDPanel(-1.0, -0.3, -1.5, 0.5, 0.6, 512, 640, 0.1);
+            // ★ 좌측 하단 패널 (연료, 헐) - 크기 확대
+            glassHUD.leftBottomPanel = createGlassHUDPanel(-1.0, -0.3, -1.5, 0.65, 0.8, 512, 640, 0.04);
             glassHUD.leftBottomPanel.mesh.rotation.y = 0.28;
             cockpitGroup.add(glassHUD.leftBottomPanel.mesh);
 
-            // ★ 우측 상단 패널 (좌표, 목표) - 유리 우측 곡면 (2배 크기)
-            glassHUD.rightPanel = createGlassHUDPanel(1.1, 0.35, -1.45, 1.1, 1.4, 768, 1024, 0.15);
-            glassHUD.rightPanel.mesh.rotation.y = -0.35;  // 곡면 따라 회전
+            // ★ 우측 상단 패널 (좌표, 목표) - 크기 확대
+            glassHUD.rightPanel = createGlassHUDPanel(1.1, 0.35, -1.45, 1.3, 1.6, 768, 1024, 0.06);
+            glassHUD.rightPanel.mesh.rotation.y = -0.35;
             cockpitGroup.add(glassHUD.rightPanel.mesh);
 
-            // ★ 우측 하단 패널 (오토파일럿) - 유리 우측 하단 곡면 (2배 크기)
-            glassHUD.rightBottomPanel = createGlassHUDPanel(1.0, -0.35, -1.45, 1.0, 1.2, 768, 896, 0.12);
+            // ★ 우측 하단 패널 (오토파일럿) - 크기 확대
+            glassHUD.rightBottomPanel = createGlassHUDPanel(1.0, -0.35, -1.45, 1.2, 1.4, 768, 896, 0.05);
             glassHUD.rightBottomPanel.mesh.rotation.y = -0.3;
             cockpitGroup.add(glassHUD.rightBottomPanel.mesh);
 
-            // ★ 하단 중앙 패널 (레이더) - 유리 하단 곡면
-            glassHUD.bottomPanel = createGlassHUDPanel(0, -0.55, -1.5, 0.9, 0.55, 768, 512, 0.04);
-            glassHUD.bottomPanel.mesh.rotation.x = -0.15;  // 약간 위를 향함
+            // ★ 하단 중앙 패널 (레이더) - 크기 확대
+            glassHUD.bottomPanel = createGlassHUDPanel(0, -0.55, -1.5, 1.1, 0.7, 768, 512, 0.02);
+            glassHUD.bottomPanel.mesh.rotation.x = -0.15;
             cockpitGroup.add(glassHUD.bottomPanel.mesh);
 
             // 레거시 HUD 제거 (호환성 유지)
@@ -22268,12 +22268,14 @@ window.MissionSystem = MissionSystem;
                         // 시작점(중심)에서 현재 위치까지의 거리
                         const dx = touch.clientX - leftTouchCenter.x;
                         const dy = touch.clientY - leftTouchCenter.y;
-                        const maxRadius = 100;  // 최대 반경 (증가)
+                        const maxRadius = 100;  // 최대 반경
 
                         if (!autopilot.engaged) {
-                            // 중심에서 멀어질수록 선회 강도 증가 (조이스틱 방식)
-                            shipInputs.yaw = Math.max(-1, Math.min(1, dx / maxRadius));
-                            shipInputs.pitch = Math.max(-1, Math.min(1, dy / maxRadius));
+                            // ★★★ 방향 수정: 조이스틱 오른쪽 = 우회전, 위 = 기수 상승 ★★★
+                            // yaw: 양수 = 좌회전이므로 dx 반전
+                            // pitch: 양수 = 기수 하강이므로 dy 반전
+                            shipInputs.yaw = Math.max(-1, Math.min(1, -dx / maxRadius));
+                            shipInputs.pitch = Math.max(-1, Math.min(1, -dy / maxRadius));
                         }
                         // ★ 중심점은 고정 (업데이트 안함) - 버벅거림 해결
                     }
@@ -23088,9 +23090,12 @@ window.MissionSystem = MissionSystem;
             if (autopilot.engaged) updateShipAutopilot(dt);
             
             // 방향 조종 (자동항법 아닐 때, 1인칭 조종석 뷰에서만)
+            // ★★★ 선회 속도: 우주선별 turnSpeed 사용, dt 적용으로 프레임 독립적 ★★★
             if (!autopilot.engaged && isCockpitView) {
-                playerShip.euler.y += shipInputs.yaw * SHIP_CONFIG.turnSpeed;
-                playerShip.euler.x += shipInputs.pitch * SHIP_CONFIG.turnSpeed;
+                // turnSpeed를 초당 라디안으로 해석 (기존 대비 약 1/3 속도)
+                const turnRate = SHIP_CONFIG.turnSpeed * dt * 20;  // 20 = 감도 조절 계수
+                playerShip.euler.y += shipInputs.yaw * turnRate;
+                playerShip.euler.x += shipInputs.pitch * turnRate;
                 playerShip.euler.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, playerShip.euler.x));
                 playerShip.mesh.quaternion.setFromEuler(playerShip.euler);
             }
