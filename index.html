@@ -17840,29 +17840,29 @@ window.MissionSystem = MissionSystem;
             glassHUD.reticle.mesh.material.opacity = 0.8;
             cockpitGroup.add(glassHUD.reticle.mesh);
 
-            // ★ 좌측 상단 패널 (속도) - 크기 확대, 곡면 감소로 모서리 클리핑 방지
-            glassHUD.leftPanel = createGlassHUDPanel(-1.1, 0.4, -1.5, 0.75, 0.95, 512, 768, 0.05);
-            glassHUD.leftPanel.mesh.rotation.y = 0.32;
+            // ★ 좌측 상단 패널 (속도) - Y 낮춤, 높이 확대, 회전 감소
+            glassHUD.leftPanel = createGlassHUDPanel(-1.0, 0.25, -1.5, 0.8, 1.1, 512, 768, 0.03);
+            glassHUD.leftPanel.mesh.rotation.y = 0.25;
             cockpitGroup.add(glassHUD.leftPanel.mesh);
 
-            // ★ 좌측 하단 패널 (연료, 헐) - 크기 확대
-            glassHUD.leftBottomPanel = createGlassHUDPanel(-1.0, -0.3, -1.5, 0.65, 0.8, 512, 640, 0.04);
-            glassHUD.leftBottomPanel.mesh.rotation.y = 0.28;
+            // ★ 좌측 하단 패널 (연료, 헐) - Y 낮춤, 높이 확대
+            glassHUD.leftBottomPanel = createGlassHUDPanel(-0.95, -0.4, -1.5, 0.7, 0.9, 512, 640, 0.03);
+            glassHUD.leftBottomPanel.mesh.rotation.y = 0.22;
             cockpitGroup.add(glassHUD.leftBottomPanel.mesh);
 
-            // ★ 우측 상단 패널 (좌표, 목표) - 크기 확대
-            glassHUD.rightPanel = createGlassHUDPanel(1.1, 0.35, -1.45, 1.3, 1.6, 768, 1024, 0.06);
-            glassHUD.rightPanel.mesh.rotation.y = -0.35;
+            // ★ 우측 상단 패널 (좌표, 목표) - Y 낮춤, 높이 확대, 회전 감소
+            glassHUD.rightPanel = createGlassHUDPanel(1.0, 0.2, -1.45, 1.4, 1.8, 768, 1024, 0.04);
+            glassHUD.rightPanel.mesh.rotation.y = -0.28;
             cockpitGroup.add(glassHUD.rightPanel.mesh);
 
-            // ★ 우측 하단 패널 (오토파일럿) - 크기 확대
-            glassHUD.rightBottomPanel = createGlassHUDPanel(1.0, -0.35, -1.45, 1.2, 1.4, 768, 896, 0.05);
-            glassHUD.rightBottomPanel.mesh.rotation.y = -0.3;
+            // ★ 우측 하단 패널 (오토파일럿) - Y 낮춤, 높이 확대
+            glassHUD.rightBottomPanel = createGlassHUDPanel(0.95, -0.45, -1.45, 1.3, 1.5, 768, 896, 0.03);
+            glassHUD.rightBottomPanel.mesh.rotation.y = -0.25;
             cockpitGroup.add(glassHUD.rightBottomPanel.mesh);
 
             // ★ 하단 중앙 패널 (레이더) - 크기 확대
-            glassHUD.bottomPanel = createGlassHUDPanel(0, -0.55, -1.5, 1.1, 0.7, 768, 512, 0.02);
-            glassHUD.bottomPanel.mesh.rotation.x = -0.15;
+            glassHUD.bottomPanel = createGlassHUDPanel(0, -0.6, -1.5, 1.2, 0.8, 768, 512, 0.02);
+            glassHUD.bottomPanel.mesh.rotation.x = -0.12;
             cockpitGroup.add(glassHUD.bottomPanel.mesh);
 
             // 레거시 HUD 제거 (호환성 유지)
@@ -17996,6 +17996,7 @@ window.MissionSystem = MissionSystem;
             if (glassHUD.leftPanel && glassHUD.leftPanel.ctx) {
                 const ctx = glassHUD.leftPanel.ctx;
                 const W = 512, H = 768;
+                const PAD = 80;  // ★ 상단 여백 (클리핑 방지)
                 ctx.clearRect(0, 0, W, H);
 
                 ctx.shadowColor = '#00ffff';
@@ -18005,40 +18006,40 @@ window.MissionSystem = MissionSystem;
                 ctx.fillStyle = '#00ffff';
                 ctx.font = 'bold 28px Orbitron, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('ENGINE STATUS', W/2, 60);
+                ctx.fillText('ENGINE STATUS', W/2, PAD + 60);
 
                 // 스로틀 바 (가로)
                 const throttle = shipInputs.throttle || 0;
                 ctx.fillStyle = '#00ffff';
                 ctx.font = '22px Orbitron, sans-serif';
-                ctx.fillText('THROTTLE', W/2, 130);
+                ctx.fillText('THROTTLE', W/2, PAD + 130);
                 ctx.strokeStyle = '#00ffff';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(60, 160, W - 120, 36);
+                ctx.strokeRect(60, PAD + 160, W - 120, 36);
                 ctx.fillStyle = throttle > 0 ? '#00ffaa' : '#ff6600';
                 const barW = Math.abs(throttle) * (W - 128) / 2;
                 if (throttle > 0) {
-                    ctx.fillRect(W/2, 164, barW, 28);
+                    ctx.fillRect(W/2, PAD + 164, barW, 28);
                 } else {
-                    ctx.fillRect(W/2 - barW, 164, barW, 28);
+                    ctx.fillRect(W/2 - barW, PAD + 164, barW, 28);
                 }
                 // 중앙선
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(W/2, 160);
-                ctx.lineTo(W/2, 196);
+                ctx.moveTo(W/2, PAD + 160);
+                ctx.lineTo(W/2, PAD + 196);
                 ctx.stroke();
 
                 // 스로틀 % 표시
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '18px Orbitron, sans-serif';
-                ctx.fillText(`${(throttle * 100).toFixed(0)}%`, W/2, 230);
+                ctx.fillText(`${(throttle * 100).toFixed(0)}%`, W/2, PAD + 230);
 
                 // 자동항법 상태
                 ctx.fillStyle = autopilot.engaged ? '#00ff88' : 'rgba(0,255,255,0.3)';
                 ctx.font = '20px Orbitron, sans-serif';
-                ctx.fillText(autopilot.engaged ? '◉ AUTOPILOT ON' : '○ MANUAL', W/2, 300);
+                ctx.fillText(autopilot.engaged ? '◉ AUTOPILOT ON' : '○ MANUAL', W/2, PAD + 300);
 
                 glassHUD.leftPanel.tex.needsUpdate = true;
             }
@@ -18096,10 +18097,11 @@ window.MissionSystem = MissionSystem;
                 glassHUD.leftBottomPanel.tex.needsUpdate = true;
             }
 
-            // === 우측 상단 패널 (512x768) - 좌표, 목표 (2배 크기) ===
+            // === 우측 상단 패널 (768x1024) - 좌표, 목표 (2배 크기) ===
             if (glassHUD.rightPanel && glassHUD.rightPanel.ctx) {
                 const ctx = glassHUD.rightPanel.ctx;
-                const W = 512, H = 768;
+                const W = 768, H = 1024;
+                const PAD = 100;  // ★ 상단 여백 (클리핑 방지)
                 ctx.clearRect(0, 0, W, H);
 
                 ctx.shadowColor = '#00aaff';
@@ -18107,26 +18109,26 @@ window.MissionSystem = MissionSystem;
 
                 // 좌표
                 ctx.fillStyle = '#00aaff';
-                ctx.font = 'bold 24px Orbitron, sans-serif';
+                ctx.font = 'bold 28px Orbitron, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('POSITION', W/2, 50);
+                ctx.fillText('POSITION', W/2, PAD + 50);
                 if (playerShip.mesh) {
                     const pos = playerShip.mesh.position;
-                    ctx.font = '18px Orbitron, sans-serif';
+                    ctx.font = '20px Orbitron, sans-serif';
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillText(`X: ${pos.x.toFixed(1)}`, W/2, 90);
-                    ctx.fillText(`Y: ${pos.y.toFixed(1)}`, W/2, 118);
-                    ctx.fillText(`Z: ${pos.z.toFixed(1)}`, W/2, 146);
+                    ctx.fillText(`X: ${pos.x.toFixed(1)}`, W/2, PAD + 95);
+                    ctx.fillText(`Y: ${pos.y.toFixed(1)}`, W/2, PAD + 125);
+                    ctx.fillText(`Z: ${pos.z.toFixed(1)}`, W/2, PAD + 155);
                 }
 
                 // 목표
                 ctx.fillStyle = '#ff6600';
-                ctx.font = 'bold 24px Orbitron, sans-serif';
-                ctx.fillText('TARGET', W/2, 200);
+                ctx.font = 'bold 28px Orbitron, sans-serif';
+                ctx.fillText('TARGET', W/2, PAD + 220);
                 if (shipTargetBody) {
                     ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 26px Orbitron, sans-serif';
-                    ctx.fillText(shipTargetBody.name || 'Unknown', W/2, 245);
+                    ctx.font = 'bold 30px Orbitron, sans-serif';
+                    ctx.fillText(shipTargetBody.name || 'Unknown', W/2, PAD + 270);
 
                     // 거리
                     const dist = playerShip.mesh.position.distanceTo(shipTargetBody.mesh.position);
@@ -18134,9 +18136,9 @@ window.MissionSystem = MissionSystem;
                     if (dist < 0.1) distText = `${(dist * 149597.87).toFixed(0)} km`;
                     else if (dist < 10) distText = `${dist.toFixed(3)} AU`;
                     else distText = `${dist.toFixed(1)} AU`;
-                    ctx.font = '20px Orbitron, sans-serif';
+                    ctx.font = '22px Orbitron, sans-serif';
                     ctx.fillStyle = '#00ffff';
-                    ctx.fillText(`DIST: ${distText}`, W/2, 290);
+                    ctx.fillText(`DIST: ${distText}`, W/2, PAD + 320);
 
                     // ETA
                     if (playerShip.speed > 0.1) {
@@ -18146,12 +18148,12 @@ window.MissionSystem = MissionSystem;
                         if (eta < 60) etaText = `${eta.toFixed(0)}s`;
                         else if (eta < 3600) etaText = `${Math.floor(eta/60)}m ${Math.floor(eta%60)}s`;
                         else etaText = `${Math.floor(eta/3600)}h ${Math.floor((eta%3600)/60)}m`;
-                        ctx.fillText(`ETA: ${etaText}`, W/2, 330);
+                        ctx.fillText(`ETA: ${etaText}`, W/2, PAD + 365);
                     }
                 } else {
                     ctx.fillStyle = '#666666';
-                    ctx.font = '20px Orbitron, sans-serif';
-                    ctx.fillText('No Target', W/2, 245);
+                    ctx.font = '22px Orbitron, sans-serif';
+                    ctx.fillText('No Target', W/2, PAD + 270);
                 }
 
                 glassHUD.rightPanel.tex.needsUpdate = true;
