@@ -22162,16 +22162,42 @@ window.MissionSystem = MissionSystem;
             });
             
             // 키보드
+            const keyState = { w: false, a: false, s: false, d: false };
             window.addEventListener('keydown', (e) => {
-                if (!isPilotMode || isInteriorMode || isObservatoryMode || autopilot.engaged) return;
-                // 속도 조절은 3인칭에서도 허용
-                if (e.key === 'w' || e.key === 'ArrowUp') shipInputs.throttle = Math.min(1, shipInputs.throttle + 0.05);
-                if (e.key === 's' || e.key === 'ArrowDown') shipInputs.throttle = Math.max(-0.5, shipInputs.throttle - 0.05);
+                if (!isPilotMode || isInteriorMode || isObservatoryMode) return;
+
+                // ★★★ WASD 선회 조작 (1인칭 조종석에서만, 자동항법 아닐 때) ★★★
+                if (isCockpitView && !autopilot.engaged) {
+                    if (e.key === 'w' || e.key === 'W') { keyState.w = true; e.preventDefault(); }
+                    if (e.key === 's' || e.key === 'S') { keyState.s = true; e.preventDefault(); }
+                    if (e.key === 'a' || e.key === 'A') { keyState.a = true; e.preventDefault(); }
+                    if (e.key === 'd' || e.key === 'D') { keyState.d = true; e.preventDefault(); }
+
+                    // 선회 입력 적용
+                    shipInputs.pitch = (keyState.w ? -1 : 0) + (keyState.s ? 1 : 0);  // W=기수 상승, S=기수 하강
+                    shipInputs.yaw = (keyState.a ? 1 : 0) + (keyState.d ? -1 : 0);    // A=좌회전, D=우회전
+                }
+
+                // 속도 조절 (화살표 키 - 3인칭에서도 허용)
+                if (!autopilot.engaged) {
+                    if (e.key === 'ArrowUp') shipInputs.throttle = Math.min(1, shipInputs.throttle + 0.05);
+                    if (e.key === 'ArrowDown') shipInputs.throttle = Math.max(-0.5, shipInputs.throttle - 0.05);
+                }
                 if (e.key === ' ') shipInputs.emergencyReverse = true;
                 // ★ Q키: 무기 발사
                 if (e.key === 'q' || e.key === 'Q') weaponSystem.isFiring = true;
             });
             window.addEventListener('keyup', (e) => {
+                // ★★★ WASD 키 해제 ★★★
+                if (e.key === 'w' || e.key === 'W') keyState.w = false;
+                if (e.key === 's' || e.key === 'S') keyState.s = false;
+                if (e.key === 'a' || e.key === 'A') keyState.a = false;
+                if (e.key === 'd' || e.key === 'D') keyState.d = false;
+
+                // 선회 입력 업데이트
+                shipInputs.pitch = (keyState.w ? -1 : 0) + (keyState.s ? 1 : 0);
+                shipInputs.yaw = (keyState.a ? 1 : 0) + (keyState.d ? -1 : 0);
+
                 if (e.key === ' ') shipInputs.emergencyReverse = false;
                 if (e.key === 'q' || e.key === 'Q') weaponSystem.isFiring = false;
             });
