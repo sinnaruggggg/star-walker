@@ -15877,28 +15877,19 @@ window.MissionSystem = MissionSystem;
             return path;
         }
         
-        // ★★★ 관리자 페이지 스탯 필수 로딩 (성공할 때까지 무한 재시도) ★★★
+        // ★★★ Supabase에서 직접 로드 (admin.html과 동일한 방식) ★★★
         async function loadShipsData() {
-            const shipsUrl = API_BASE + '/ships';
             let attempt = 0;
 
-            // 로딩 상태 표시
             const showLoading = (msg) => {
-                let loadingEl = document.getElementById('ships-loading-overlay');
-                if (!loadingEl) {
-                    loadingEl = document.createElement('div');
-                    loadingEl.id = 'ships-loading-overlay';
-                    loadingEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;color:#0ff;font-family:Orbitron,sans-serif;';
-                    document.body.appendChild(loadingEl);
+                let el = document.getElementById('ships-loading-overlay');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'ships-loading-overlay';
+                    el.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;color:#0ff;font-family:Orbitron,sans-serif;';
+                    document.body.appendChild(el);
                 }
-                loadingEl.innerHTML = `
-                    <div style="font-size:24px;margin-bottom:20px;">🚀 LOADING SHIP DATA</div>
-                    <div style="font-size:16px;color:#888;">${msg}</div>
-                    <div style="margin-top:20px;width:200px;height:4px;background:#333;border-radius:2px;overflow:hidden;">
-                        <div style="width:100%;height:100%;background:linear-gradient(90deg,#0ff,#00f,#0ff);animation:loading 1s infinite linear;"></div>
-                    </div>
-                    <style>@keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}</style>
-                `;
+                el.innerHTML = `<div style="font-size:24px;margin-bottom:20px;">🚀 LOADING SHIP DATA</div><div style="font-size:14px;color:#888;">${msg}</div>`;
             };
 
             const hideLoading = () => {
@@ -15906,46 +15897,49 @@ window.MissionSystem = MissionSystem;
                 if (el) el.remove();
             };
 
+            // Supabase 클라이언트 생성 (admin.html과 동일)
+            const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
             while (true) {
                 attempt++;
-                showLoading(`서버 연결 시도 ${attempt}...`);
+                showLoading(`Supabase 연결 시도 ${attempt}...`);
 
                 try {
-                    console.log(`🚀 ships 데이터 로드 시도 ${attempt}...`);
+                    if (!supabase) throw new Error('Supabase SDK 미로드');
 
-                    const res = await fetch(shipsUrl, {
-                        cache: 'no-store',
-                        headers: { 'Cache-Control': 'no-cache' }
-                    });
+                    console.log(`🚀 Supabase에서 ships 직접 로드 시도 ${attempt}...`);
 
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    // ★★★ admin.html과 동일한 쿼리 ★★★
+                    const { data: shipsData, error } = await supabase
+                        .from('ships')
+                        .select('*')
+                        .order('tier', { ascending: true });
 
-                    const shipsData = await res.json();
+                    if (error) throw error;
+                    if (!shipsData || shipsData.length === 0) throw new Error('빈 데이터');
 
-                    if (shipsData.error) throw new Error(shipsData.error);
-                    if (!Array.isArray(shipsData) || shipsData.length === 0) throw new Error('빈 데이터');
+                    console.log('📦 Supabase ships 로드 성공:', shipsData.length, '개');
+                    console.log('📦 첫 번째 우주선 raw:', shipsData[0]);
 
-                    console.log('📦 ships 데이터 로드 성공:', shipsData.length, '개');
-
-                    // ★★★ 모든 스탯 강제 적용 ★★★
-                    shipsData.forEach(shipData => {
-                        const ship = SHIP_TYPES.find(s => s.id === shipData.id);
+                    // ★★★ DB 컬럼명 그대로 사용 (snake_case) ★★★
+                    shipsData.forEach(row => {
+                        const ship = SHIP_TYPES.find(s => s.id === row.id);
                         if (ship) {
-                            if (shipData.maxSpeed != null) ship.maxSpeed = Number(shipData.maxSpeed);
-                            if (shipData.acceleration != null) ship.acceleration = Number(shipData.acceleration);
-                            if (shipData.turnSpeed != null) ship.turnSpeed = Number(shipData.turnSpeed);
-                            if (shipData.maxFuel != null) ship.maxFuel = Number(shipData.maxFuel);
-                            if (shipData.maxHull != null) ship.maxHull = Number(shipData.maxHull);
-                            if (shipData.price != null) ship.price = Number(shipData.price);
-                            if (shipData.tier != null) ship.tier = Number(shipData.tier);
-                            if (shipData.size) ship.size = shipData.size;
-                            if (shipData.special !== undefined) ship.special = shipData.special;
-                            if (shipData.unlocked !== undefined) ship.unlocked = shipData.unlocked;
-                            if (shipData.image) ship.image = convertToSupabaseUrl(shipData.image);
-                            if (shipData.model) ship.model = convertToSupabaseUrl(shipData.model);
-                            if (shipData.engineConfig) ship.engineConfig = shipData.engineConfig;
+                            if (row.max_speed != null) ship.maxSpeed = Number(row.max_speed);
+                            if (row.acceleration != null) ship.acceleration = Number(row.acceleration);
+                            if (row.turn_speed != null) ship.turnSpeed = Number(row.turn_speed);
+                            if (row.max_fuel != null) ship.maxFuel = Number(row.max_fuel);
+                            if (row.max_hull != null) ship.maxHull = Number(row.max_hull);
+                            if (row.price != null) ship.price = Number(row.price);
+                            if (row.tier != null) ship.tier = Number(row.tier);
+                            if (row.size) ship.size = row.size;
+                            if (row.special !== undefined) ship.special = row.special;
+                            if (row.unlocked !== undefined) ship.unlocked = row.unlocked;
+                            if (row.image) ship.image = convertToSupabaseUrl(row.image);
+                            if (row.model) ship.model = convertToSupabaseUrl(row.model);
+                            if (row.engine_config) ship.engineConfig = row.engine_config;
 
-                            console.log(`  ✅ ${ship.id}: turnSpeed=${ship.turnSpeed}, maxSpeed=${ship.maxSpeed}`);
+                            console.log(`  ✅ ${ship.id}: turn_speed=${row.turn_speed} → turnSpeed=${ship.turnSpeed}`);
                         }
                     });
 
@@ -15960,12 +15954,12 @@ window.MissionSystem = MissionSystem;
 
                     shipsDataLoaded = true;
                     hideLoading();
-                    console.log('✅ 관리자 페이지 스탯 적용 완료!');
+                    console.log('✅ Supabase에서 스탯 적용 완료!');
                     return true;
 
                 } catch (err) {
                     console.warn(`⚠️ 시도 ${attempt} 실패:`, err.message);
-                    showLoading(`연결 실패... ${3}초 후 재시도 (${attempt}회 시도)`);
+                    showLoading(`연결 실패: ${err.message} - 3초 후 재시도`);
                     await new Promise(r => setTimeout(r, 3000));
                 }
             }
