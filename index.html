@@ -17842,7 +17842,7 @@ window.MissionSystem = MissionSystem;
                 const tex = new THREE.CanvasTexture(canvas);
                 tex.minFilter = THREE.LinearFilter;
                 const mat = new THREE.MeshBasicMaterial({
-                    map: tex, transparent: true, opacity: 0.9,
+                    map: tex, transparent: true, opacity: 0.7,  // ★ 20% 더 투명
                     side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
                 });
                 const mesh = new THREE.Mesh(geometry, mat);
@@ -17856,24 +17856,24 @@ window.MissionSystem = MissionSystem;
             glassHUD.reticle.mesh.material.opacity = 0.8;
             cockpitGroup.add(glassHUD.reticle.mesh);
 
-            // ★ 좌측 상단 패널 (속도) - Y 낮춤, 높이 확대, 회전 감소
-            glassHUD.leftPanel = createGlassHUDPanel(-1.0, 0.25, -1.5, 0.8, 1.1, 512, 768, 0.03);
-            glassHUD.leftPanel.mesh.rotation.y = 0.25;
+            // ★ 좌측 상단 패널 (속도) - 20% 더 멀리
+            glassHUD.leftPanel = createGlassHUDPanel(-1.2, 0.25, -1.5, 0.8, 1.1, 512, 768, 0.03);
+            glassHUD.leftPanel.mesh.rotation.y = 0.3;
             cockpitGroup.add(glassHUD.leftPanel.mesh);
 
-            // ★ 좌측 하단 패널 (연료, 헐) - Y 낮춤, 높이 확대
-            glassHUD.leftBottomPanel = createGlassHUDPanel(-0.95, -0.4, -1.5, 0.7, 0.9, 512, 640, 0.03);
-            glassHUD.leftBottomPanel.mesh.rotation.y = 0.22;
+            // ★ 좌측 하단 패널 (연료, 헐) - 20% 더 멀리
+            glassHUD.leftBottomPanel = createGlassHUDPanel(-1.15, -0.4, -1.5, 0.7, 0.9, 512, 640, 0.03);
+            glassHUD.leftBottomPanel.mesh.rotation.y = 0.28;
             cockpitGroup.add(glassHUD.leftBottomPanel.mesh);
 
-            // ★ 우측 상단 패널 (좌표, 목표) - Y 낮춤, 높이 확대, 회전 감소
-            glassHUD.rightPanel = createGlassHUDPanel(1.0, 0.2, -1.45, 1.4, 1.8, 768, 1024, 0.04);
-            glassHUD.rightPanel.mesh.rotation.y = -0.28;
+            // ★ 우측 상단 패널 (좌표, 목표) - 20% 더 멀리
+            glassHUD.rightPanel = createGlassHUDPanel(1.2, 0.2, -1.45, 1.4, 1.8, 768, 1024, 0.04);
+            glassHUD.rightPanel.mesh.rotation.y = -0.34;
             cockpitGroup.add(glassHUD.rightPanel.mesh);
 
-            // ★ 우측 하단 패널 (오토파일럿) - Y 낮춤, 높이 확대
-            glassHUD.rightBottomPanel = createGlassHUDPanel(0.95, -0.45, -1.45, 1.3, 1.5, 768, 896, 0.03);
-            glassHUD.rightBottomPanel.mesh.rotation.y = -0.25;
+            // ★ 우측 하단 패널 (오토파일럿) - 20% 더 멀리
+            glassHUD.rightBottomPanel = createGlassHUDPanel(1.15, -0.45, -1.45, 1.3, 1.5, 768, 896, 0.03);
+            glassHUD.rightBottomPanel.mesh.rotation.y = -0.3;
             cockpitGroup.add(glassHUD.rightBottomPanel.mesh);
 
             // ★ 하단 중앙 패널 (레이더) - 크기 확대
@@ -18064,50 +18064,56 @@ window.MissionSystem = MissionSystem;
             if (glassHUD.leftBottomPanel && glassHUD.leftBottomPanel.ctx) {
                 const ctx = glassHUD.leftBottomPanel.ctx;
                 const W = 512, H = 640;
+                const PAD = 60;  // ★ 상단 여백 추가
                 ctx.clearRect(0, 0, W, H);
 
                 ctx.shadowColor = '#00ff88';
                 ctx.shadowBlur = 10;
 
+                // ★ 연료 퍼센트 올바르게 계산 (maxFuel 기준)
+                const fuelRaw = playerShip.fuel !== undefined ? playerShip.fuel : SHIP_CONFIG.maxFuel;
+                const fuelPercent = (fuelRaw / SHIP_CONFIG.maxFuel) * 100;
+
                 // 연료
                 ctx.fillStyle = '#00ff88';
                 ctx.font = 'bold 24px Orbitron, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('FUEL', W/2, 50);
-                const fuel = playerShip.fuel !== undefined ? playerShip.fuel : 100;
+                ctx.fillText('FUEL', W/2, PAD + 50);
                 ctx.strokeStyle = '#00ff88';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(50, 70, W - 100, 44);
-                ctx.fillStyle = fuel > 30 ? '#00ff88' : '#ff4444';
-                ctx.fillRect(54, 74, (W - 108) * (fuel / 100), 36);
+                ctx.strokeRect(50, PAD + 70, W - 100, 44);
+                ctx.fillStyle = fuelPercent > 30 ? '#00ff88' : '#ff4444';
+                ctx.fillRect(54, PAD + 74, (W - 108) * Math.min(fuelPercent / 100, 1), 36);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 26px Orbitron, sans-serif';
-                ctx.fillText(`${fuel.toFixed(0)}%`, W/2, 102);
+                ctx.fillText(`${fuelPercent.toFixed(0)}%`, W/2, PAD + 102);
 
-                // 헐
+                // ★ 헐 퍼센트 올바르게 계산 (maxHull 기준)
+                const hullRaw = playerShip.hull !== undefined ? playerShip.hull : SHIP_CONFIG.maxHull;
+                const hullPercent = (hullRaw / SHIP_CONFIG.maxHull) * 100;
+
                 ctx.fillStyle = '#ff8800';
                 ctx.font = 'bold 24px Orbitron, sans-serif';
-                ctx.fillText('HULL INTEGRITY', W/2, 180);
-                const hull = playerShip.hull !== undefined ? playerShip.hull : 100;
+                ctx.fillText('HULL INTEGRITY', W/2, PAD + 180);
                 ctx.strokeStyle = '#ff8800';
-                ctx.strokeRect(50, 200, W - 100, 44);
-                ctx.fillStyle = hull > 30 ? '#ff8800' : '#ff2222';
-                ctx.fillRect(54, 204, (W - 108) * (hull / 100), 36);
+                ctx.strokeRect(50, PAD + 200, W - 100, 44);
+                ctx.fillStyle = hullPercent > 30 ? '#ff8800' : '#ff2222';
+                ctx.fillRect(54, PAD + 204, (W - 108) * Math.min(hullPercent / 100, 1), 36);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 26px Orbitron, sans-serif';
-                ctx.fillText(`${hull.toFixed(0)}%`, W/2, 232);
+                ctx.fillText(`${hullPercent.toFixed(0)}%`, W/2, PAD + 232);
 
                 // 상태 텍스트
                 ctx.font = '16px Orbitron, sans-serif';
-                if (hull <= 30) {
+                if (hullPercent <= 30) {
                     ctx.fillStyle = '#ff2222';
-                    ctx.fillText('⚠ CRITICAL DAMAGE', W/2, 290);
-                } else if (fuel <= 20) {
+                    ctx.fillText('⚠ CRITICAL DAMAGE', W/2, PAD + 290);
+                } else if (fuelPercent <= 20) {
                     ctx.fillStyle = '#ffaa00';
-                    ctx.fillText('⚠ LOW FUEL WARNING', W/2, 290);
+                    ctx.fillText('⚠ LOW FUEL WARNING', W/2, PAD + 290);
                 } else {
                     ctx.fillStyle = '#00ff88';
-                    ctx.fillText('◉ SYSTEMS NOMINAL', W/2, 290);
+                    ctx.fillText('◉ SYSTEMS NOMINAL', W/2, PAD + 290);
                 }
 
                 glassHUD.leftBottomPanel.tex.needsUpdate = true;
