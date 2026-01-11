@@ -15903,24 +15903,34 @@ window.MissionSystem = MissionSystem;
                     console.log('📦 SHIP_TYPES ids:', SHIP_TYPES.map(s => s.id));
 
                     shipsData.forEach(shipData => {
-                        console.log(`  🔍 ships 항목: id="${shipData.id}", image="${shipData.image || '없음'}", model="${shipData.model || '없음'}"`);
+                        console.log(`  🔍 ships 항목: id="${shipData.id}", turnSpeed=${shipData.turnSpeed}`);
 
                         const ship = SHIP_TYPES.find(s => s.id === shipData.id);
                         if (ship) {
+                            // ★★★ 관리자 페이지에서 설정한 모든 스탯 적용 ★★★
+                            if (shipData.maxSpeed !== undefined) ship.maxSpeed = shipData.maxSpeed;
+                            if (shipData.acceleration !== undefined) ship.acceleration = parseFloat(shipData.acceleration);
+                            if (shipData.turnSpeed !== undefined) ship.turnSpeed = parseFloat(shipData.turnSpeed);
+                            if (shipData.maxFuel !== undefined) ship.maxFuel = shipData.maxFuel;
+                            if (shipData.maxHull !== undefined) ship.maxHull = shipData.maxHull;
+                            if (shipData.price !== undefined) ship.price = shipData.price;
+                            if (shipData.tier !== undefined) ship.tier = shipData.tier;
+                            if (shipData.size !== undefined) ship.size = shipData.size;
+                            if (shipData.special !== undefined) ship.special = shipData.special;
+                            if (shipData.unlocked !== undefined) ship.unlocked = shipData.unlocked;
+
                             // 이미지와 모델 경로 업데이트 (Supabase Storage로 변환)
                             if (shipData.image && shipData.image.length > 0) {
                                 ship.image = convertToSupabaseUrl(shipData.image);
-                                console.log(`    ✅ ${ship.id} 이미지 적용: ${ship.image}`);
                             }
                             if (shipData.model && shipData.model.length > 0) {
                                 ship.model = convertToSupabaseUrl(shipData.model);
-                                console.log(`    ✅ ${ship.id} 모델 적용: ${ship.model}`);
                             }
                             // ★ 엔진 설정 로드
                             if (shipData.engineConfig) {
                                 ship.engineConfig = shipData.engineConfig;
-                                console.log(`    🔥 ${ship.id} 엔진설정 적용`);
                             }
+                            console.log(`    ✅ ${ship.id} 스탯 적용: turnSpeed=${ship.turnSpeed}, maxSpeed=${ship.maxSpeed}`);
                         } else {
                             console.log(`    ⚠️ SHIP_TYPES에서 id="${shipData.id}" 를 찾을 수 없음!`);
                         }
