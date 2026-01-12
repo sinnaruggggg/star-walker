@@ -22339,9 +22339,9 @@ window.MissionSystem = MissionSystem;
 
                         if (!autopilot.engaged) {
                             // ★★★ 방향 수정: 조이스틱 오른쪽 = 우회전, 위 = 기수 상승 ★★★
-                            // yaw: 양수 = 좌회전이므로 dx 반전
-                            // pitch: 양수 = 기수 하강이므로 dy 반전
-                            shipInputs.yaw = Math.max(-1, Math.min(1, -dx / maxRadius));
+                            // yaw: dx 양수(오른쪽) = 우회전
+                            // pitch: dy 양수(아래) = 기수 하강
+                            shipInputs.yaw = Math.max(-1, Math.min(1, dx / maxRadius));
                             shipInputs.pitch = Math.max(-1, Math.min(1, -dy / maxRadius));
                         }
                         // ★ 중심점은 고정 (업데이트 안함) - 버벅거림 해결
