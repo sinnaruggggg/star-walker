@@ -291,6 +291,11 @@
         <button class="tab active" data-tab="ships">🚀 우주선</button>
         <button class="tab" data-tab="celestial">🌍 천체</button>
         <button class="tab" data-tab="config">⚙️ 설정</button>
+        <button class="tab" data-tab="cockpit-ui">🎮 조종실 UI</button>
+        <button class="tab" data-tab="audio">🔊 오디오</button>
+        <button class="tab" data-tab="weapons">⚔️ 무기</button>
+        <button class="tab" data-tab="armors">🛡️ 장갑</button>
+        <button class="tab" data-tab="items">📦 아이템</button>
         <button class="tab" data-tab="files">📁 파일</button>
     </nav>
 
@@ -331,6 +336,471 @@
                     <input type="text" id="bgm-explore" placeholder="BGM ID">
                 </div>
                 <button class="btn btn-primary" onclick="saveConfig()">저장</button>
+            </div>
+        </div>
+
+        <!-- 조종실 UI 탭 -->
+        <div id="cockpit-ui-tab" class="tab-content">
+            <h2 style="color:#0ff; font-family:'Orbitron',sans-serif; margin-bottom:20px;">🎮 조종실 UI 버튼 관리</h2>
+            <p style="color:#888; margin-bottom:20px;">조종실 모드에서 사용되는 버튼 아이콘을 커스터마이즈할 수 있습니다.</p>
+
+            <div class="card-grid">
+                <!-- 발사 버튼 -->
+                <div class="card">
+                    <h3 style="color:#ff6600; margin-bottom:15px;">🔥 발사 버튼</h3>
+                    <div class="cockpit-btn-preview" id="fire-btn-preview" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(145deg,#ff3300,#cc2200); border:3px solid #ff6600; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:32px;">🔥</div>
+                    <div class="file-upload" onclick="document.getElementById('fire-btn-input').click()" style="padding:15px;">
+                        <input type="file" id="fire-btn-input" accept="image/*" onchange="uploadCockpitBtn('fire', this)" style="display:none;">
+                        <p>📤 이미지 업로드</p>
+                    </div>
+                    <div id="fire-btn-url" style="margin-top:10px; font-size:11px; color:#888; word-break:break-all;"></div>
+                </div>
+
+                <!-- 역추진 버튼 -->
+                <div class="card">
+                    <h3 style="color:#00aaff; margin-bottom:15px;">⏹️ 긴급 역추진 버튼</h3>
+                    <div class="cockpit-btn-preview" id="brake-btn-preview" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(145deg,#0066cc,#004499); border:3px solid #00aaff; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:32px;">⏹️</div>
+                    <div class="file-upload" onclick="document.getElementById('brake-btn-input').click()" style="padding:15px;">
+                        <input type="file" id="brake-btn-input" accept="image/*" onchange="uploadCockpitBtn('brake', this)" style="display:none;">
+                        <p>📤 이미지 업로드</p>
+                    </div>
+                    <div id="brake-btn-url" style="margin-top:10px; font-size:11px; color:#888; word-break:break-all;"></div>
+                </div>
+
+                <!-- 자동 조종 버튼 -->
+                <div class="card">
+                    <h3 style="color:#00ff88; margin-bottom:15px;">🤖 자동 조종 버튼</h3>
+                    <div class="cockpit-btn-preview" id="auto-btn-preview" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(145deg,#006644,#004422); border:3px solid #00ff88; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:32px;">🤖</div>
+                    <div class="file-upload" onclick="document.getElementById('auto-btn-input').click()" style="padding:15px;">
+                        <input type="file" id="auto-btn-input" accept="image/*" onchange="uploadCockpitBtn('auto', this)" style="display:none;">
+                        <p>📤 이미지 업로드</p>
+                    </div>
+                    <div id="auto-btn-url" style="margin-top:10px; font-size:11px; color:#888; word-break:break-all;"></div>
+                </div>
+
+                <!-- 설정 버튼 -->
+                <div class="card">
+                    <h3 style="color:#0ff; margin-bottom:15px;">⚙️ 설정 버튼</h3>
+                    <div class="cockpit-btn-preview" id="settings-btn-preview" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,rgba(0,50,80,0.95),rgba(0,30,50,0.95)); border:2px solid #0ff; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:32px;">⚙️</div>
+                    <div class="file-upload" onclick="document.getElementById('settings-btn-input').click()" style="padding:15px;">
+                        <input type="file" id="settings-btn-input" accept="image/*" onchange="uploadCockpitBtn('settings', this)" style="display:none;">
+                        <p>📤 이미지 업로드</p>
+                    </div>
+                    <div id="settings-btn-url" style="margin-top:10px; font-size:11px; color:#888; word-break:break-all;"></div>
+                </div>
+
+                <!-- 라디오 버튼 -->
+                <div class="card">
+                    <h3 style="color:#ff88ff; margin-bottom:15px;">📻 라디오 버튼</h3>
+                    <div class="cockpit-btn-preview" id="radio-btn-preview" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,rgba(80,0,80,0.95),rgba(50,0,50,0.95)); border:2px solid #ff88ff; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:32px;">📻</div>
+                    <div class="file-upload" onclick="document.getElementById('radio-btn-input').click()" style="padding:15px;">
+                        <input type="file" id="radio-btn-input" accept="image/*" onchange="uploadCockpitBtn('radio', this)" style="display:none;">
+                        <p>📤 이미지 업로드</p>
+                    </div>
+                    <div id="radio-btn-url" style="margin-top:10px; font-size:11px; color:#888; word-break:break-all;"></div>
+                </div>
+
+                <!-- 망원경 버튼 -->
+                <div class="card">
+                    <h3 style="color:#ffcc00; margin-bottom:15px;">🔭 망원경 버튼</h3>
+                    <div class="cockpit-btn-preview" id="telescope-btn-preview" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#1a5276,#2980b9); border:2px solid #ffcc00; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:32px;">🔭</div>
+                    <div class="file-upload" onclick="document.getElementById('telescope-btn-input').click()" style="padding:15px;">
+                        <input type="file" id="telescope-btn-input" accept="image/*" onchange="uploadCockpitBtn('telescope', this)" style="display:none;">
+                        <p>📤 이미지 업로드</p>
+                    </div>
+                    <div id="telescope-btn-url" style="margin-top:10px; font-size:11px; color:#888; word-break:break-all;"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3 style="color:#0ff; margin-bottom:15px;">💾 저장된 UI 설정</h3>
+                <div id="cockpit-ui-settings" style="color:#888;">로딩 중...</div>
+                <button class="btn btn-primary" style="margin-top:15px;" onclick="saveCockpitUISettings()">설정 저장</button>
+                <button class="btn" style="margin-top:15px; margin-left:10px;" onclick="resetCockpitUISettings()">기본값으로 리셋</button>
+            </div>
+        </div>
+
+        <!-- 오디오 탭 -->
+        <div id="audio-tab" class="tab-content">
+            <h2 style="color:#0ff; font-family:'Orbitron',sans-serif; margin-bottom:20px;">🔊 오디오 관리</h2>
+            <p style="color:#888; margin-bottom:20px;">게임에서 사용되는 BGM과 효과음을 업로드하고 관리합니다.</p>
+
+            <!-- BGM 섹션 -->
+            <div class="card" style="margin-bottom:20px;">
+                <h3 style="color:#0ff; margin-bottom:15px;">🎵 배경 음악 (BGM)</h3>
+                <div class="card-grid" style="margin-top:15px;">
+                    <!-- 메인 메뉴 BGM -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🏠</span>
+                            <div>
+                                <div style="color:#0ff; font-size:14px;">메인 메뉴 BGM</div>
+                                <div style="color:#888; font-size:11px;">메인 화면 배경 음악</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-bgm_menu" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-bgm_menu').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-bgm_menu" accept="audio/*" onchange="uploadAudio('bgm_menu', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 오디오 파일 업로드</p>
+                        </div>
+                        <div id="audio-url-bgm_menu" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 탐험 BGM -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🚀</span>
+                            <div>
+                                <div style="color:#0ff; font-size:14px;">탐험 BGM</div>
+                                <div style="color:#888; font-size:11px;">우주 탐험 중 배경 음악</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-bgm_explore" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-bgm_explore').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-bgm_explore" accept="audio/*" onchange="uploadAudio('bgm_explore', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 오디오 파일 업로드</p>
+                        </div>
+                        <div id="audio-url-bgm_explore" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 전투 BGM -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">⚔️</span>
+                            <div>
+                                <div style="color:#0ff; font-size:14px;">전투 BGM</div>
+                                <div style="color:#888; font-size:11px;">전투 상황 배경 음악</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-bgm_battle" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-bgm_battle').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-bgm_battle" accept="audio/*" onchange="uploadAudio('bgm_battle', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 오디오 파일 업로드</p>
+                        </div>
+                        <div id="audio-url-bgm_battle" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 정거장 BGM -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🛸</span>
+                            <div>
+                                <div style="color:#0ff; font-size:14px;">정거장 BGM</div>
+                                <div style="color:#888; font-size:11px;">우주정거장 내부 배경 음악</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-bgm_station" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-bgm_station').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-bgm_station" accept="audio/*" onchange="uploadAudio('bgm_station', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 오디오 파일 업로드</p>
+                        </div>
+                        <div id="audio-url-bgm_station" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 효과음 섹션 -->
+            <div class="card">
+                <h3 style="color:#0ff; margin-bottom:15px;">🔉 효과음 (SFX)</h3>
+                <div class="card-grid" style="margin-top:15px;">
+                    <!-- 엔진 추진 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🔥</span>
+                            <div>
+                                <div style="color:#ff6600; font-size:14px;">엔진 추진</div>
+                                <div style="color:#888; font-size:11px;">우주선 엔진 가동 소리</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_engine" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_engine').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_engine" accept="audio/*" onchange="uploadAudio('sfx_engine', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_engine" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 부스터 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">⚡</span>
+                            <div>
+                                <div style="color:#ffcc00; font-size:14px;">부스터</div>
+                                <div style="color:#888; font-size:11px;">부스트/애프터버너 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_boost" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_boost').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_boost" accept="audio/*" onchange="uploadAudio('sfx_boost', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_boost" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 무기 발사 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">💥</span>
+                            <div>
+                                <div style="color:#ff3333; font-size:14px;">무기 발사</div>
+                                <div style="color:#888; font-size:11px;">레이저/미사일 발사음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_fire" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_fire').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_fire" accept="audio/*" onchange="uploadAudio('sfx_fire', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_fire" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 폭발 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">💣</span>
+                            <div>
+                                <div style="color:#ff6600; font-size:14px;">폭발</div>
+                                <div style="color:#888; font-size:11px;">폭발 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_explosion" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_explosion').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_explosion" accept="audio/*" onchange="uploadAudio('sfx_explosion', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_explosion" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 피격 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🛡️</span>
+                            <div>
+                                <div style="color:#ff4444; font-size:14px;">피격</div>
+                                <div style="color:#888; font-size:11px;">우주선 피격 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_hit" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_hit').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_hit" accept="audio/*" onchange="uploadAudio('sfx_hit', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_hit" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 도킹 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🔗</span>
+                            <div>
+                                <div style="color:#00ff88; font-size:14px;">도킹</div>
+                                <div style="color:#888; font-size:11px;">정거장 도킹 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_dock" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_dock').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_dock" accept="audio/*" onchange="uploadAudio('sfx_dock', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_dock" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 경고음 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">⚠️</span>
+                            <div>
+                                <div style="color:#ff0000; font-size:14px;">경고음</div>
+                                <div style="color:#888; font-size:11px;">위험 경고 알림</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_warning" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_warning').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_warning" accept="audio/*" onchange="uploadAudio('sfx_warning', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_warning" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 연료 부족 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">⛽</span>
+                            <div>
+                                <div style="color:#ff8800; font-size:14px;">연료 부족</div>
+                                <div style="color:#888; font-size:11px;">연료 부족 경고음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_fuel_low" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_fuel_low').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_fuel_low" accept="audio/*" onchange="uploadAudio('sfx_fuel_low', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_fuel_low" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 미션 완료 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🏆</span>
+                            <div>
+                                <div style="color:#ffd700; font-size:14px;">미션 완료</div>
+                                <div style="color:#888; font-size:11px;">미션 성공 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_mission_complete" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_mission_complete').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_mission_complete" accept="audio/*" onchange="uploadAudio('sfx_mission_complete', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_mission_complete" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- UI 클릭 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🖱️</span>
+                            <div>
+                                <div style="color:#0ff; font-size:14px;">UI 클릭</div>
+                                <div style="color:#888; font-size:11px;">버튼 클릭 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_click" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_click').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_click" accept="audio/*" onchange="uploadAudio('sfx_click', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_click" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 오토파일럿 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🤖</span>
+                            <div>
+                                <div style="color:#00ff88; font-size:14px;">오토파일럿</div>
+                                <div style="color:#888; font-size:11px;">자동 조종 활성화/비활성화</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_autopilot" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_autopilot').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_autopilot" accept="audio/*" onchange="uploadAudio('sfx_autopilot', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_autopilot" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 워프 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🌀</span>
+                            <div>
+                                <div style="color:#aa00ff; font-size:14px;">워프</div>
+                                <div style="color:#888; font-size:11px;">워프 드라이브 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_warp" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_warp').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_warp" accept="audio/*" onchange="uploadAudio('sfx_warp', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_warp" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 쉴드 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🔵</span>
+                            <div>
+                                <div style="color:#00aaff; font-size:14px;">쉴드</div>
+                                <div style="color:#888; font-size:11px;">쉴드 활성화 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_shield" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_shield').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_shield" accept="audio/*" onchange="uploadAudio('sfx_shield', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_shield" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 스캐너 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">📡</span>
+                            <div>
+                                <div style="color:#00ffaa; font-size:14px;">스캐너</div>
+                                <div style="color:#888; font-size:11px;">스캔 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_scan" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_scan').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_scan" accept="audio/*" onchange="uploadAudio('sfx_scan', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_scan" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+
+                    <!-- 조종실 입장 -->
+                    <div style="background:rgba(0,20,40,0.5); padding:15px; border-radius:8px; border:1px solid rgba(0,255,255,0.2);">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <span style="font-size:24px;">🎮</span>
+                            <div>
+                                <div style="color:#0ff; font-size:14px;">조종실 입장</div>
+                                <div style="color:#888; font-size:11px;">조종실 모드 진입 효과음</div>
+                            </div>
+                        </div>
+                        <audio id="audio-preview-sfx_cockpit" controls style="width:100%; height:30px; margin-bottom:10px;"></audio>
+                        <div class="file-upload" onclick="document.getElementById('audio-input-sfx_cockpit').click()" style="padding:10px;">
+                            <input type="file" id="audio-input-sfx_cockpit" accept="audio/*" onchange="uploadAudio('sfx_cockpit', this)" style="display:none;">
+                            <p style="font-size:12px;">📤 업로드</p>
+                        </div>
+                        <div id="audio-url-sfx_cockpit" style="margin-top:8px; font-size:10px; color:#888; word-break:break-all;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 저장 버튼 -->
+            <div class="card" style="margin-top:20px;">
+                <h3 style="color:#0ff; margin-bottom:15px;">💾 오디오 설정</h3>
+                <div id="audio-settings" style="color:#888; margin-bottom:15px;">로딩 중...</div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="saveAudioSettings()">설정 저장</button>
+                    <button class="btn" onclick="resetAudioSettings()">기본값으로 리셋</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 무기 탭 -->
+        <div id="weapons-tab" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="color:#0ff; font-family:'Orbitron',sans-serif;">⚔️ 무기 관리</h2>
+                <button class="btn btn-primary" onclick="openWeaponModal()">+ 새 무기</button>
+            </div>
+            <div id="weapons-grid" class="card-grid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- 장갑 탭 -->
+        <div id="armors-tab" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="color:#0ff; font-family:'Orbitron',sans-serif;">🛡️ 장갑 관리</h2>
+                <button class="btn btn-primary" onclick="openArmorModal()">+ 새 장갑</button>
+            </div>
+            <div id="armors-grid" class="card-grid">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- 아이템 탭 -->
+        <div id="items-tab" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="color:#0ff; font-family:'Orbitron',sans-serif;">📦 아이템 관리</h2>
+                <button class="btn btn-primary" onclick="openItemModal()">+ 새 아이템</button>
+            </div>
+            <div id="items-grid" class="card-grid">
+                <div class="loading"><div class="spinner"></div></div>
             </div>
         </div>
 
@@ -412,6 +882,10 @@
                         <label>가격</label>
                         <input type="number" id="ship-price" value="0">
                     </div>
+                    <div class="form-group">
+                        <label>적재량</label>
+                        <input type="number" id="ship-capacity" value="100" min="0">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>설명</label>
@@ -452,6 +926,210 @@
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button type="submit" class="btn btn-success">💾 저장</button>
                     <button type="button" class="btn btn-danger" onclick="deleteShip()">🗑️ 삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 무기 편집 모달 -->
+    <div id="weapon-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="weapon-modal-title">무기 편집</h2>
+                <button class="modal-close" onclick="closeWeaponModal()">×</button>
+            </div>
+            <form id="weapon-form">
+                <input type="hidden" id="weapon-original-id">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group">
+                        <label>ID (영문)</label>
+                        <input type="text" id="weapon-id" required>
+                    </div>
+                    <div class="form-group">
+                        <label>티어</label>
+                        <select id="weapon-tier">
+                            <option value="1">Tier 1</option>
+                            <option value="2">Tier 2</option>
+                            <option value="3">Tier 3</option>
+                            <option value="4">Tier 4</option>
+                            <option value="5">Tier 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>이름</label>
+                        <input type="text" id="weapon-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>가격</label>
+                        <input type="number" id="weapon-price" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>데미지</label>
+                        <input type="number" id="weapon-damage" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>연사속도 (초당)</label>
+                        <input type="number" id="weapon-fire-rate" step="0.1" value="1.0">
+                    </div>
+                    <div class="form-group">
+                        <label>사거리 (m)</label>
+                        <input type="number" id="weapon-range" value="500">
+                    </div>
+                    <div class="form-group">
+                        <label>에너지 소모</label>
+                        <input type="number" id="weapon-energy" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>무게</label>
+                        <input type="number" id="weapon-weight" value="10" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea id="weapon-desc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>이미지 URL</label>
+                    <input type="text" id="weapon-image">
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-success">💾 저장</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteWeapon()">🗑️ 삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 장갑 편집 모달 -->
+    <div id="armor-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="armor-modal-title">장갑 편집</h2>
+                <button class="modal-close" onclick="closeArmorModal()">×</button>
+            </div>
+            <form id="armor-form">
+                <input type="hidden" id="armor-original-id">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group">
+                        <label>ID (영문)</label>
+                        <input type="text" id="armor-id" required>
+                    </div>
+                    <div class="form-group">
+                        <label>티어</label>
+                        <select id="armor-tier">
+                            <option value="1">Tier 1</option>
+                            <option value="2">Tier 2</option>
+                            <option value="3">Tier 3</option>
+                            <option value="4">Tier 4</option>
+                            <option value="5">Tier 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>이름</label>
+                        <input type="text" id="armor-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>가격</label>
+                        <input type="number" id="armor-price" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>방어력</label>
+                        <input type="number" id="armor-defense" value="50">
+                    </div>
+                    <div class="form-group">
+                        <label>HP 보너스</label>
+                        <input type="number" id="armor-hp-bonus" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>무게 (0.0~1.0)</label>
+                        <input type="number" id="armor-weight" step="0.1" value="1.0" min="0" max="2">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea id="armor-desc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>특수 효과</label>
+                    <input type="text" id="armor-effect" placeholder="예: 에너지 무기 피해 30% 감소">
+                </div>
+                <div class="form-group">
+                    <label>이미지 URL</label>
+                    <input type="text" id="armor-image">
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-success">💾 저장</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteArmor()">🗑️ 삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 아이템 편집 모달 -->
+    <div id="item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="item-modal-title">아이템 편집</h2>
+                <button class="modal-close" onclick="closeItemModal()">×</button>
+            </div>
+            <form id="item-form">
+                <input type="hidden" id="item-original-id">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div class="form-group">
+                        <label>ID (영문)</label>
+                        <input type="text" id="item-id" required>
+                    </div>
+                    <div class="form-group">
+                        <label>카테고리</label>
+                        <select id="item-category">
+                            <option value="consumable">소모품</option>
+                            <option value="upgrade">업그레이드</option>
+                            <option value="material">재료</option>
+                            <option value="special">특수</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>이름</label>
+                        <input type="text" id="item-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>가격</label>
+                        <input type="number" id="item-price" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>최대 소지 수량</label>
+                        <input type="number" id="item-max-stack" value="99">
+                    </div>
+                    <div class="form-group">
+                        <label>레어도</label>
+                        <select id="item-rarity">
+                            <option value="common">일반</option>
+                            <option value="uncommon">고급</option>
+                            <option value="rare">희귀</option>
+                            <option value="epic">에픽</option>
+                            <option value="legendary">전설</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>무게</label>
+                        <input type="number" id="item-weight" value="1" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea id="item-desc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>효과 (JSON)</label>
+                    <textarea id="item-effect" rows="2" placeholder='{"fuel": 50, "hp": 100}'></textarea>
+                </div>
+                <div class="form-group">
+                    <label>이미지 URL</label>
+                    <input type="text" id="item-image">
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-success">💾 저장</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteItem()">🗑️ 삭제</button>
                 </div>
             </form>
         </div>
@@ -511,6 +1189,7 @@
                             <span>🚀 ${ship.acceleration}</span>
                             <span>🔄 ${ship.turn_speed}</span>
                             <span>⛽ ${ship.max_fuel}</span>
+                            <span>📦 ${ship.capacity || 0}</span>
                         </div>
                     </div>
                 </div>
@@ -539,6 +1218,7 @@
                     document.getElementById('ship-max-fuel').value = ship.max_fuel;
                     document.getElementById('ship-size').value = ship.size;
                     document.getElementById('ship-price').value = ship.price;
+                    document.getElementById('ship-capacity').value = ship.capacity || 100;
                     document.getElementById('ship-description').value = ship.description || '';
                     document.getElementById('ship-special').value = ship.special || '';
                     document.getElementById('ship-image').value = ship.image || '';
@@ -590,6 +1270,7 @@
                 max_fuel: parseInt(document.getElementById('ship-max-fuel').value),
                 size: document.getElementById('ship-size').value,
                 price: parseInt(document.getElementById('ship-price').value),
+                capacity: parseInt(document.getElementById('ship-capacity').value),
                 description: document.getElementById('ship-description').value,
                 special: document.getElementById('ship-special').value,
                 image: document.getElementById('ship-image').value,
@@ -682,6 +1363,759 @@
                 toast.remove();
             }, 3000);
         }
+
+        // ========== 조종실 UI 버튼 관리 ==========
+        let cockpitUIConfig = {
+            fire: null,
+            brake: null,
+            auto: null,
+            settings: null,
+            radio: null,
+            telescope: null
+        };
+
+        // 조종실 UI 버튼 업로드
+        async function uploadCockpitBtn(btnType, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const urlDiv = document.getElementById(`${btnType}-btn-url`);
+            const previewDiv = document.getElementById(`${btnType}-btn-preview`);
+            urlDiv.innerHTML = '업로드 중...';
+
+            try {
+                const timestamp = Date.now();
+                const ext = file.name.split('.').pop();
+                const fileName = `cockpit_btn_${btnType}_${timestamp}.${ext}`;
+
+                const { data, error } = await supabaseClient.storage
+                    .from('assets')
+                    .upload(`cockpit-ui/${fileName}`, file);
+
+                if (error) throw error;
+
+                const { data: urlData } = supabaseClient.storage
+                    .from('assets')
+                    .getPublicUrl(`cockpit-ui/${fileName}`);
+
+                cockpitUIConfig[btnType] = urlData.publicUrl;
+                urlDiv.innerHTML = `<a href="${urlData.publicUrl}" target="_blank" style="color:#0ff;">${urlData.publicUrl}</a>`;
+
+                // 미리보기 업데이트
+                previewDiv.innerHTML = `<img src="${urlData.publicUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:50%;">`;
+
+                showToast(`${btnType} 버튼 이미지 업로드 완료!`, 'success');
+            } catch (err) {
+                urlDiv.innerHTML = `<span style="color:#f00;">업로드 실패: ${err.message}</span>`;
+                showToast('업로드 실패: ' + err.message, 'error');
+            }
+
+            input.value = '';
+        }
+
+        // 조종실 UI 설정 저장
+        async function saveCockpitUISettings() {
+            try {
+                // Supabase에 설정 저장 (config 테이블 사용)
+                const { data, error } = await supabaseClient
+                    .from('config')
+                    .upsert({
+                        key: 'cockpit_ui_buttons',
+                        value: cockpitUIConfig
+                    }, { onConflict: 'key' });
+
+                if (error) throw error;
+
+                showToast('조종실 UI 설정이 저장되었습니다!', 'success');
+                loadCockpitUISettings();
+            } catch (err) {
+                showToast('저장 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 조종실 UI 설정 불러오기
+        async function loadCockpitUISettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('config')
+                    .select('value')
+                    .eq('key', 'cockpit_ui_buttons')
+                    .single();
+
+                if (data && data.value) {
+                    cockpitUIConfig = data.value;
+
+                    // 미리보기 업데이트
+                    Object.keys(cockpitUIConfig).forEach(btnType => {
+                        if (cockpitUIConfig[btnType]) {
+                            const previewDiv = document.getElementById(`${btnType}-btn-preview`);
+                            const urlDiv = document.getElementById(`${btnType}-btn-url`);
+                            if (previewDiv) {
+                                previewDiv.innerHTML = `<img src="${cockpitUIConfig[btnType]}" style="width:100%; height:100%; object-fit:contain; border-radius:50%;">`;
+                            }
+                            if (urlDiv) {
+                                urlDiv.innerHTML = `<a href="${cockpitUIConfig[btnType]}" target="_blank" style="color:#0ff;">${cockpitUIConfig[btnType]}</a>`;
+                            }
+                        }
+                    });
+                }
+
+                document.getElementById('cockpit-ui-settings').innerHTML = `
+                    <pre style="background:#0a0a1a; padding:10px; border-radius:5px; font-size:11px; overflow-x:auto;">${JSON.stringify(cockpitUIConfig, null, 2)}</pre>
+                `;
+            } catch (err) {
+                document.getElementById('cockpit-ui-settings').innerHTML = `<span style="color:#888;">설정 없음 (기본값 사용)</span>`;
+            }
+        }
+
+        // 조종실 UI 설정 리셋
+        async function resetCockpitUISettings() {
+            if (!confirm('조종실 UI 설정을 기본값으로 리셋하시겠습니까?')) return;
+
+            try {
+                await supabaseClient
+                    .from('config')
+                    .delete()
+                    .eq('key', 'cockpit_ui_buttons');
+
+                cockpitUIConfig = {
+                    fire: null,
+                    brake: null,
+                    auto: null,
+                    settings: null,
+                    radio: null,
+                    telescope: null
+                };
+
+                // 미리보기 리셋
+                const defaultEmojis = {
+                    fire: '🔥',
+                    brake: '⏹️',
+                    auto: '🤖',
+                    settings: '⚙️',
+                    radio: '📻',
+                    telescope: '🔭'
+                };
+                Object.keys(defaultEmojis).forEach(btnType => {
+                    const previewDiv = document.getElementById(`${btnType}-btn-preview`);
+                    const urlDiv = document.getElementById(`${btnType}-btn-url`);
+                    if (previewDiv) {
+                        previewDiv.innerHTML = defaultEmojis[btnType];
+                    }
+                    if (urlDiv) {
+                        urlDiv.innerHTML = '';
+                    }
+                });
+
+                showToast('조종실 UI 설정이 리셋되었습니다.', 'info');
+                loadCockpitUISettings();
+            } catch (err) {
+                showToast('리셋 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 탭 변경 시 조종실 UI 설정 로드
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.dataset.tab === 'cockpit-ui') {
+                    loadCockpitUISettings();
+                }
+            });
+        });
+
+        // ========== 오디오 관리 ==========
+        let audioConfig = {
+            // BGM
+            bgm_menu: null,
+            bgm_explore: null,
+            bgm_battle: null,
+            bgm_station: null,
+            // SFX
+            sfx_engine: null,
+            sfx_boost: null,
+            sfx_fire: null,
+            sfx_explosion: null,
+            sfx_hit: null,
+            sfx_dock: null,
+            sfx_warning: null,
+            sfx_fuel_low: null,
+            sfx_mission_complete: null,
+            sfx_click: null,
+            sfx_autopilot: null,
+            sfx_warp: null,
+            sfx_shield: null,
+            sfx_scan: null,
+            sfx_cockpit: null
+        };
+
+        // 오디오 파일 업로드
+        async function uploadAudio(audioType, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const urlDiv = document.getElementById(`audio-url-${audioType}`);
+            const previewAudio = document.getElementById(`audio-preview-${audioType}`);
+            urlDiv.innerHTML = '<span style="color:#ffcc00;">업로드 중...</span>';
+
+            try {
+                const timestamp = Date.now();
+                const ext = file.name.split('.').pop();
+                const fileName = `${audioType}_${timestamp}.${ext}`;
+
+                const { data, error } = await supabaseClient.storage
+                    .from('assets')
+                    .upload(`audio/${fileName}`, file);
+
+                if (error) throw error;
+
+                const { data: urlData } = supabaseClient.storage
+                    .from('assets')
+                    .getPublicUrl(`audio/${fileName}`);
+
+                audioConfig[audioType] = urlData.publicUrl;
+                urlDiv.innerHTML = `<a href="${urlData.publicUrl}" target="_blank" style="color:#0ff;">${urlData.publicUrl}</a>`;
+
+                // 오디오 미리보기 업데이트
+                previewAudio.src = urlData.publicUrl;
+
+                showToast(`${audioType} 오디오 업로드 완료!`, 'success');
+            } catch (err) {
+                urlDiv.innerHTML = `<span style="color:#ff4444;">업로드 실패: ${err.message}</span>`;
+                showToast('업로드 실패: ' + err.message, 'error');
+            }
+
+            input.value = '';
+        }
+
+        // 오디오 설정 저장
+        async function saveAudioSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('config')
+                    .upsert({
+                        key: 'game_audio',
+                        value: audioConfig
+                    }, { onConflict: 'key' });
+
+                if (error) throw error;
+
+                showToast('오디오 설정이 저장되었습니다!', 'success');
+                loadAudioSettings();
+            } catch (err) {
+                showToast('저장 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 오디오 설정 불러오기
+        async function loadAudioSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('config')
+                    .select('value')
+                    .eq('key', 'game_audio')
+                    .single();
+
+                if (data && data.value) {
+                    audioConfig = { ...audioConfig, ...data.value };
+
+                    // 미리보기 업데이트
+                    Object.keys(audioConfig).forEach(audioType => {
+                        if (audioConfig[audioType]) {
+                            const previewAudio = document.getElementById(`audio-preview-${audioType}`);
+                            const urlDiv = document.getElementById(`audio-url-${audioType}`);
+                            if (previewAudio) {
+                                previewAudio.src = audioConfig[audioType];
+                            }
+                            if (urlDiv) {
+                                urlDiv.innerHTML = `<a href="${audioConfig[audioType]}" target="_blank" style="color:#0ff;">${audioConfig[audioType]}</a>`;
+                            }
+                        }
+                    });
+                }
+
+                // 설정 표시
+                const settingsDiv = document.getElementById('audio-settings');
+                const configuredCount = Object.values(audioConfig).filter(v => v !== null).length;
+                const totalCount = Object.keys(audioConfig).length;
+                settingsDiv.innerHTML = `
+                    <p>설정된 오디오: <span style="color:#0ff;">${configuredCount}</span> / ${totalCount}</p>
+                    <details style="margin-top:10px;">
+                        <summary style="cursor:pointer; color:#888;">상세 보기</summary>
+                        <pre style="background:#0a0a1a; padding:10px; border-radius:5px; font-size:10px; overflow-x:auto; margin-top:10px;">${JSON.stringify(audioConfig, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (err) {
+                document.getElementById('audio-settings').innerHTML = `<span style="color:#888;">설정 없음 (기본값 사용)</span>`;
+            }
+        }
+
+        // 오디오 설정 리셋
+        async function resetAudioSettings() {
+            if (!confirm('오디오 설정을 기본값으로 리셋하시겠습니까?\n업로드된 파일은 삭제되지 않습니다.')) return;
+
+            try {
+                await supabaseClient
+                    .from('config')
+                    .delete()
+                    .eq('key', 'game_audio');
+
+                // 설정 초기화
+                Object.keys(audioConfig).forEach(key => {
+                    audioConfig[key] = null;
+                    const previewAudio = document.getElementById(`audio-preview-${key}`);
+                    const urlDiv = document.getElementById(`audio-url-${key}`);
+                    if (previewAudio) {
+                        previewAudio.src = '';
+                    }
+                    if (urlDiv) {
+                        urlDiv.innerHTML = '';
+                    }
+                });
+
+                showToast('오디오 설정이 리셋되었습니다.', 'info');
+                loadAudioSettings();
+            } catch (err) {
+                showToast('리셋 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 탭 변경 시 오디오 설정 로드
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.dataset.tab === 'audio') {
+                    loadAudioSettings();
+                }
+            });
+        });
+
+        // ========== 무기 관리 ==========
+        let weaponsData = [];
+        let currentEditWeapon = null;
+
+        // 무기 목록 로드
+        async function loadWeapons() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('weapons')
+                    .select('*')
+                    .order('tier');
+
+                if (error) throw error;
+                weaponsData = data || [];
+                renderWeapons();
+            } catch (err) {
+                // 테이블이 없으면 빈 목록
+                weaponsData = [];
+                document.getElementById('weapons-grid').innerHTML = '<p style="color:#888;">무기 데이터가 없습니다. 새 무기를 추가해주세요.</p>';
+            }
+        }
+
+        // 무기 렌더링
+        function renderWeapons() {
+            const grid = document.getElementById('weapons-grid');
+            if (weaponsData.length === 0) {
+                grid.innerHTML = '<p style="color:#888;">무기 데이터가 없습니다. 새 무기를 추가해주세요.</p>';
+                return;
+            }
+            grid.innerHTML = weaponsData.map(weapon => `
+                <div class="card" style="cursor:pointer;" onclick="editWeapon('${weapon.id}')">
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <div style="width:50px; height:50px; background:#0a1628; border:2px solid #ff6600; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:24px;">⚔️</div>
+                        <div style="flex:1;">
+                            <div style="color:#ff6600; font-family:'Orbitron',sans-serif; font-size:14px;">${weapon.name}</div>
+                            <div style="color:#888; font-size:12px;">Tier ${weapon.tier} • ${weapon.price} 코인</div>
+                            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; margin-top:5px; font-size:11px; color:#aaa;">
+                                <span>💥 ${weapon.damage}</span>
+                                <span>🔫 ${weapon.fire_rate}/s</span>
+                                <span>📏 ${weapon.range}m</span>
+                                <span>⚡ ${weapon.energy}</span>
+                                <span>⚖️ ${weapon.weight || 10}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 무기 모달 열기
+        function openWeaponModal(weaponId = null) {
+            currentEditWeapon = weaponId;
+            const modal = document.getElementById('weapon-modal');
+            const title = document.getElementById('weapon-modal-title');
+
+            if (weaponId) {
+                const weapon = weaponsData.find(w => w.id === weaponId);
+                if (weapon) {
+                    title.textContent = '무기 편집';
+                    document.getElementById('weapon-original-id').value = weapon.id;
+                    document.getElementById('weapon-id').value = weapon.id;
+                    document.getElementById('weapon-name').value = weapon.name;
+                    document.getElementById('weapon-tier').value = weapon.tier;
+                    document.getElementById('weapon-damage').value = weapon.damage;
+                    document.getElementById('weapon-fire-rate').value = weapon.fire_rate;
+                    document.getElementById('weapon-range').value = weapon.range;
+                    document.getElementById('weapon-energy').value = weapon.energy;
+                    document.getElementById('weapon-weight').value = weapon.weight || 10;
+                    document.getElementById('weapon-price').value = weapon.price;
+                    document.getElementById('weapon-desc').value = weapon.description || '';
+                    document.getElementById('weapon-image').value = weapon.image || '';
+                }
+            } else {
+                title.textContent = '새 무기';
+                document.getElementById('weapon-form').reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function editWeapon(weaponId) { openWeaponModal(weaponId); }
+        function closeWeaponModal() {
+            document.getElementById('weapon-modal').classList.remove('active');
+            currentEditWeapon = null;
+        }
+
+        // 무기 저장
+        document.getElementById('weapon-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const weaponData = {
+                id: document.getElementById('weapon-id').value,
+                name: document.getElementById('weapon-name').value,
+                tier: parseInt(document.getElementById('weapon-tier').value),
+                damage: parseInt(document.getElementById('weapon-damage').value),
+                fire_rate: parseFloat(document.getElementById('weapon-fire-rate').value),
+                range: parseInt(document.getElementById('weapon-range').value),
+                energy: parseInt(document.getElementById('weapon-energy').value),
+                weight: parseInt(document.getElementById('weapon-weight').value),
+                price: parseInt(document.getElementById('weapon-price').value),
+                description: document.getElementById('weapon-desc').value,
+                image: document.getElementById('weapon-image').value
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('weapons')
+                    .upsert(weaponData, { onConflict: 'id' });
+
+                if (error) throw error;
+
+                showToast('무기 저장 완료!', 'success');
+                closeWeaponModal();
+                loadWeapons();
+            } catch (err) {
+                showToast('저장 실패: ' + err.message, 'error');
+            }
+        });
+
+        // 무기 삭제
+        async function deleteWeapon() {
+            if (!currentEditWeapon) return;
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('weapons')
+                    .delete()
+                    .eq('id', currentEditWeapon);
+
+                if (error) throw error;
+
+                showToast('무기 삭제 완료', 'success');
+                closeWeaponModal();
+                loadWeapons();
+            } catch (err) {
+                showToast('삭제 실패: ' + err.message, 'error');
+            }
+        }
+
+        // ========== 장갑 관리 ==========
+        let armorsData = [];
+        let currentEditArmor = null;
+
+        // 장갑 목록 로드
+        async function loadArmors() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('armors')
+                    .select('*')
+                    .order('tier');
+
+                if (error) throw error;
+                armorsData = data || [];
+                renderArmors();
+            } catch (err) {
+                armorsData = [];
+                document.getElementById('armors-grid').innerHTML = '<p style="color:#888;">장갑 데이터가 없습니다. 새 장갑을 추가해주세요.</p>';
+            }
+        }
+
+        // 장갑 렌더링
+        function renderArmors() {
+            const grid = document.getElementById('armors-grid');
+            if (armorsData.length === 0) {
+                grid.innerHTML = '<p style="color:#888;">장갑 데이터가 없습니다. 새 장갑을 추가해주세요.</p>';
+                return;
+            }
+            grid.innerHTML = armorsData.map(armor => `
+                <div class="card" style="cursor:pointer;" onclick="editArmor('${armor.id}')">
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <div style="width:50px; height:50px; background:#0a1628; border:2px solid #00aaff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:24px;">🛡️</div>
+                        <div style="flex:1;">
+                            <div style="color:#00aaff; font-family:'Orbitron',sans-serif; font-size:14px;">${armor.name}</div>
+                            <div style="color:#888; font-size:12px;">Tier ${armor.tier} • ${armor.price} 코인</div>
+                            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin-top:5px; font-size:11px; color:#aaa;">
+                                <span>🛡️ ${armor.defense}</span>
+                                <span>❤️ +${armor.hp_bonus}</span>
+                                <span>⚖️ ${armor.weight}</span>
+                            </div>
+                            ${armor.effect ? `<div style="font-size:10px; color:#0f8; margin-top:5px;">✨ ${armor.effect}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 장갑 모달 열기
+        function openArmorModal(armorId = null) {
+            currentEditArmor = armorId;
+            const modal = document.getElementById('armor-modal');
+            const title = document.getElementById('armor-modal-title');
+
+            if (armorId) {
+                const armor = armorsData.find(a => a.id === armorId);
+                if (armor) {
+                    title.textContent = '장갑 편집';
+                    document.getElementById('armor-original-id').value = armor.id;
+                    document.getElementById('armor-id').value = armor.id;
+                    document.getElementById('armor-name').value = armor.name;
+                    document.getElementById('armor-tier').value = armor.tier;
+                    document.getElementById('armor-defense').value = armor.defense;
+                    document.getElementById('armor-hp-bonus').value = armor.hp_bonus;
+                    document.getElementById('armor-weight').value = armor.weight;
+                    document.getElementById('armor-price').value = armor.price;
+                    document.getElementById('armor-desc').value = armor.description || '';
+                    document.getElementById('armor-effect').value = armor.effect || '';
+                    document.getElementById('armor-image').value = armor.image || '';
+                }
+            } else {
+                title.textContent = '새 장갑';
+                document.getElementById('armor-form').reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function editArmor(armorId) { openArmorModal(armorId); }
+        function closeArmorModal() {
+            document.getElementById('armor-modal').classList.remove('active');
+            currentEditArmor = null;
+        }
+
+        // 장갑 저장
+        document.getElementById('armor-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const armorData = {
+                id: document.getElementById('armor-id').value,
+                name: document.getElementById('armor-name').value,
+                tier: parseInt(document.getElementById('armor-tier').value),
+                defense: parseInt(document.getElementById('armor-defense').value),
+                hp_bonus: parseInt(document.getElementById('armor-hp-bonus').value),
+                weight: parseFloat(document.getElementById('armor-weight').value),
+                price: parseInt(document.getElementById('armor-price').value),
+                description: document.getElementById('armor-desc').value,
+                effect: document.getElementById('armor-effect').value,
+                image: document.getElementById('armor-image').value
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('armors')
+                    .upsert(armorData, { onConflict: 'id' });
+
+                if (error) throw error;
+
+                showToast('장갑 저장 완료!', 'success');
+                closeArmorModal();
+                loadArmors();
+            } catch (err) {
+                showToast('저장 실패: ' + err.message, 'error');
+            }
+        });
+
+        // 장갑 삭제
+        async function deleteArmor() {
+            if (!currentEditArmor) return;
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('armors')
+                    .delete()
+                    .eq('id', currentEditArmor);
+
+                if (error) throw error;
+
+                showToast('장갑 삭제 완료', 'success');
+                closeArmorModal();
+                loadArmors();
+            } catch (err) {
+                showToast('삭제 실패: ' + err.message, 'error');
+            }
+        }
+
+        // ========== 아이템 관리 ==========
+        let itemsData = [];
+        let currentEditItem = null;
+
+        // 아이템 목록 로드
+        async function loadItems() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('items')
+                    .select('*')
+                    .order('category');
+
+                if (error) throw error;
+                itemsData = data || [];
+                renderItems();
+            } catch (err) {
+                itemsData = [];
+                document.getElementById('items-grid').innerHTML = '<p style="color:#888;">아이템 데이터가 없습니다. 새 아이템을 추가해주세요.</p>';
+            }
+        }
+
+        // 아이템 렌더링
+        function renderItems() {
+            const grid = document.getElementById('items-grid');
+            if (itemsData.length === 0) {
+                grid.innerHTML = '<p style="color:#888;">아이템 데이터가 없습니다. 새 아이템을 추가해주세요.</p>';
+                return;
+            }
+            const rarityColors = { common: '#888', uncommon: '#0f0', rare: '#00f', epic: '#a0f', legendary: '#fa0' };
+            const categoryIcons = { consumable: '🧪', upgrade: '⬆️', material: '🔩', special: '✨' };
+            grid.innerHTML = itemsData.map(item => `
+                <div class="card" style="cursor:pointer;" onclick="editItem('${item.id}')">
+                    <div style="display:flex; gap:15px; align-items:center;">
+                        <div style="width:50px; height:50px; background:#0a1628; border:2px solid ${rarityColors[item.rarity] || '#888'}; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:24px;">${categoryIcons[item.category] || '📦'}</div>
+                        <div style="flex:1;">
+                            <div style="color:${rarityColors[item.rarity] || '#888'}; font-family:'Orbitron',sans-serif; font-size:14px;">${item.name}</div>
+                            <div style="color:#888; font-size:12px;">${item.category} • ${item.price} 코인</div>
+                            <div style="font-size:11px; color:#aaa; margin-top:5px;">최대 ${item.max_stack}개 • ⚖️ ${item.weight || 1}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 아이템 모달 열기
+        function openItemModal(itemId = null) {
+            currentEditItem = itemId;
+            const modal = document.getElementById('item-modal');
+            const title = document.getElementById('item-modal-title');
+
+            if (itemId) {
+                const item = itemsData.find(i => i.id === itemId);
+                if (item) {
+                    title.textContent = '아이템 편집';
+                    document.getElementById('item-original-id').value = item.id;
+                    document.getElementById('item-id').value = item.id;
+                    document.getElementById('item-name').value = item.name;
+                    document.getElementById('item-category').value = item.category;
+                    document.getElementById('item-price').value = item.price;
+                    document.getElementById('item-max-stack').value = item.max_stack;
+                    document.getElementById('item-rarity').value = item.rarity;
+                    document.getElementById('item-weight').value = item.weight || 1;
+                    document.getElementById('item-desc').value = item.description || '';
+                    document.getElementById('item-effect').value = item.effect ? JSON.stringify(item.effect) : '';
+                    document.getElementById('item-image').value = item.image || '';
+                }
+            } else {
+                title.textContent = '새 아이템';
+                document.getElementById('item-form').reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function editItem(itemId) { openItemModal(itemId); }
+        function closeItemModal() {
+            document.getElementById('item-modal').classList.remove('active');
+            currentEditItem = null;
+        }
+
+        // 아이템 저장
+        document.getElementById('item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let effectData = null;
+            const effectStr = document.getElementById('item-effect').value;
+            if (effectStr) {
+                try {
+                    effectData = JSON.parse(effectStr);
+                } catch (err) {
+                    showToast('효과 JSON 형식 오류', 'error');
+                    return;
+                }
+            }
+
+            const itemData = {
+                id: document.getElementById('item-id').value,
+                name: document.getElementById('item-name').value,
+                category: document.getElementById('item-category').value,
+                price: parseInt(document.getElementById('item-price').value),
+                max_stack: parseInt(document.getElementById('item-max-stack').value),
+                rarity: document.getElementById('item-rarity').value,
+                weight: parseInt(document.getElementById('item-weight').value),
+                description: document.getElementById('item-desc').value,
+                effect: effectData,
+                image: document.getElementById('item-image').value
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('items')
+                    .upsert(itemData, { onConflict: 'id' });
+
+                if (error) throw error;
+
+                showToast('아이템 저장 완료!', 'success');
+                closeItemModal();
+                loadItems();
+            } catch (err) {
+                showToast('저장 실패: ' + err.message, 'error');
+            }
+        });
+
+        // 아이템 삭제
+        async function deleteItem() {
+            if (!currentEditItem) return;
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('items')
+                    .delete()
+                    .eq('id', currentEditItem);
+
+                if (error) throw error;
+
+                showToast('아이템 삭제 완료', 'success');
+                closeItemModal();
+                loadItems();
+            } catch (err) {
+                showToast('삭제 실패: ' + err.message, 'error');
+            }
+        }
+
+        // 탭 변경 시 데이터 로드
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.dataset.tab === 'weapons') loadWeapons();
+                if (tab.dataset.tab === 'armors') loadArmors();
+                if (tab.dataset.tab === 'items') loadItems();
+            });
+        });
 
         // 초기 로드
         loadShips();

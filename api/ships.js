@@ -36,6 +36,8 @@ export default async function handler(req, res) {
                 acceleration: parseFloat(ship.acceleration),
                 turnSpeed: parseFloat(ship.turn_speed),
                 maxFuel: ship.max_fuel,
+                maxHull: ship.max_hull,
+                capacity: ship.capacity,  // 적재량
                 size: ship.size,
                 color: ship.color,
                 special: ship.special,
@@ -63,6 +65,8 @@ export default async function handler(req, res) {
                 acceleration: ship.acceleration,
                 turn_speed: ship.turnSpeed,
                 max_fuel: ship.maxFuel,
+                max_hull: ship.maxHull,
+                capacity: ship.capacity,  // 적재량
                 size: ship.size,
                 color: ship.color,
                 special: ship.special,
@@ -95,6 +99,8 @@ export default async function handler(req, res) {
             if (updates.acceleration !== undefined) dbUpdates.acceleration = updates.acceleration;
             if (updates.turnSpeed !== undefined) dbUpdates.turn_speed = updates.turnSpeed;
             if (updates.maxFuel !== undefined) dbUpdates.max_fuel = updates.maxFuel;
+            if (updates.maxHull !== undefined) dbUpdates.max_hull = updates.maxHull;
+            if (updates.capacity !== undefined) dbUpdates.capacity = updates.capacity;  // 적재량
             if (updates.size !== undefined) dbUpdates.size = updates.size;
             if (updates.color !== undefined) dbUpdates.color = updates.color;
             if (updates.special !== undefined) dbUpdates.special = updates.special;
