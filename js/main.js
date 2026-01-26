@@ -9539,13 +9539,16 @@
                 }
                 
                 // 조종석 내부 좌석 위치 (cockpitGroup 로컬 좌표)
-                const seatPos = new THREE.Vector3(0, 0, 0);  // 구 중앙
-                
+                // ★ 카메라를 뒤쪽으로 이동해서 조종석 패널이 덜 가깝게
+                const seatOffset = new THREE.Vector3(0, 0, 0.15);  // z+ = 뒤쪽
+
                 // cockpitGroup의 월드 위치 계산
                 const cockpitWorldPos = new THREE.Vector3();
                 cockpitGroup.getWorldPosition(cockpitWorldPos);
-                
-                camera.position.copy(cockpitWorldPos);
+
+                // 우주선 방향으로 오프셋 적용
+                const offsetWorld = seatOffset.clone().applyQuaternion(playerShip.mesh.quaternion);
+                camera.position.copy(cockpitWorldPos).add(offsetWorld);
                 
                 // 우주선 방향 + 고개 회전
                 camera.quaternion.copy(playerShip.mesh.quaternion);
