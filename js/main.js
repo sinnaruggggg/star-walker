@@ -9540,10 +9540,14 @@
                 }
                 
                 // 조종석 내부 좌석 위치 (cockpitGroup 로컬 좌표)
+                // ★ 조종석이 z=0.3 뒤로 이동했으므로 시점도 이동 (의자보다는 앞쪽)
+                const seatOffset = new THREE.Vector3(0, 0, 0.2);
+
                 const cockpitWorldPos = new THREE.Vector3();
                 cockpitGroup.getWorldPosition(cockpitWorldPos);
 
-                camera.position.copy(cockpitWorldPos);
+                const offsetWorld = seatOffset.clone().applyQuaternion(playerShip.mesh.quaternion);
+                camera.position.copy(cockpitWorldPos).add(offsetWorld);
                 
                 // 우주선 방향 + 고개 회전
                 camera.quaternion.copy(playerShip.mesh.quaternion);
