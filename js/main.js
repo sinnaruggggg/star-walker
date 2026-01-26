@@ -13427,9 +13427,10 @@
                 }
             }, { passive: false });
             
-            // 터치 조이스틱
+            // 터치 조이스틱 (3인칭 뷰 전용 - 조종석에서는 document 레벨 터치 사용)
             canvas.addEventListener('touchstart', (e) => {
                 if (!isPilotMode || isInteriorMode || isObservatoryMode) return;
+                if (isCockpitView) return;  // ★ 조종석에서는 document 터치 핸들러 사용
                 const t = e.changedTouches[0];
                 if (t.clientX > window.innerWidth * 0.7) return;
                 
@@ -13462,6 +13463,7 @@
             
             canvas.addEventListener('touchmove', (e) => {
                 if (!isPilotMode || !joystickActive || isInteriorMode || isObservatoryMode) return;
+                if (isCockpitView) return;  // ★ 조종석에서는 document 터치 핸들러 사용
                 e.preventDefault();
                 const t = e.changedTouches[0];
                 let dx = t.clientX - joystickCenter.x;
@@ -13477,6 +13479,7 @@
             }, { passive: false });
             
             canvas.addEventListener('touchend', () => {
+                if (isCockpitView) return;  // ★ 조종석에서는 document 터치 핸들러 사용
                 joystickActive = false;
                 document.getElementById('virtual-joystick').style.display = 'none';
                 document.getElementById('joystick-knob').style.transform = 'translate(-50%, -50%)';
