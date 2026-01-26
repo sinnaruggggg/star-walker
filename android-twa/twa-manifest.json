@@ -1,0 +1,47 @@
+{
+  "packageId": "com.starstrider.solar",
+  "host": "solar-explorer-navy.vercel.app",
+  "name": "Starstrider",
+  "launcherName": "Starstrider",
+  "display": "fullscreen",
+  "themeColor": "#0a1628",
+  "navigationColor": "#000011",
+  "navigationColorDark": "#000011",
+  "navigationDividerColor": "#000011",
+  "navigationDividerColorDark": "#000011",
+  "backgroundColor": "#000011",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://solar-explorer-navy.vercel.app/icons/icon-512x512.png",
+  "maskableIconUrl": "https://solar-explorer-navy.vercel.app/icons/icon-512x512.png",
+  "monochromeIconUrl": "https://solar-explorer-navy.vercel.app/icons/icon-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./starstrider.keystore",
+    "alias": "starstrider"
+  },
+  "appVersionCode": 1,
+  "appVersionName": "1.0.0",
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://solar-explorer-navy.vercel.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": {
+      "enabled": false
+    },
+    "locationDelegation": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "orientation": "landscape",
+  "fullScopeUrl": "https://solar-explorer-navy.vercel.app/",
+  "minSdkVersion": 19,
+  "fingerprints": []
+}

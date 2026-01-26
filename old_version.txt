@@ -31,7 +31,5164 @@
     <meta name="msapplication-TileColor" content="#0a1628">
     <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
     
-    <link rel="stylesheet" href="css/main.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+        
+        /* ===== SF NEBULA DESIGN SYSTEM ===== */
+        :root {
+            /* 색상 팔레트 */
+            --sf-bg-deep: #0a0a14;
+            --sf-bg-dark: #0d1117;
+            --sf-bg-panel: rgba(10, 15, 25, 0.85);
+            --sf-bg-card: rgba(15, 20, 35, 0.9);
+            
+            --sf-cyan: #00ffff;
+            --sf-cyan-dim: #00aaaa;
+            --sf-cyan-glow: rgba(0, 255, 255, 0.4);
+            --sf-green: #00ff88;
+            --sf-green-dim: #00aa66;
+            --sf-yellow: #ffd93d;
+            --sf-orange: #ff9500;
+            --sf-red: #ff4757;
+            --sf-purple: #a855f7;
+            --sf-pink: #ff6bcb;
+            
+            --sf-text-bright: #ffffff;
+            --sf-text-normal: #c8d6e5;
+            --sf-text-dim: #6b7c93;
+            
+            /* 글로우 효과 */
+            --sf-glow-cyan: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.1);
+            --sf-glow-green: 0 0 10px rgba(0, 255, 136, 0.5), 0 0 20px rgba(0, 255, 136, 0.3);
+            --sf-glow-red: 0 0 10px rgba(255, 71, 87, 0.5), 0 0 20px rgba(255, 71, 87, 0.3);
+            
+            /* UI 레이아웃 변수 */
+            --top-bar-height: 60px;
+            --nav-width: 160px;
+            --spawn-dock-width: 60px;
+            --chat-toggle-size: 50px;
+            --ui-gap: 10px;
+            --ui-padding: 15px;
+            --bottom-safe: 80px;
+        }
+        
+        /* 스캔라인 오버레이 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 255, 0.01) 2px,
+                rgba(0, 255, 255, 0.01) 4px
+            );
+            pointer-events: none;
+            z-index: 99999;
+        }
+        
+        /* 그리드 패턴 배경 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: linear-gradient(135deg, var(--sf-bg-deep) 0%, var(--sf-bg-dark) 50%, #0a1628 100%);
+            font-family: 'Rajdhani', 'Noto Sans KR', sans-serif; 
+            user-select: none;
+            color: var(--sf-text-normal);
+        }
+        
+        /* ★★★ 모든 스크롤바 숨김 ★★★ */
+        * {
+            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;  /* IE/Edge */
+        }
+        *::-webkit-scrollbar {
+            display: none;  /* Chrome, Safari, Opera */
+            width: 0;
+            height: 0;
+        }
+        
+        /* SF 공통 버튼 스타일 */
+        .sf-btn {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 255, 255, 0.05) 100%);
+            border: 1px solid var(--sf-cyan);
+            color: var(--sf-cyan);
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            position: relative;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px var(--sf-cyan-glow);
+            box-shadow: var(--sf-glow-cyan), inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        .sf-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.3) 0%, rgba(0, 255, 255, 0.1) 100%);
+            box-shadow: var(--sf-glow-cyan), inset 0 0 30px rgba(0, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .sf-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* SF 패널 스타일 */
+        .sf-panel {
+            background: var(--sf-bg-panel);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            position: relative;
+        }
+        .sf-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--sf-cyan), transparent);
+        }
+        
+        /* SF 카드 스타일 */
+        .sf-card {
+            background: var(--sf-bg-card);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .sf-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        /* 펄스 애니메이션 */
+        @keyframes sf-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes sf-glow-pulse {
+            0%, 100% { box-shadow: 0 0 5px var(--sf-cyan), 0 0 10px var(--sf-cyan-glow); }
+            50% { box-shadow: 0 0 15px var(--sf-cyan), 0 0 30px var(--sf-cyan-glow); }
+        }
+        @keyframes sf-scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        
+        /* ===== 상단 영역 ===== */
+        #top-bar {
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: var(--top-bar-height);
+            background: linear-gradient(180deg, rgba(10, 15, 25, 0.95) 0%, rgba(10, 15, 25, 0.7) 70%, transparent 100%);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; box-sizing: border-box; z-index: 100; pointer-events: none;
+        }
+        #top-bar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--sf-cyan), transparent);
+        }
+        /* 로고 숨김 */
+        #top-bar h1 { 
+            display: none;
+        }
+
+        .control-group { pointer-events: auto; display: flex; align-items: center; gap: 8px; color: var(--sf-text-normal); }
+        
+        .slider-container { display: flex; flex-direction: column; gap: 2px; }
+        .slider-row { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--sf-text-dim); font-family: 'Orbitron', sans-serif; }
+        .slider-label { width: 45px; text-align: right; text-transform: uppercase; letter-spacing: 0.5px; }
+        input[type=range] { 
+            width: 80px; 
+            cursor: pointer; 
+            accent-color: var(--sf-cyan); 
+            height: 4px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        
+        #time-val { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px; 
+            font-weight: bold; 
+            color: var(--sf-cyan); 
+            width: 40px; 
+            text-align: right;
+            text-shadow: 0 0 10px var(--sf-cyan-glow);
+        }
+
+        .mode-btn {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            color: var(--sf-cyan); 
+            padding: 5px 10px; 
+            border-radius: 4px;
+            clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            text-shadow: 0 0 10px var(--sf-cyan-glow);
+        }
+        .mode-btn:hover { 
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.3) 0%, rgba(0, 255, 255, 0.1) 100%);
+            box-shadow: 0 0 15px var(--sf-cyan-glow), inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        .mode-btn.active { 
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.4) 0%, rgba(0, 255, 255, 0.2) 100%);
+            border-color: var(--sf-cyan);
+            box-shadow: var(--sf-glow-cyan);
+            font-weight: bold; 
+        }
+
+        #btn-station { 
+            border-color: var(--sf-green); 
+            color: var(--sf-green);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 255, 136, 0.02) 100%);
+        }
+        #btn-station:hover { 
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 255, 136, 0.1) 100%);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+
+        #btn-catalog { 
+            border-color: var(--sf-purple); 
+            color: var(--sf-purple);
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.02) 100%);
+        }
+        #btn-catalog:hover { 
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0.1) 100%);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+
+        /* ===== 좌측 영역: 네비게이션 ===== */
+        #nav-container {
+            position: absolute; 
+            top: 70px;
+            left: 0; 
+            bottom: 80px;
+            z-index: 90; 
+            display: flex; 
+            align-items: flex-start;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform: translateX(0);
+            overflow: hidden;
+        }
+        #nav-container.closed { transform: translateX(-130px); }
+
+        #nav-panel {
+            width: 160px; 
+            max-height: calc(100vh - 170px);
+            overflow-y: auto;
+            background: linear-gradient(180deg, rgba(10, 15, 25, 0.95) 0%, rgba(10, 15, 25, 0.85) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            padding: 15px 8px;
+            pointer-events: auto;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+        }
+        #nav-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--sf-cyan), transparent);
+        }
+        #nav-panel::-webkit-scrollbar { width: 3px; }
+        #nav-panel::-webkit-scrollbar-thumb { background: var(--sf-cyan-dim); border-radius: 2px; }
+        #nav-panel::-webkit-scrollbar-track { background: rgba(0, 255, 255, 0.1); }
+
+        .nav-header { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px; 
+            color: var(--sf-cyan); 
+            margin-bottom: 8px; 
+            padding-left: 8px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--sf-cyan-glow);
+        }
+        .nav-item {
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--sf-text-normal);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(0, 255, 255, 0.03);
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: var(--sf-cyan);
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+        .nav-item:hover {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: rgba(0, 255, 255, 0.3);
+            color: var(--sf-cyan);
+            padding-left: 16px;
+        }
+        .nav-item:hover::before {
+            transform: scaleY(1);
+        }
+        .nav-item.active { 
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.2) 0%, rgba(0, 255, 255, 0.05) 100%);
+            border-color: var(--sf-cyan);
+            color: var(--sf-cyan);
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        .nav-item.active::before {
+            transform: scaleY(1);
+            box-shadow: 0 0 10px var(--sf-cyan);
+        }
+        .nav-item .type-icon { font-size: 10px; opacity: 0.7; }
+        .nav-item.satellite { padding-left: 24px; font-size: 12px; color: var(--sf-text-dim); }
+
+        #nav-toggle {
+            width: 24px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(10, 15, 25, 0.9) 0%, rgba(10, 15, 25, 0.7) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            color: var(--sf-cyan);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            pointer-events: auto;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        #nav-toggle:hover { 
+            background: rgba(0, 255, 255, 0.15);
+            box-shadow: 0 0 15px var(--sf-cyan-glow);
+        }
+
+        /* ===== 우측 상단 영역: 스폰 독 ===== */
+        #spawn-dock {
+            position: absolute; 
+            top: 70px;
+            right: 15px; 
+            width: 55px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            background: linear-gradient(180deg, rgba(10, 15, 25, 0.95) 0%, rgba(10, 15, 25, 0.85) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 100;
+            pointer-events: auto;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(0, 255, 255, 0.05);
+        }
+        #spawn-dock::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 2px;
+            background: var(--sf-cyan);
+            border-radius: 1px;
+            box-shadow: 0 0 10px var(--sf-cyan);
+        }
+        #spawn-dock::-webkit-scrollbar { width: 3px; }
+        #spawn-dock::-webkit-scrollbar-thumb { background: var(--sf-cyan-dim); border-radius: 2px; }
+        
+        .spawn-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 255, 255, 0.1);
+            background-color: rgba(10, 15, 25, 0.8);
+        }
+        .spawn-btn:hover { 
+            transform: scale(1.15);
+            border-color: var(--sf-cyan);
+            box-shadow: 0 0 20px var(--sf-cyan-glow), inset 0 0 15px rgba(0, 255, 255, 0.2);
+            z-index: 10;
+        }
+        .spawn-btn.active { 
+            border-color: var(--sf-cyan);
+            box-shadow: var(--sf-glow-cyan);
+            animation: sf-glow-pulse 2s infinite;
+        }
+        .spawn-btn::after {
+            content: attr(data-name);
+            position: absolute;
+            right: 55px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, rgba(10, 15, 25, 0.95) 0%, rgba(10, 15, 25, 0.9) 100%);
+            border: 1px solid var(--sf-cyan);
+            color: var(--sf-cyan);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--sf-glow-cyan);
+        }
+        .spawn-btn:hover::after { opacity: 1; }
+
+        #catalog-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(10, 15, 25, 0.95) 0%, rgba(5, 8, 15, 0.98) 100%);
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        #catalog-modal.open { display: flex; }
+        #catalog-content {
+            width: 85%;
+            max-height: 85vh;
+            margin: auto;
+            background: linear-gradient(135deg, rgba(10, 15, 25, 0.95) 0%, rgba(15, 20, 30, 0.9) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            padding-bottom: 40px;
+            overflow-y: auto;
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            align-content: start;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.1), inset 0 0 50px rgba(0, 255, 255, 0.02);
+        }
+        #catalog-content::before {
+            content: 'CELESTIAL CATALOG';
+            position: absolute;
+            top: -30px;
+            left: 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--sf-cyan);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: var(--sf-glow-cyan);
+        }
+        #catalog-content::-webkit-scrollbar { width: 6px; }
+        #catalog-content::-webkit-scrollbar-track { background: rgba(0, 255, 255, 0.05); border-radius: 4px; }
+        #catalog-content::-webkit-scrollbar-thumb { background: var(--sf-cyan-dim); border-radius: 4px; }
+        #catalog-content::-webkit-scrollbar-thumb:hover { background: #777; }
+        
+        .catalog-card {
+            background: #252530; border-radius: 10px; padding: 12px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            transition: 0.2s; border: 2px solid transparent;
+        }
+        .catalog-card:hover { transform: translateY(-3px); background: #303040; border-color: #e74c3c; box-shadow: 0 5px 20px rgba(231, 76, 60, 0.3); }
+        .catalog-thumb {
+            width: 70px; height: 70px; border-radius: 50%; background-color: #000;
+            background-size: cover; background-position: center; border: 3px solid #444;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .catalog-card:hover .catalog-thumb { border-color: #e74c3c; }
+        .catalog-name { font-size: 11px; color: #ddd; text-align: center; font-weight: bold; }
+        
+        #catalog-close {
+            margin-top: 20px; padding: 10px 30px; background: #e74c3c; color: white; border: none;
+            border-radius: 20px; font-weight: bold; cursor: pointer;
+        }
+
+        /* 포커스 거리 표시 패널 */
+        /* ===== 우측 하단 영역: 거리 패널 ===== */
+        #focus-distance-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 90px;  /* spawn-dock 왼쪽 */
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #4fc3f7;
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+            min-width: 150px;
+        }
+        #focus-distance-panel.visible { display: flex; }
+        #focus-target-name {
+            font-size: 11px;
+            color: #4fc3f7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #focus-distance-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+
+        /* 우주선 선택 모달 */
+        #ship-select-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 250; display: none;
+            backdrop-filter: blur(10px); align-items: center; justify-content: center;
+            pointer-events: auto; overflow-y: auto; padding: 20px 0;
+        }
+        #ship-select-modal.open { display: flex; }
+        #ship-select-content {
+            width: 90%; max-width: 900px; max-height: 85vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #4fc3f7; border-radius: 20px; padding: 25px; overflow-y: auto; margin: auto;
+            box-shadow: 0 0 50px rgba(79, 195, 247, 0.3);
+        }
+        #ship-select-content h2 {
+            color: #4fc3f7; text-align: center; margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+        #ship-list {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px; margin-bottom: 20px; max-height: 200px; overflow-y: auto;
+            padding: 5px;
+        }
+        #ship-list::-webkit-scrollbar { width: 5px; }
+        #ship-list::-webkit-scrollbar-thumb { background: #4fc3f7; border-radius: 3px; }
+        .ship-card {
+            background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.3s;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            position: relative; min-height: 120px;
+        }
+        .ship-card:hover { background: rgba(79, 195, 247, 0.1); border-color: #4fc3f7; transform: translateY(-3px); }
+        .ship-card.selected { background: rgba(79, 195, 247, 0.2); border-color: #4fc3f7; box-shadow: 0 0 15px rgba(79, 195, 247, 0.4); }
+        .ship-card.locked { opacity: 0.5; cursor: not-allowed; }
+        .ship-card.locked:hover { transform: none; border-color: rgba(255,255,255,0.1); }
+        .ship-card-icon { width: 100%; height: 70px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; overflow: hidden; background: rgba(0,0,0,0.3); }
+        .ship-card-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .ship-card-name { font-size: 12px; color: #fff; text-align: center; font-weight: bold; }
+        .ship-card-tier { font-size: 10px; color: #ffd700; }
+        .ship-card-lock { position: absolute; font-size: 20px; }
+        .ship-card-dev { font-size: 9px; color: #ff9800; background: rgba(255,152,0,0.2); padding: 2px 6px; border-radius: 8px; margin-top: 2px; }
+        .ship-card-owned { position: absolute; top: 5px; left: 5px; background: #27ae60; color: #fff; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+        .ship-card.owned { border-color: #27ae60; }
+        
+        #ship-detail {
+            display: flex; gap: 20px; background: rgba(0,0,0,0.3); border-radius: 15px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        #ship-preview {
+            width: 200px; height: 200px; background: radial-gradient(circle, #1a2a3a 0%, #0a1520 100%);
+            border-radius: 15px; border: 1px solid #333; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        #ship-preview::before {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        }
+        #ship-preview canvas { max-width: 100%; max-height: 100%; }
+        #ship-info { flex: 1; }
+        #ship-info h3 { color: #4fc3f7; margin: 0 0 5px 0; font-family: 'Orbitron', sans-serif; font-size: 20px; }
+        #ship-detail-desc { color: #aaa; font-size: 13px; margin-bottom: 15px; }
+        #ship-stats { display: flex; flex-direction: column; gap: 10px; }
+        .stat-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #ccc; }
+        .stat-row > span:first-child { width: 70px; }
+        .stat-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+        .stat-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .stat-fill.speed { background: linear-gradient(90deg, #e74c3c, #f39c12); }
+        .stat-fill.accel { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+        .stat-fill.turn { background: linear-gradient(90deg, #3498db, #2980b9); }
+        .stat-fill.fuel { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+        .stat-val { width: 70px; text-align: right; color: #fff; font-weight: bold; }
+        #ship-special {
+            margin-top: 15px; padding: 10px 15px; background: rgba(79, 195, 247, 0.1);
+            border: 1px solid #4fc3f7; border-radius: 8px; color: #4fc3f7; font-size: 12px;
+        }
+        #ship-special:empty { display: none; }
+        
+        #ship-select-buttons { display: flex; justify-content: center; gap: 15px; }
+        .ship-modal-btn {
+            padding: 12px 40px; border-radius: 25px; border: none; font-size: 14px;
+            font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif; transition: all 0.3s;
+        }
+        .ship-modal-btn.confirm { background: linear-gradient(180deg, #4fc3f7, #0288d1); color: #fff; }
+        .ship-modal-btn.confirm:hover { background: linear-gradient(180deg, #81d4fa, #4fc3f7); transform: scale(1.05); }
+        .ship-modal-btn.cancel { background: rgba(100,100,100,0.5); border: 1px solid #666; color: #aaa; }
+        .ship-modal-btn.cancel:hover { background: rgba(150,150,150,0.5); }
+        .ship-modal-btn.buy { background: linear-gradient(180deg, #f39c12, #e67e22); color: #fff; }
+        .ship-modal-btn.buy:hover { background: linear-gradient(180deg, #f7dc6f, #f39c12); transform: scale(1.05); }
+        .ship-modal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .ship-modal-btn.armory { background: linear-gradient(180deg, #e74c3c, #c0392b); color: #fff; }
+        .ship-modal-btn.armory:hover { background: linear-gradient(180deg, #ff6b6b, #e74c3c); transform: scale(1.05); }
+        
+        /* 무장 모달 */
+        #armory-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 260; display: none;
+            backdrop-filter: blur(10px); align-items: center; justify-content: center;
+            overflow-y: auto; padding: 20px 0;
+        }
+        #armory-modal.open { display: flex; }
+        #armory-content {
+            width: 95%; max-width: 1000px; max-height: 85vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #e74c3c; border-radius: 20px; padding: 20px; overflow-y: auto; margin: auto;
+            box-shadow: 0 0 50px rgba(231, 76, 60, 0.3);
+        }
+        #armory-content h2 {
+            color: #e74c3c; text-align: center; margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+        .armory-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .armory-tab {
+            padding: 10px 25px; background: rgba(255,255,255,0.1); border: 1px solid #444;
+            border-radius: 20px; color: #aaa; cursor: pointer; font-family: 'Orbitron', sans-serif;
+            font-size: 12px; transition: all 0.3s;
+        }
+        .armory-tab:hover { border-color: #e74c3c; color: #e74c3c; }
+        .armory-tab.active { background: rgba(231, 76, 60, 0.3); border-color: #e74c3c; color: #e74c3c; }
+        
+        .armory-main { display: flex; gap: 15px; }
+        .armory-list-container { flex: 1; max-height: 350px; overflow-y: auto; }
+        .armory-list { display: flex; flex-direction: column; gap: 8px; }
+        .armory-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; cursor: pointer; transition: all 0.3s;
+        }
+        .armory-item:hover { background: rgba(231, 76, 60, 0.1); border-color: #e74c3c; }
+        .armory-item.selected { background: rgba(231, 76, 60, 0.2); border-color: #e74c3c; box-shadow: 0 0 10px rgba(231, 76, 60, 0.3); }
+        .armory-item.locked { opacity: 0.4; cursor: not-allowed; }
+        .armory-item.equipped { border-color: #27ae60; background: rgba(39, 174, 96, 0.15); }
+        .armory-item-icon { font-size: 24px; width: 40px; text-align: center; }
+        .armory-item-info { flex: 1; }
+        .armory-item-name { color: #fff; font-size: 13px; font-weight: bold; }
+        .armory-item-tier { font-size: 10px; color: #f39c12; }
+        .armory-item-stats { font-size: 10px; color: #888; }
+        .armory-item-price { color: #f39c12; font-size: 12px; font-weight: bold; }
+        .armory-item-owned { color: #27ae60; font-size: 11px; }
+        
+        .armory-detail {
+            width: 280px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px;
+        }
+        .armory-detail h3 { color: #e74c3c; margin: 0 0 10px 0; font-size: 16px; font-family: 'Orbitron', sans-serif; }
+        .armory-detail-icon { font-size: 48px; text-align: center; margin-bottom: 10px; }
+        .armory-detail-desc { color: #aaa; font-size: 11px; margin-bottom: 15px; line-height: 1.5; }
+        .armory-detail-stats { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+        .armory-stat-row { display: flex; justify-content: space-between; font-size: 11px; }
+        .armory-stat-row span:first-child { color: #888; }
+        .armory-stat-row span:last-child { color: #fff; font-weight: bold; }
+        .armory-detail-effect { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; border-radius: 8px; padding: 8px; font-size: 11px; color: #e74c3c; margin-bottom: 15px; }
+        
+        .armory-equipped-section { margin-bottom: 15px; padding: 10px; background: rgba(39, 174, 96, 0.1); border: 1px solid #27ae60; border-radius: 10px; }
+        .armory-equipped-title { color: #27ae60; font-size: 12px; margin-bottom: 8px; }
+        .armory-equipped-slot { display: flex; align-items: center; gap: 8px; padding: 5px; background: rgba(0,0,0,0.3); border-radius: 5px; margin-bottom: 5px; }
+        .armory-equipped-slot span { font-size: 11px; color: #ccc; }
+        .armory-slot-empty { color: #666 !important; font-style: italic; }
+        
+        .armory-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        
+        /* 가격 표시 */
+        #ship-price-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, rgba(243,156,18,0.3), rgba(230,126,34,0.3));
+            border: 1px solid #f39c12;
+            border-radius: 20px;
+            width: fit-content;
+        }
+        .price-label { font-size: 18px; }
+        #ship-price-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: #f7dc6f;
+        }
+        #ship-owned-badge {
+            background: #27ae60;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        /* 우주선 리스트 아이템에 보유 표시 */
+        .ship-item.owned::after {
+            content: '✓';
+            position: absolute;
+            top: 3px;
+            right: 5px;
+            background: #27ae60;
+            color: #fff;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ship-item { position: relative; }
+        
+        @media (max-width: 600px) {
+            #ship-detail { flex-direction: column; }
+            #ship-preview { width: 100%; height: 150px; }
+            #ship-list { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        #msg-box {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            color: #ff6b6b; font-weight: bold; text-shadow: 0 2px 4px black;
+            font-size: 16px; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        }
+
+        /* ===== 하단 중앙 영역: 버튼들 ===== */
+        #reset-cam {
+            position: absolute; 
+            bottom: 20px; 
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e67e22; color: white; padding: 10px 25px; border: none;
+            border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 13px;
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3); display: none; pointer-events: auto;
+            z-index: 95;
+        }
+        /* 조종 모드에서 전체보기 버튼 완전히 숨김 */
+        body.pilot-mode #reset-cam {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        
+        .label {
+            color: rgba(255,255,255,0.7); font-size: 10px; text-shadow: 0 0 3px black;
+            pointer-events: none; margin-top: -8px;
+        }
+        .ship-parked-label {
+            color: #f39c12 !important;
+            font-size: 12px !important;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(243, 156, 18, 0.8);
+            cursor: pointer;
+            pointer-events: auto !important;
+        }
+        
+        .galaxy-label {
+            color: #ff9966; font-size: 14px; font-weight: bold; letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 100, 50, 0.8); opacity: 0.8; pointer-events: none;
+        }
+
+        .notify-label {
+            font-size: 14px; font-weight: bold; text-shadow: 0 0 5px black;
+            pointer-events: none; transition: opacity 1s, transform 1s;
+            opacity: 1; transform: translateY(0); white-space: nowrap;
+        }
+        .notify-label.fade-out { opacity: 0; transform: translateY(-30px); }
+        .notify-warn { color: #ffeb3b; }
+        .notify-success { color: #ff5722; font-size: 16px; text-shadow: 0 0 10px #ff5722; }
+
+        /* ===== 좌측 하단 영역: 채팅 ===== */
+        #chat-toggle {
+            position: absolute; 
+            bottom: 20px; 
+            left: 20px;
+            width: 50px; 
+            height: 50px;
+            background: rgba(30, 30, 40, 0.9);
+            border: 2px solid rgba(79, 195, 247, 0.5);
+            border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #4fc3f7;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s; z-index: 101; pointer-events: auto;
+        }
+        #chat-toggle:hover { transform: scale(1.1); background: rgba(79, 195, 247, 0.2); color: white; border-color: white; }
+
+        #chat-panel {
+            position: absolute; 
+            bottom: 80px;  /* chat-toggle 위 */
+            left: 20px;
+            width: 320px; 
+            height: 400px;
+            max-height: calc(100vh - 160px);
+            background: rgba(15, 15, 20, 0.95);
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            border-radius: 15px;
+            display: flex; flex-direction: column;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            transform: scale(0); transform-origin: bottom left;
+            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            z-index: 101; pointer-events: auto; overflow: hidden;
+        }
+        #chat-panel.open { transform: scale(1); }
+
+        #chat-header {
+            padding: 15px; background: rgba(79, 195, 247, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #4fc3f7; font-weight: bold; font-size: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #chat-close { cursor: pointer; font-size: 18px; color: #aaa; }
+        #chat-close:hover { color: white; }
+
+        #chat-messages {
+            flex: 1; padding: 15px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+            font-size: 13px;
+        }
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; line-height: 1.4; word-break: break-word; }
+        .msg.user { align-self: flex-end; background: #2c3e50; color: white; border-bottom-right-radius: 2px; }
+        .msg.ai { align-self: flex-start; background: rgba(79, 195, 247, 0.15); color: #ddd; border-bottom-left-radius: 2px; border: 1px solid rgba(79, 195, 247, 0.2); }
+        .msg.system { align-self: center; font-size: 11px; color: #666; margin: 5px 0; }
+
+        #chat-input-area {
+            padding: 10px; border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex; gap: 5px;
+        }
+        #chat-input {
+            flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px; padding: 8px 12px; color: white; font-size: 13px; outline: none;
+        }
+        #chat-input:focus { border-color: #4fc3f7; }
+        #chat-send {
+            background: #4fc3f7; border: none; border-radius: 50%;
+            width: 32px; height: 32px; cursor: pointer; color: #000;
+            display: flex; align-items: center; justify-content: center; font-weight: bold;
+        }
+        #chat-send:hover { background: white; }
+
+        /* ===== 우주선 조종 시스템 CSS ===== */
+        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+        
+        #board-ship-btn {
+            position: absolute; 
+            bottom: 80px;  /* reset-cam 위 */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px; background: linear-gradient(180deg, #4fc3f7, #0288d1);
+            border: 2px solid #81d4fa; color: white; font-size: 16px; font-weight: bold;
+            border-radius: 30px; cursor: pointer; z-index: 150; display: none;
+            box-shadow: 0 0 30px rgba(79, 195, 247, 0.5); animation: pulse 2s infinite;
+            font-family: 'Orbitron', sans-serif; pointer-events: auto;
+        }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(79, 195, 247, 0.5); } 50% { box-shadow: 0 0 40px rgba(79, 195, 247, 0.8); } }
+        #board-ship-btn:hover { background: linear-gradient(180deg, #81d4fa, #4fc3f7); transform: translateX(-50%) scale(1.05); }
+
+        #cockpit-hud { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 200; font-family: 'Orbitron', sans-serif; }
+        #cockpit-hud.active { display: block; }
+        
+        /* 콕핏 프레임 (1인칭 시점) */
+        #cockpit-frame {
+            display: none; /* 3D 조종석 사용으로 2D 프레임 숨김 */
+        }
+        /* 2D 조종석 요소들 - 비활성화 */
+        /*
+        #cockpit-frame {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+        */
+        #cockpit-frame::before {
+            display: none;
+        }
+        /* 창문 프레임 기둥들 */
+        .cockpit-strut {
+            display: none;
+        }
+        .cockpit-strut.left { left: 25%; top: 0; bottom: 0; width: 25px; transform: skewX(-15deg); }
+        .cockpit-strut.right { right: 25%; top: 0; bottom: 0; width: 25px; transform: skewX(15deg); }
+        .cockpit-strut.top { top: 15%; left: 80px; right: 80px; height: 20px; transform: perspective(500px) rotateX(30deg); }
+        /* 대시보드 */
+        #cockpit-dashboard {
+            display: none;
+        }
+        #cockpit-dashboard::before {
+            display: none;
+        }
+        /* 사이드 패널 */
+        .cockpit-side-panel {
+            display: none;
+        }
+        .cockpit-side-panel.left { left: 0; border-radius: 0 15px 15px 0; border-left: none; }
+        .cockpit-side-panel.right { right: 0; border-radius: 15px 0 0 15px; border-right: none; }
+        /* 조종 요크/스틱 힌트 */
+        .cockpit-indicator {
+            display: none;
+        }
+        .cockpit-indicator.left { left: 150px; }
+        .cockpit-indicator.right { right: 150px; }
+        /* 콕핏 프레임은 #cockpit-frame에서 구현됨 */
+        
+        #pilot-top-bar { position: absolute; top: 8px; left: 55%; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: 55%; }
+        .pilot-info-panel { background: rgba(0,40,60,0.9); border: 1px solid #00ffff; padding: 5px 12px; border-radius: 5px; text-align: center; }
+        .pilot-info-label { font-size: 8px; color: #00ffff; letter-spacing: 1px; }
+        .pilot-info-value { font-size: 12px; color: #fff; }
+        .pilot-info-panel.ship-name-panel { border-color: #ffd700; }
+        .pilot-info-panel.ship-name-panel .pilot-info-label { color: #ffd700; }
+        .pilot-info-panel.ship-name-panel .pilot-info-value { color: #ffd700; }
+        .pilot-info-panel.ability-btn {
+            cursor: pointer; pointer-events: auto; border-color: #ff6600;
+            display: flex; align-items: center; gap: 6px; transition: all 0.3s;
+        }
+        .pilot-info-panel.ability-btn:hover { background: rgba(255,102,0,0.3); transform: scale(1.05); }
+        .pilot-info-panel.ability-btn.on-cooldown { opacity: 0.5; cursor: not-allowed; }
+        .pilot-info-panel.ability-btn #ability-icon { font-size: 14px; }
+        .pilot-info-panel.ability-btn #ability-name { font-size: 10px; color: #ff6600; }
+        .pilot-info-panel.ability-btn #ability-cooldown { font-size: 10px; color: #fff; }
+        
+        /* 연료보급 버튼 - 제거됨, 도킹 버튼으로 대체 */
+        .pilot-info-panel.refuel-btn {
+            display: none !important;
+        }
+        
+        /* ★ 화면 중앙 도킹 버튼 */
+        #docking-center-btn {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0,100,150,0.9), rgba(0,50,100,0.95));
+            border: 3px solid #00ffff;
+            color: #00ffff;
+            padding: 20px 50px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            pointer-events: auto;
+            display: none;
+            z-index: 1500;
+            animation: dockingPulse 1.5s infinite;
+            box-shadow: 0 0 30px rgba(0,255,255,0.5);
+        }
+        #docking-center-btn:hover {
+            background: linear-gradient(135deg, rgba(0,150,200,0.95), rgba(0,80,130,1));
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        #docking-center-btn.show { display: block; }
+        @keyframes dockingPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,255,0.5), inset 0 0 10px rgba(0,255,255,0.2); }
+            50% { box-shadow: 0 0 40px rgba(0,255,255,0.8), inset 0 0 20px rgba(0,255,255,0.4); }
+        }
+        
+        /* ★ 도킹 완료 후 메뉴 */
+        #docking-menu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1500;
+            pointer-events: auto;
+        }
+        #docking-menu.show { display: flex; }
+        .docking-menu-btn {
+            background: linear-gradient(135deg, rgba(0,80,60,0.95), rgba(0,40,30,0.98));
+            border: 3px solid #00ff88;
+            color: #00ff88;
+            padding: 25px 60px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0,255,136,0.4);
+        }
+        .docking-menu-btn:hover {
+            background: linear-gradient(135deg, rgba(0,120,90,0.98), rgba(0,60,45,1));
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0,255,136,0.6);
+        }
+        .docking-menu-btn.interior {
+            border-color: #ffaa00;
+            color: #ffaa00;
+            box-shadow: 0 0 20px rgba(255,170,0,0.4);
+        }
+        .docking-menu-btn.interior:hover {
+            box-shadow: 0 0 30px rgba(255,170,0,0.6);
+        }
+        
+        /* ★ 도킹해제 버튼 */
+        #undock-btn {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(150,50,0,0.9), rgba(100,30,0,0.95));
+            border: 3px solid #ff6600;
+            color: #ff6600;
+            padding: 20px 50px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            pointer-events: auto;
+            display: none;
+            z-index: 1500;
+            animation: undockPulse 1.5s infinite;
+            box-shadow: 0 0 30px rgba(255,102,0,0.5);
+        }
+        #undock-btn:hover {
+            background: linear-gradient(135deg, rgba(200,70,0,0.95), rgba(130,40,0,1));
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        #undock-btn.show { display: block; }
+        @keyframes undockPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,102,0,0.5), inset 0 0 10px rgba(255,102,0,0.2); }
+            50% { box-shadow: 0 0 40px rgba(255,102,0,0.8), inset 0 0 20px rgba(255,102,0,0.4); }
+        }
+        
+        /* 연료 보급 진행 오버레이 */
+        #refuel-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,20,40,0.95);
+            border: 3px solid #00ff00;
+            border-radius: 20px;
+            padding: 30px 50px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 1600;
+        }
+        #refuel-overlay.show { display: flex; }
+        #refuel-overlay .refuel-title {
+            color: #00ff00;
+            font-size: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #refuel-overlay .refuel-bar-container {
+            width: 300px;
+            height: 30px;
+            background: rgba(0,50,0,0.8);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        #refuel-overlay .refuel-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00aa00, #00ff00);
+            transition: width 0.1s;
+        }
+        #refuel-overlay .refuel-amount {
+            color: #fff;
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #refuel-overlay .refuel-cost {
+            color: #ffcc00;
+            font-size: 14px;
+        }
+        
+        /* ★★★ 수리 오버레이 ★★★ */
+        #repair-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40,20,0,0.95);
+            border: 3px solid #ff8800;
+            border-radius: 20px;
+            padding: 30px 50px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 1600;
+        }
+        #repair-overlay.show { display: flex; }
+        #repair-overlay .repair-title {
+            color: #ff8800;
+            font-size: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #repair-overlay .repair-bar-container {
+            width: 300px;
+            height: 30px;
+            background: rgba(50,30,0,0.8);
+            border: 2px solid #ff8800;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        #repair-overlay .repair-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #aa5500, #ff8800);
+            transition: width 0.1s;
+        }
+        #repair-overlay .repair-amount {
+            color: #fff;
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #repair-overlay .repair-cost {
+            color: #ffcc00;
+            font-size: 14px;
+        }
+        
+        /* ★★★ 내구도 게이지 (연료 옆) ★★★ */
+        #hull-gauge {
+            position: absolute;
+            bottom: 150px;
+            right: 85px;
+            width: 35px;
+            height: 140px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #ff6600;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 4px;
+            gap: 5px;
+            z-index: 100;
+        }
+        #hull-gauge .gauge-label {
+            font-size: 10px;
+            color: #ff6600;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+        #hull-gauge .gauge-bar {
+            width: 18px;
+            height: 100px;
+            background: rgba(100,50,0,0.5);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        #hull-gauge .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(180deg, #ff8800, #ff4400);
+            transition: height 0.3s, background 0.3s;
+            border-radius: 2px;
+        }
+        #hull-gauge .gauge-val {
+            font-size: 10px;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #hull-gauge.critical .gauge-fill {
+            background: linear-gradient(180deg, #ff0000, #aa0000);
+            animation: hullCritical 0.5s infinite;
+        }
+        @keyframes hullCritical {
+            50% { opacity: 0.6; }
+        }
+        
+        /* ★★★ 보호막 충돌 경고 ★★★ */
+        #shield-impact-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, rgba(0,200,255,0) 40%, rgba(0,200,255,0.3) 100%);
+            z-index: 1200;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        #shield-impact-overlay.active {
+            opacity: 1;
+            animation: shieldFlash 0.5s ease-out;
+        }
+        @keyframes shieldFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* ★★★ 내구도 경고 ★★★ */
+        .pilot-warning.hull-critical {
+            background: rgba(255,100,0,0.3);
+            border-color: #ff6600;
+            color: #ff6600;
+        }
+        
+        /* 수리 버튼 스타일 */
+        .docking-menu-btn.repair {
+            border-color: #ff8800;
+            color: #ff8800;
+            box-shadow: 0 0 20px rgba(255,136,0,0.4);
+        }
+        .docking-menu-btn.repair:hover {
+            box-shadow: 0 0 30px rgba(255,136,0,0.6);
+        }
+        
+        #pilot-target-select { position: absolute; top: 65px; left: 55%; transform: translateX(-50%); pointer-events: auto; }
+        #pilot-target-select select { background: rgba(0,30,50,0.95); border: 1px solid #ff6600; color: #ff6600; padding: 6px 12px; border-radius: 15px; font-size: 10px; font-family: 'Orbitron', sans-serif; }
+        
+        /* ★★★ 3D 좌표 표시 패널 ★★★ */
+        #pilot-coords-panel { 
+            position: absolute; 
+            top: 60px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: linear-gradient(135deg, rgba(0,40,80,0.9) 0%, rgba(0,20,50,0.95) 100%); 
+            border: 2px solid #00aaff; 
+            padding: 8px 20px; 
+            border-radius: 10px; 
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            box-shadow: 0 0 15px rgba(0,170,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        #pilot-coords-panel:hover { 
+            background: linear-gradient(135deg, rgba(0,60,100,0.95) 0%, rgba(0,40,70,0.95) 100%); 
+            box-shadow: 0 0 25px rgba(0,170,255,0.5);
+        }
+        #pilot-coords-panel:active { transform: translateX(-50%) scale(0.95); }
+        #pilot-coords-panel .coords-label { font-size: 9px; color: #00aaff; margin-bottom: 2px; }
+        #pilot-coords-panel .coords-value { font-size: 12px; color: #fff; letter-spacing: 1px; }
+        #pilot-coords-panel.copied { border-color: #00ff88; box-shadow: 0 0 20px rgba(0,255,136,0.5); }
+        #pilot-coords-panel.copied .coords-label { color: #00ff88; }
+        
+        #pilot-eta-box { position: absolute; top: 110px; left: 55%; transform: translateX(-50%); background: rgba(0,80,60,0.9); border: 2px solid #00ff88; padding: 8px 20px; border-radius: 10px; text-align: center; display: none; }
+        #pilot-eta-box.active { display: block; }
+        #pilot-eta-box .eta-label { font-size: 9px; color: #00ff88; }
+        #pilot-eta-box .eta-time { font-size: 22px; color: #fff; }
+        #pilot-eta-box .eta-target { font-size: 10px; color: #00ff88; }
+        
+        #pilot-warning-panel { position: absolute; top: 150px; left: 55%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 5px; align-items: center; }
+        .pilot-warning { background: rgba(255,0,0,0.3); border: 2px solid #f00; padding: 8px 20px; border-radius: 5px; color: #f00; font-size: 12px; animation: blink 0.5s infinite; display: none; }
+        .pilot-warning.active { display: block; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        .pilot-warning.caution { background: rgba(255,150,0,0.3); border-color: #f90; color: #f90; }
+        .pilot-warning.decel { background: rgba(255,100,0,0.4); border: 3px solid #ff6600; color: #ffcc00; font-size: 14px; padding: 10px 25px; animation: decelBlink 0.8s infinite; box-shadow: 0 0 20px rgba(255,100,0,0.5); }
+        @keyframes decelBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .pilot-warning.gravity { 
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.6) 0%, rgba(180, 0, 0, 0.5) 100%);
+            border: 2px solid #ff0000;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 15px 35px;
+            animation: gravityPulse 0.3s infinite;
+            box-shadow: var(--sf-glow-red), inset 0 0 30px rgba(255, 0, 0, 0.2);
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+        @keyframes gravityPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        #pilot-left { position: absolute; left: 10px; left: calc(10px + env(safe-area-inset-left)); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; }
+        .pilot-gauge { 
+            width: 90px;
+            background: linear-gradient(135deg, rgba(10, 15, 25, 0.95) 0%, rgba(15, 20, 30, 0.9) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 0;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            padding: 10px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.05);
+        }
+        .pilot-gauge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--sf-cyan), transparent);
+        }
+        .pilot-gauge-title { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 8px;
+            font-weight: 600;
+            color: var(--sf-cyan);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--sf-cyan-glow);
+        }
+        .pilot-gauge-value { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--sf-green);
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+        .pilot-gauge-unit { font-size: 8px; color: var(--sf-text-dim); font-family: 'Orbitron', sans-serif; }
+        .pilot-gauge-bar { 
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .pilot-gauge-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .pilot-gauge-fill.speed { background: linear-gradient(90deg, var(--sf-green), var(--sf-yellow), var(--sf-red)); }
+        
+        #pilot-right { position: absolute; right: 10px; right: calc(10px + env(safe-area-inset-right)); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        #pilot-radar { 
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(0, 30, 50, 0.95) 0%, rgba(0, 20, 40, 0.9) 100%);
+            border: 2px solid var(--sf-cyan);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: var(--sf-glow-cyan), inset 0 0 30px rgba(0, 255, 255, 0.1);
+        }
+        #pilot-radar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background: var(--sf-cyan);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--sf-cyan);
+        }
+        #pilot-radar-sweep { 
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.9), transparent);
+            transform-origin: left center;
+            animation: sweep 2s linear infinite;
+            box-shadow: 0 0 10px var(--sf-cyan);
+        }
+        @keyframes sweep { to { transform: rotate(360deg); } }
+        .radar-ring { position: absolute; top: 50%; left: 50%; border: 1px solid rgba(0, 255, 255, 0.15); border-radius: 50%; transform: translate(-50%,-50%); }
+        .radar-blip { position: absolute; border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 0 5px currentColor; }
+        #pilot-radar-ship { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: var(--sf-green); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 0 10px var(--sf-green); }
+        
+        #pilot-target-info { 
+            background: linear-gradient(135deg, rgba(50, 30, 0, 0.9) 0%, rgba(40, 25, 0, 0.85) 100%);
+            border: 1px solid var(--sf-orange);
+            padding: 10px;
+            border-radius: 0;
+            clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+            min-width: 100px;
+            font-size: 10px;
+            box-shadow: 0 0 15px rgba(255, 149, 0, 0.2);
+        }
+        .target-label { font-family: 'Orbitron', sans-serif; font-size: 7px; color: var(--sf-orange); text-transform: uppercase; letter-spacing: 1px; }
+        .target-name { font-size: 11px; color: var(--sf-text-bright); margin: 4px 0; font-weight: 600; }
+        .target-dist, .target-eta { font-size: 9px; color: var(--sf-orange); }
+        
+        #pilot-autopilot-info { 
+            background: linear-gradient(135deg, rgba(0, 60, 40, 0.9) 0%, rgba(0, 50, 35, 0.85) 100%);
+            border: 1px solid var(--sf-green);
+            padding: 10px;
+            border-radius: 0;
+            clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+            min-width: 100px;
+            font-size: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+        #pilot-autopilot-info.inactive { 
+            background: linear-gradient(135deg, rgba(40, 40, 40, 0.9) 0%, rgba(30, 30, 30, 0.85) 100%);
+            border-color: var(--sf-text-dim);
+            box-shadow: none;
+        }
+        .ap-label { font-family: 'Orbitron', sans-serif; font-size: 7px; color: var(--sf-green); text-transform: uppercase; letter-spacing: 1px; }
+        #pilot-autopilot-info.inactive .ap-label { color: var(--sf-text-dim); }
+        .ap-status { font-size: 11px; color: var(--sf-text-bright); margin: 4px 0; font-weight: 600; }
+        .ap-phase { font-size: 9px; color: var(--sf-green); }
+        
+        /* 조종실 라디오 패널 */
+        #cockpit-radio {
+            position: fixed;
+            top: 50px;
+            right: 60px;
+            background: linear-gradient(135deg, rgba(10, 15, 25, 0.98) 0%, rgba(15, 20, 30, 0.95) 100%);
+            border: 1px solid var(--sf-cyan);
+            border-radius: 0;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+            padding: 15px;
+            z-index: 1003;
+            display: none;
+            min-width: 220px;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: var(--sf-glow-cyan), 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+        body.pilot-mode #cockpit-radio { display: block; }
+        #cockpit-radio.collapsed {
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            overflow: hidden;
+            clip-path: none;
+        }
+        #cockpit-radio.collapsed .radio-content { display: none; }
+        #cockpit-radio.collapsed .radio-toggle { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%;
+            font-size: 1.2em;
+        }
+        .radio-toggle {
+            background: rgba(0,100,150,0.5);
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            width: 100%;
+        }
+        .radio-toggle:hover { background: rgba(0,150,200,0.7); }
+        .radio-toggle.playing { 
+            background: rgba(0,200,100,0.5); 
+            border-color: #0f0;
+            color: #0f0;
+            animation: radioPulse 1s infinite;
+        }
+        @keyframes radioPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(0,255,100,0.5); }
+            50% { box-shadow: 0 0 15px rgba(0,255,100,0.8); }
+        }
+        .radio-content { margin-top: 10px; }
+        .radio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .radio-close-btn {
+            background: rgba(255,50,50,0.3);
+            border: 1px solid rgba(255,100,100,0.5);
+            color: #f88;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .radio-close-btn:hover {
+            background: rgba(255,50,50,0.6);
+            color: #fff;
+        }
+        .radio-title {
+            color: #0ff;
+            font-size: 0.75em;
+            text-align: center;
+        }
+        .radio-station {
+            background: rgba(0,50,80,0.5);
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7em;
+            transition: all 0.2s;
+        }
+        .radio-station:hover {
+            border-color: #0ff;
+            color: #fff;
+        }
+        .radio-station.active {
+            border-color: #0f0;
+            color: #0f0;
+            background: rgba(0,100,50,0.5);
+        }
+        .radio-station-name { font-weight: bold; }
+        .radio-station-desc { font-size: 0.85em; opacity: 0.7; margin-top: 2px; }
+        .radio-volume {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.7em;
+            color: #888;
+        }
+        .radio-volume input { flex: 1; cursor: pointer; }
+        .radio-now-playing {
+            margin-top: 8px;
+            padding: 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            font-size: 0.65em;
+            color: #0ff;
+            text-align: center;
+            min-height: 20px;
+        }
+        
+        /* AI 부조종사 패널 */
+        /* ========== 통합 채팅 패널 ========== */
+        #unified-chat-panel {
+            position: fixed;
+            left: 5px;
+            left: calc(5px + env(safe-area-inset-left));
+            top: 5px;
+            width: 280px;
+            max-width: 40vw;
+            background: rgba(10, 20, 40, 0.95);
+            border: 1px solid #0ff;
+            border-radius: 10px;
+            padding: 8px;
+            pointer-events: auto;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            font-size: 12px;
+            z-index: 500;
+            transition: background 0.5s, border-color 0.5s, box-shadow 0.5s;
+            display: none;  /* 기본 숨김 */
+        }
+        #unified-chat-panel.transparent {
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
+        }
+        #unified-chat-panel.transparent .chat-tab-bar,
+        #unified-chat-panel.transparent .chat-content-box {
+            background: transparent;
+        }
+        #unified-chat-panel.transparent .chat-tab {
+            background: transparent;
+            border-color: transparent;
+        }
+        #unified-chat-panel.transparent #chat-toggle-btn {
+            background: transparent;
+            border-color: transparent;
+        }
+        
+        .chat-tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+        .chat-tab {
+            flex: 1;
+            padding: 6px 8px;
+            background: rgba(0, 50, 80, 0.5);
+            border: 1px solid #345;
+            border-radius: 5px;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .chat-tab.active {
+            background: rgba(0, 150, 200, 0.4);
+            border-color: #0ff;
+            color: #0ff;
+        }
+        .chat-tab:hover {
+            border-color: #0ff;
+        }
+        #chat-toggle-btn {
+            width: 26px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid #0ff;
+            border-radius: 5px;
+            color: #0ff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        #chat-toggle-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        
+        .chat-content-box {
+            min-height: 50px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: #e0e0e0;
+            line-height: 1.5;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-bottom: 6px;
+        }
+        .chat-content-box::-webkit-scrollbar { width: 3px; }
+        .chat-content-box::-webkit-scrollbar-thumb { background: #0ff; border-radius: 3px; }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 5px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #345;
+            border-radius: 5px;
+            padding: 6px 8px;
+            color: #fff;
+            font-size: 11px;
+        }
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: #0ff;
+        }
+        .chat-input-area button {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #0088aa, #00aacc);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 접힌 상태 */
+        #unified-chat-panel.collapsed .chat-content,
+        #unified-chat-panel.collapsed .chat-content-box,
+        #unified-chat-panel.collapsed .chat-input-area {
+            display: none;
+        }
+        #unified-chat-panel.collapsed {
+            width: auto;
+            padding: 6px 8px;
+        }
+        #unified-chat-panel.collapsed .chat-tab-bar {
+            margin-bottom: 0;
+        }
+        #unified-chat-panel.collapsed #chat-toggle-btn {
+            transform: rotate(180deg);
+        }
+        
+        /* 멀티 채팅 메시지 스타일 */
+        .mp-msg { margin: 3px 0; word-break: break-word; }
+        .mp-msg .nick { color: #ff0; font-weight: bold; margin-right: 5px; }
+        .mp-msg .time { color: #888; font-size: 9px; margin-right: 5px; }
+        .mp-msg .text { color: #fff; }
+        .mp-msg.system { color: #0ff; font-style: italic; }
+        
+        /* ARIA 메시지 스타일 */
+        .aria-msg { margin: 3px 0; }
+        .aria-msg .aria-label { color: #9b59b6; font-weight: bold; }
+        .aria-msg .aria-text { color: #e0e0e0; white-space: pre-wrap; }
+        
+        /* 기존 패널 숨김 */
+        #ai-copilot-panel { display: none !important; }
+        #multiplayer-ui { display: none !important; }
+        
+        /* AI 로딩 표시 */
+        #ai-copilot-panel.loading #ai-avatar {
+            animation: ai-loading 1s linear infinite;
+        }
+        @keyframes ai-loading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 미션 알림 */
+        #ai-mission-alert {
+            display: none;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            font-size: 10px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 0.5s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        /* AI 교신 모달 */
+        #ai-comm-modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 20, 40, 0.98);
+            border: 2px solid #9b59b6;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 300;
+            pointer-events: auto;
+        }
+        #ai-comm-modal.open { display: block; }
+        #ai-comm-portrait {
+            font-size: 50px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        #ai-comm-name {
+            text-align: center;
+            font-size: 14px;
+            color: #9b59b6;
+            margin-bottom: 10px;
+        }
+        #ai-comm-message {
+            font-size: 12px;
+            color: #e0e0e0;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            min-height: 60px;
+        }
+        #ai-comm-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .ai-comm-choice {
+            padding: 10px 15px;
+            background: rgba(155, 89, 182, 0.2);
+            border: 1px solid #9b59b6;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .ai-comm-choice:hover {
+            background: rgba(155, 89, 182, 0.4);
+            transform: translateX(5px);
+        }
+        .ai-comm-choice.danger { border-color: #e74c3c; color: #e74c3c; }
+        .ai-comm-choice.success { border-color: #27ae60; color: #27ae60; }
+        
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 60px; height: 60px; pointer-events: none; }
+        .ch-line { position: absolute; background: rgba(0,255,255,0.4); }
+        .ch-line.h { top: 50%; width: 100%; height: 1px; }
+        .ch-line.v { left: 50%; height: 100%; width: 1px; }
+        .ch-dot { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background: #00ffff; border-radius: 50%; transform: translate(-50%,-50%); }
+        
+        #pilot-bottom { position: absolute; bottom: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 12px; padding-left: calc(12px + env(safe-area-inset-left)); padding-right: calc(12px + env(safe-area-inset-right)); pointer-events: none; }
+        #pilot-left-console { display: flex; gap: 8px; align-items: flex-end; pointer-events: auto; }
+        #pilot-center-console { display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: auto; }
+        #pilot-right-console { display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: auto; }
+        /* 드래그 시 독립적으로 움직이도록 */
+        #pilot-left-console.dragging,
+        #pilot-center-console.dragging,
+        #pilot-right-console.dragging,
+        #mobile-gauge-container.dragging,
+        #mobile-speed-container.dragging,
+        #mobile-btns-container.dragging,
+        #mobile-arrows-container.dragging {
+            position: fixed !important;
+            z-index: 9999 !important;
+        }
+        .vertical-gauge { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .vg-bar { width: 25px; height: 80px; background: rgba(0,30,50,0.9); border: 1px solid #00ffff; border-radius: 5px; padding: 2px; }
+        .vg-bg { width: 100%; height: 100%; background: #0a0a0a; border-radius: 3px; position: relative; overflow: hidden; }
+        .vg-fill { position: absolute; width: 100%; border-radius: 3px; transition: height 0.2s; }
+        .vg-fill.throttle { background: linear-gradient(0deg, #0066ff, #00ffff); bottom: 0; }
+        .vg-fill.fuel { background: linear-gradient(0deg, #ff3300, #ffff00, #00ff00); bottom: 0; }
+        
+        /* THR 게이지 - 중앙 0 */
+        .thr-gauge { position: relative; }
+        .thr-label-top { font-size: 6px; color: #00ff88; margin-bottom: 2px; }
+        .thr-label-bottom { font-size: 6px; color: #ff6600; margin-top: 2px; }
+        .thr-bar { height: 100px; }
+        .thr-center-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #fff; z-index: 5; }
+        .vg-fill.throttle-up { bottom: 50%; background: linear-gradient(0deg, #00ff88, #00ffcc); }
+        .vg-fill.throttle-down { top: 50%; background: linear-gradient(180deg, #ff6600, #ff3300); }
+        .vg-label { font-size: 7px; color: var(--sf-cyan); font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+        .vg-value { font-size: 9px; color: var(--sf-text-bright); font-weight: 600; }
+        
+        #pilot-main-speed .speed-value { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px; 
+            font-weight: 700;
+            color: var(--sf-cyan); 
+            text-shadow: var(--sf-glow-cyan);
+            letter-spacing: 2px;
+        }
+        #pilot-main-speed .speed-unit { font-size: 10px; color: var(--sf-text-dim); font-family: 'Orbitron', sans-serif; text-transform: uppercase; }
+        #pilot-btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        
+        .pilot-console-btn { 
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 255, 255, 0.02) 100%);
+            border: 1px solid var(--sf-cyan);
+            color: var(--sf-cyan);
+            padding: 10px 14px;
+            border-radius: 0;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px var(--sf-cyan-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        .pilot-console-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .pilot-console-btn:hover::before {
+            left: 100%;
+        }
+        .pilot-console-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.25) 0%, rgba(0, 255, 255, 0.1) 100%);
+            box-shadow: 0 0 20px var(--sf-cyan-glow), inset 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+        .pilot-console-btn:active { 
+            background: rgba(0, 255, 255, 0.3);
+            transform: scale(0.98);
+        }
+        .pilot-console-btn.autopilot { 
+            border-color: var(--sf-green);
+            color: var(--sf-green);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 255, 136, 0.02) 100%);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+        }
+        .pilot-console-btn.autopilot.engaged { 
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 255, 136, 0.15) 100%);
+            box-shadow: var(--sf-glow-green);
+            animation: sf-glow-pulse 2s infinite;
+        }
+        .pilot-console-btn.interior { 
+            border-color: var(--sf-orange);
+            color: var(--sf-orange);
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, rgba(255, 149, 0, 0.02) 100%);
+        }
+        .pilot-console-btn.interior.disabled { 
+            border-color: var(--sf-text-dim);
+            color: var(--sf-text-dim);
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .pilot-console-btn.danger { 
+            border-color: var(--sf-red);
+            color: var(--sf-red);
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1) 0%, rgba(255, 71, 87, 0.02) 100%);
+        }
+        .pilot-console-btn.emergency { 
+            border-color: #ff0000;
+            color: #fff;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.5) 0%, rgba(200, 0, 0, 0.4) 100%);
+            animation: emergencyPulse 0.5s infinite;
+            display: none;
+            box-shadow: var(--sf-glow-red);
+        }
+        .pilot-console-btn.emergency.active { display: block; }
+        .pilot-console-btn.orbit-entry { 
+            border-color: var(--sf-green);
+            color: var(--sf-green);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 255, 136, 0.05) 100%);
+        }
+        .pilot-console-btn.orbit-entry:hover { 
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.4) 0%, rgba(0, 255, 136, 0.15) 100%);
+        }
+        
+        /* 긴급 역추진 버튼 */
+        .pilot-ctrl-btn.emergency-brake {
+            background: linear-gradient(145deg, #cc0000, #990000);
+            border: 2px solid #ff3333;
+            color: white;
+            font-size: 10px;
+            line-height: 1.1;
+            width: 50px;
+            height: 50px;
+            margin-left: 10px;
+            display: none;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            border-radius: 0;
+            box-shadow: var(--sf-glow-red);
+        }
+        .pilot-ctrl-btn.emergency-brake:active {
+            background: #ff0000;
+            transform: scale(0.95);
+        }
+        
+        /* 데스크톱 전용 버튼 */
+        .desktop-only { display: flex; }
+        
+        /* 전체화면 버튼 */
+        #btn-fullscreen { background: rgba(155, 89, 182, 0.2); border: 1px solid rgba(155, 89, 182, 0.5); color: #9b59b6; }
+        #btn-fullscreen:hover { background: #9b59b6; color: #fff; }
+        #btn-fullscreen.active { background: #9b59b6; color: #fff; }
+        
+        /* 언어 선택 */
+        #lang-select {
+            background: rgba(52, 73, 94, 0.8);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 4px;
+            font-size: 9px;
+            padding: 4px 6px;
+            outline: none;
+        }
+        #lang-select option {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        /* 유저 영역 */
+        #user-area {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+            margin-right: 60px;  /* 광고버튼 공간 확보 */
+            pointer-events: auto;  /* 클릭 가능하게! */
+        }
+        #user-coins {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 10px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #user-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #user-name {
+            color: #3498db;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        #btn-login {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+        }
+        #btn-logout {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+        
+        /* 로그인 모달 */
+        #login-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        #login-modal.open { display: flex; }
+        #login-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #3498db;
+            border-radius: 15px;
+            padding: 30px;
+            width: 320px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            margin: auto;
+        }
+        #login-content h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .login-tab {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .login-tab.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: #fff;
+        }
+        #login-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        #login-content input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        #login-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+            min-height: 18px;
+        }
+        .login-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .login-submit:hover { transform: scale(1.02); }
+        #login-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #login-close:hover { color: #fff; }
+        
+        /* 아이디/비밀번호 찾기 */
+        .login-find-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        .login-find-links a {
+            color: #888;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .login-find-links a:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+        #login-success {
+            color: #2ecc71;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+            min-height: 18px;
+        }
+        .find-result {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .find-result .label {
+            color: #888;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        .find-result .value {
+            color: #2ecc71;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .back-to-login {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        .back-to-login:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        
+        /* 함선 처분 모달 */
+        #sell-ship-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 3500;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        #sell-ship-modal.open { display: flex; }
+        #sell-ship-content {
+            background: linear-gradient(135deg, #2c1810, #1a1a2e);
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            margin: auto;
+            text-align: center;
+        }
+        #sell-ship-content h2 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        #sell-ship-content p {
+            color: #ccc;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        #sell-ship-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .sell-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .sell-info-row:last-child { border-bottom: none; }
+        #sell-price-value {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        #sell-ship-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .ship-modal-btn.sell {
+            background: linear-gradient(180deg, #e74c3c, #c0392b);
+            color: #fff;
+        }
+        .ship-modal-btn.sell:hover {
+            background: linear-gradient(180deg, #ff6b6b, #e74c3c);
+            transform: scale(1.05);
+        }
+        @keyframes emergencyPulse { 0%, 100% { background: rgba(255,0,0,0.5); } 50% { background: rgba(255,0,0,0.8); } }
+        
+        .pilot-ctrl-btn { width: 45px; height: 45px; border-radius: 50%; background: rgba(0,40,60,0.9); border: 2px solid #00ffff; color: #00ffff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .pilot-ctrl-btn:active { background: rgba(0,255,255,0.3); }
+        .pilot-ctrl-btn.brake { border-color: #f00; color: #f00; font-size: 8px; }
+        
+        #virtual-joystick { position: absolute; display: none; pointer-events: none; z-index: 300; }
+        #joystick-base { width: 100px; height: 100px; background: rgba(0,255,255,0.08); border: 2px solid rgba(0,255,255,0.4); border-radius: 50%; }
+        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; background: radial-gradient(circle, rgba(0,255,255,0.7), rgba(0,255,255,0.2)); border-radius: 50%; transform: translate(-50%,-50%); }
+        
+        /* 모바일용 동적 조이스틱 (터치 시 생성) */
+        #pilot-joystick {
+            position: absolute;
+            width: 80px; height: 150px; 
+            pointer-events: none; z-index: 300;
+            display: none;
+        }
+        #pilot-joystick.visible { display: block; }
+        @media (min-width: 1024px) { #pilot-joystick { display: none !important; } }
+        #pilot-joystick-base {
+            width: 100%; height: 100%; background: rgba(0,255,255,0.1);
+            border: 3px solid rgba(0,255,255,0.5); border-radius: 40px;
+            position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+            align-items: center; padding: 8px 0;
+        }
+        #pilot-joystick-base::before {
+            content: '▲ Accel';
+            font-size: 9px; color: #0f0; font-family: 'Orbitron', sans-serif;
+        }
+        #pilot-joystick-base::after {
+            content: '▼ Reverse';
+            font-size: 9px; color: #f60; font-family: 'Orbitron', sans-serif;
+        }
+        #pilot-joystick-knob {
+            position: absolute; top: 50%; left: 50%; width: 45px; height: 45px;
+            background: radial-gradient(circle, rgba(0,255,255,0.8), rgba(0,255,255,0.3));
+            border-radius: 50%; transform: translate(-50%,-50%);
+            box-shadow: 0 0 15px rgba(0,255,255,0.5);
+        }
+        #pilot-joystick-label {
+            position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            font-size: 10px; color: #00ffff; font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        
+        /* 터치 영역 (화면 하단 왼쪽) */
+        #touch-area-left {
+            position: absolute;
+            left: 0; bottom: 0;
+            width: 50%; height: 45%;
+            pointer-events: auto;
+            z-index: 250;
+            display: none;
+        }
+        #cockpit-hud.active #touch-area-left { display: block; }
+        @media (min-width: 1024px) { #touch-area-left { display: none !important; } }
+        
+        /* 모바일에서 AI 패널이 터치 영역 위에 오도록 */
+        #ai-copilot-panel { z-index: 260; }
+
+        /* 선내 모드 */
+        #interior-hud { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 260; }
+        #interior-hud.active { display: block; }
+        #interior-top { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,40,60,0.9); border: 1px solid #00ffff; padding: 6px 20px; border-radius: 20px; display: flex; gap: 15px; align-items: center; }
+        #interior-location { font-size: 12px; color: #00ffff; font-family: 'Orbitron', sans-serif; }
+        #interior-eta { font-size: 11px; color: #00ff88; font-family: 'Orbitron', sans-serif; }
+        #interior-bottom { position: absolute; bottom: 15px; bottom: calc(15px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: auto; }
+        #move-joystick { position: absolute; bottom: 70px; bottom: calc(70px + env(safe-area-inset-bottom)); left: 15px; left: calc(15px + env(safe-area-inset-left)); width: 110px; height: 110px; pointer-events: auto; z-index: 270; display: none; }
+        #move-joystick.active { display: block; }
+        #move-joystick-base { width: 100%; height: 100%; background: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.4); border-radius: 50%; }
+        #move-joystick-knob { position: absolute; top: 50%; left: 50%; width: 45px; height: 45px; background: radial-gradient(circle, rgba(255,255,255,0.7), rgba(255,255,255,0.3)); border-radius: 50%; transform: translate(-50%,-50%); }
+        #door-prompt { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,60,100,0.95); border: 2px solid #00ffff; padding: 20px 35px; border-radius: 15px; text-align: center; pointer-events: auto; z-index: 280; }
+        #door-prompt.active { display: block; }
+        #door-prompt p { color: #aaa; font-size: 11px; margin-bottom: 12px; }
+        #door-prompt .door-name { color: #00ffff; font-size: 16px; margin-bottom: 8px; font-family: 'Orbitron', sans-serif; }
+        #btn-open-door { background: linear-gradient(180deg, #00ffff, #0088aa); border: none; color: #000; padding: 12px 35px; border-radius: 25px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        #interior-crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255,255,255,0.6); border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+        #object-name { display: none; position: absolute; top: 55%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 1px solid #00ffff; padding: 6px 15px; border-radius: 8px; color: #00ffff; font-size: 12px; font-family: 'Orbitron', sans-serif; pointer-events: none; z-index: 275; }
+        #object-name.active { display: block; }
+        #interaction-hint { display: none; position: absolute; top: 62%; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 10px; pointer-events: none; z-index: 275; }
+        #interaction-hint.active { display: block; }
+
+        /* 전망대 모드 */
+        #observatory-hud { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 260; }
+        #observatory-hud.active { display: block; }
+        #obs-top { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,40,60,0.8); border: 1px solid #00ffff; padding: 6px 20px; border-radius: 20px; display: flex; gap: 15px; align-items: center; }
+        #obs-title { font-size: 12px; color: #00ffff; font-family: 'Orbitron', sans-serif; }
+        #obs-eta { font-size: 11px; color: #00ff88; font-family: 'Orbitron', sans-serif; }
+        #obs-bottom { position: absolute; bottom: 15px; bottom: calc(15px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: auto; }
+
+        /* 궤도 진입 프롬프트 */
+        #orbit-prompt { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,60,40,0.95); border: 3px solid #00ff88; padding: 25px 40px; border-radius: 15px; text-align: center; pointer-events: auto; z-index: 350; box-shadow: 0 0 40px rgba(0,255,136,0.4); }
+        #orbit-prompt.active { display: block; animation: orbitPulse 1.5s infinite; }
+        @keyframes orbitPulse { 0%, 100% { box-shadow: 0 0 40px rgba(0,255,136,0.4); } 50% { box-shadow: 0 0 60px rgba(0,255,136,0.6); } }
+        .orbit-prompt-title { font-size: 18px; color: #00ff88; margin-bottom: 8px; font-family: 'Orbitron', sans-serif; }
+        .orbit-prompt-target { font-size: 22px; color: #fff; margin-bottom: 15px; font-family: 'Orbitron', sans-serif; }
+        #orbit-prompt p { color: #aaa; font-size: 12px; margin-bottom: 20px; line-height: 1.6; }
+        .orbit-prompt-buttons { display: flex; gap: 15px; justify-content: center; }
+        .orbit-btn { padding: 12px 25px; border-radius: 25px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif; }
+        .orbit-btn.confirm { background: linear-gradient(180deg, #00ff88, #00aa55); color: #000; }
+        .orbit-btn.cancel { background: rgba(100,100,100,0.5); border: 1px solid #666; color: #aaa; }
+        .orbit-btn.confirm:hover { background: #00ffaa; }
+        .orbit-btn.cancel:hover { background: rgba(150,150,150,0.5); }
+
+        /* 모바일 반응형 */
+        @media (max-width: 600px) and (orientation: portrait) {
+            #pilot-left, #pilot-right { display: none; }
+            /* 2D cockpit 제거됨 */
+            #pilot-top-bar { gap: 6px; flex-wrap: wrap; max-width: 95%; }
+            .pilot-info-panel { padding: 3px 8px; }
+            #pilot-target-select { top: 55px; }
+            #pilot-eta-box { top: 85px; padding: 5px 12px; }
+            #pilot-warning-panel { top: 125px; }
+            .pilot-console-btn { padding: 7px 10px; font-size: 8px; }
+            .pilot-ctrl-btn { width: 40px; height: 40px; font-size: 14px; }
+            .vg-bar { height: 60px; width: 20px; }
+            #pilot-main-speed .speed-value { font-size: 22px; }
+        }
+        @media (max-height: 500px) and (orientation: landscape) {
+            /* 2D cockpit 제거됨 */
+            #pilot-left, #pilot-right { transform: translateY(-50%) scale(0.7); }
+            #pilot-top-bar { top: 3px; gap: 5px; }
+            .pilot-info-panel { padding: 2px 6px; }
+            #pilot-target-select { top: 42px; }
+            #pilot-eta-box { top: 70px; }
+            #pilot-warning-panel { top: 100px; }
+            .vg-bar { height: 50px; width: 18px; }
+            #pilot-main-speed .speed-value { font-size: 18px; }
+            .pilot-console-btn { padding: 5px 8px; font-size: 7px; }
+            .pilot-ctrl-btn { width: 35px; height: 35px; font-size: 12px; }
+        }
+
+        /* ========== 모바일 반응형 최적화 ========== */
+        
+        /* 모바일용 시간 조절 버튼 */
+        #mobile-time-controls {
+            display: none;  /* 기본적으로 숨김 */
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .time-btn {
+            background: #3498db;
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .time-btn:active {
+            background: #2980b9;
+            transform: scale(0.95);
+        }
+        #time-val-mobile {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            /* ===== 모바일 UI 변수 재정의 ===== */
+            :root {
+                --top-bar-height: 45px;
+                --nav-width: 140px;
+                --spawn-dock-width: 50px;
+                --chat-toggle-size: 45px;
+                --ui-gap: 8px;
+                --ui-padding: 10px;
+            }
+            
+            /* AI 부조종사 패널 모바일 - 글자 크기 1.5배 */
+            #ai-copilot-panel {
+                width: 200px;
+                max-width: 50vw;
+                top: 5px;
+                left: 5px;
+                padding: 8px;
+            }
+            #ai-avatar { width: 26px; height: 26px; font-size: 13px; }
+            #ai-name { font-size: 12px; }
+            #ai-status { font-size: 9px; }
+            #ai-message-box { min-height: 50px; max-height: 100px; font-size: 14px; line-height: 1.5; padding: 6px; }
+            #ai-message-text { font-size: 14px; }
+            #ai-input-area { margin-top: 6px; }
+            #ai-input { padding: 8px 10px; font-size: 12px; }
+            #ai-input::placeholder { font-size: 11px; }
+            #ai-send-btn { width: 30px; height: 30px; font-size: 12px; }
+            #ai-expand-btn { width: 24px; height: 24px; font-size: 12px; line-height: 22px; }
+            #ai-comm-modal { min-width: 200px; padding: 12px; }
+            #ai-comm-portrait { font-size: 30px; }
+            
+            /* 탑바 */
+            #top-bar {
+                padding: 8px 10px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            #top-bar h1 {
+                font-size: 14px;
+                width: auto;
+                text-align: left;
+                margin-bottom: 0;
+            }
+            .control-group {
+                flex: 1;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            .mode-btn {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+            .slider-container {
+                display: none;  /* 모바일에서 슬라이더 숨김 */
+            }
+            #time-val {
+                display: none;  /* 모바일에서 데스크톱 시간 표시 숨김 */
+            }
+            #mobile-time-controls {
+                display: flex;  /* 모바일에서 시간 조절 버튼 표시 */
+            }
+            /* 유저 영역 모바일 */
+            #user-area {
+                position: relative;
+                gap: 5px;
+                pointer-events: auto;  /* 클릭 가능 유지 */
+            }
+            #user-coins {
+                padding: 3px 8px;
+                font-size: 11px;
+            }
+            #user-name {
+                display: none;
+            }
+            
+            /* 모바일에서 데스크톱 전용 버튼 숨기기 */
+            .desktop-only {
+                display: none !important;
+            }
+            #pilot-right-console {
+                display: none;
+            }
+            
+            /* 긴급 역추진 버튼 모바일 표시 */
+            .pilot-ctrl-btn.emergency-brake {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* 조종 모드에서 전체보기 버튼 숨기기 */
+            #cockpit-hud.active ~ #reset-cam,
+            body.pilot-mode #reset-cam {
+                display: none !important;
+            }
+            
+            /* ===== UI 영역 체계적 배치 (겹침 방지) ===== */
+            
+            /* 상단 영역: top-bar */
+            #top-bar {
+                height: 50px;
+                padding: 5px 10px;
+            }
+            #top-bar h1 {
+                font-size: 12px;
+            }
+            
+            /* 좌측 영역: nav-container */
+            #nav-container {
+                top: 55px;
+                left: 0;
+                bottom: 70px;
+            }
+            #nav-panel {
+                width: 130px;
+                max-height: calc(100vh - 140px);
+                font-size: 10px;
+            }
+            .nav-item {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+            .nav-item.satellite {
+                padding-left: 15px;
+                font-size: 9px;
+            }
+            #nav-toggle {
+                width: 28px;
+                font-size: 12px;
+                padding: 15px 5px;
+            }
+            
+            /* 우측 상단 영역: spawn-dock */
+            #spawn-dock {
+                top: 55px;
+                right: 10px;
+                width: 45px;
+                max-height: calc(100vh - 130px);
+            }
+            .spawn-btn {
+                width: 30px;
+                height: 30px;
+            }
+            
+            /* 좌측 하단 영역: chat-toggle, chat-panel */
+            #chat-toggle {
+                bottom: 15px;
+                left: 15px;
+                right: auto;
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+            #chat-panel {
+                bottom: 70px;
+                left: 15px;
+                right: auto;
+                width: calc(100vw - 80px);
+                max-width: 280px;
+                height: auto;
+                max-height: calc(100vh - 150px);
+            }
+            
+            /* 하단 중앙 영역: 버튼들 */
+            #board-ship-btn {
+                bottom: 70px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                padding: 10px 20px;
+                font-size: 12px;
+            }
+            #reset-cam {
+                bottom: 15px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
+            
+            /* 메시지, 거리 패널 */
+            #msg-box {
+                bottom: 130px;
+                left: 50%;
+                transform: translateX(-50%);
+                max-width: 70%;
+                font-size: 11px;
+            }
+            #focus-distance-panel {
+                bottom: 15px;
+                right: 70px;
+                left: auto;
+            }
+            
+            /* ===== 추가 모바일 설정 ===== */
+            /* 메시지 박스 */
+            #msg-box {
+                bottom: 60px;
+                font-size: 13px;
+                max-width: 90%;
+                text-align: center;
+            }
+            
+            /* 리셋 카메라 버튼 */
+            #reset-cam {
+                bottom: 15px;
+                padding: 8px 18px;
+                font-size: 11px;
+            }
+            
+            /* 포커스 거리 패널 */
+            #focus-distance-panel {
+                bottom: 70px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+            #focus-distance-value {
+                font-size: 14px;
+            }
+            
+            /* 카탈로그 모달 */
+            #catalog-content {
+                width: 95%;
+                max-height: 60vh;
+                padding: 15px;
+                padding-bottom: 30px;
+                grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+                gap: 10px;
+            }
+            .catalog-card {
+                padding: 8px;
+            }
+            .catalog-thumb {
+                width: 55px;
+                height: 55px;
+            }
+            .catalog-name {
+                font-size: 9px;
+            }
+            
+            /* 우주선 선택 모달 */
+            #ship-select-modal {
+                padding: 15px;
+            }
+            #ship-select-modal h2 {
+                font-size: 16px;
+            }
+            #ship-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                max-height: 35vh;
+            }
+            .ship-card {
+                padding: 8px;
+                min-height: 100px;
+            }
+            .ship-card-icon {
+                width: 100%;
+                height: 55px;
+                font-size: 24px;
+            }
+            .ship-card-name {
+                font-size: 11px;
+            }
+            .ship-card-class {
+                font-size: 9px;
+            }
+            #ship-detail {
+                flex-direction: column;
+                gap: 10px;
+            }
+            #ship-preview {
+                width: 100%;
+                height: 120px;
+            }
+            #ship-stats {
+                font-size: 11px;
+            }
+            #btn-select-ship, #btn-cancel-ship {
+                padding: 10px 25px;
+                font-size: 12px;
+            }
+        }
+
+        /* 더 작은 화면 (스마트폰) */
+        @media (max-width: 480px) {
+            /* AI 패널 스마트폰 - 글자 크기 1.5배 */
+            #ai-copilot-panel {
+                width: 180px;
+                max-width: 55vw;
+                top: 3px;
+                left: 3px;
+                padding: 6px;
+            }
+            #ai-copilot-header { margin-bottom: 5px; padding-bottom: 4px; gap: 6px; }
+            #ai-avatar { width: 22px; height: 22px; font-size: 12px; }
+            #ai-name { font-size: 11px; letter-spacing: 0; }
+            #ai-status { font-size: 8px; }
+            #ai-message-box { min-height: 45px; max-height: 90px; font-size: 13px; line-height: 1.4; padding: 5px; }
+            #ai-message-text { font-size: 13px; }
+            #ai-input-area { margin-top: 5px; }
+            #ai-input { padding: 6px 8px; font-size: 11px; }
+            #ai-input::placeholder { font-size: 10px; }
+            #ai-send-btn { width: 26px; height: 26px; font-size: 11px; }
+            #ai-expand-btn { width: 22px; height: 22px; font-size: 11px; line-height: 20px; }
+            #ai-comm-modal { min-width: 160px; padding: 10px; }
+            #ai-comm-portrait { font-size: 25px; }
+            #ai-comm-name { font-size: 10px; }
+            #ai-comm-message { font-size: 8px; }
+            .ai-comm-choice { padding: 6px 8px; font-size: 8px; }
+            
+            #top-bar h1 {
+                font-size: 12px;
+            }
+            .mode-btn {
+                padding: 5px 8px;
+                font-size: 9px;
+            }
+            
+            #nav-panel {
+                width: 120px;
+                max-height: 35vh;
+            }
+            .nav-item {
+                padding: 5px 6px;
+                font-size: 9px;
+            }
+            
+            /* 카탈로그 스마트폰 */
+            #catalog-content {
+                width: 95%;
+                max-height: 55vh;
+                padding: 10px;
+                padding-bottom: 25px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .catalog-card {
+                padding: 6px;
+            }
+            .catalog-thumb {
+                width: 45px;
+                height: 45px;
+                border-width: 2px;
+            }
+            .catalog-name {
+                font-size: 8px;
+            }
+            
+            #chat-panel {
+                width: 90vw;
+                height: 50vh;
+                right: 5vw;
+            }
+            #chat-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                bottom: 15px;
+                right: 15px;
+            }
+            
+            #ship-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .ship-card {
+                padding: 6px;
+                min-height: 90px;
+            }
+            .ship-card-icon {
+                width: 100%;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            #focus-distance-panel {
+                bottom: 60px;
+                right: 5px;
+                padding: 6px 10px;
+            }
+            
+            /* 조종 모드 HUD */
+            #pilot-top-bar {
+                gap: 4px;
+            }
+            .pilot-info-panel {
+                padding: 3px 6px;
+                font-size: 9px;
+            }
+            .pilot-info-panel .info-value {
+                font-size: 11px;
+            }
+            #pilot-target-select select {
+                padding: 4px 8px;
+                font-size: 9px;
+            }
+            
+            /* 조이스틱 */
+            #pilot-joystick {
+                width: 100px;
+                height: 100px;
+                bottom: 15px;
+                left: 15px;
+            }
+            #joystick-knob {
+                width: 40px;
+                height: 40px;
+            }
+            
+            /* 조종 버튼 */
+            .pilot-ctrl-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 12px;
+            }
+            #pilot-stop-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 10px;
+            }
+            #pilot-throttle-up, #pilot-throttle-down {
+                width: 45px;
+                height: 45px;
+            }
+            
+            /* 게이지 */
+            .vg-bar {
+                height: 50px;
+                width: 18px;
+            }
+            .vg-label {
+                font-size: 8px;
+            }
+            .vg-value {
+                font-size: 9px;
+            }
+            
+            /* 콘솔 버튼 */
+            #pilot-console-btns {
+                gap: 5px;
+            }
+            .pilot-console-btn {
+                padding: 6px 10px;
+                font-size: 8px;
+            }
+            
+            /* 속도 표시 */
+            #pilot-main-speed {
+                bottom: 55px;
+            }
+            #pilot-main-speed .speed-value {
+                font-size: 20px;
+            }
+            #pilot-main-speed .speed-unit {
+                font-size: 10px;
+            }
+        }
+
+        /* 가로 모드 모바일 */
+        @media (max-height: 450px) and (orientation: landscape) {
+            #top-bar {
+                padding: 5px 10px;
+            }
+            #top-bar h1 {
+                font-size: 12px;
+                width: auto;
+                margin-bottom: 0;
+            }
+            .mode-btn {
+                padding: 4px 8px;
+                font-size: 9px;
+            }
+            
+            #nav-panel {
+                max-height: 80vh;
+                width: 130px;
+            }
+            
+            #ship-select-modal {
+                padding: 10px;
+                max-height: 95vh;
+            }
+            #ship-list {
+                grid-template-columns: repeat(5, 1fr);
+                max-height: 25vh;
+            }
+            #ship-detail {
+                flex-direction: row;
+            }
+            #ship-preview {
+                width: 150px;
+                height: 100px;
+            }
+            
+            #pilot-joystick {
+                width: 80px;
+                height: 80px;
+                bottom: 10px;
+                left: 10px;
+            }
+            #joystick-knob {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .pilot-ctrl-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 10px;
+            }
+            #pilot-stop-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 9px;
+            }
+            
+            #focus-distance-panel {
+                bottom: 50px;
+                padding: 5px 8px;
+            }
+        }
+
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .mode-btn, .pilot-console-btn, .pilot-ctrl-btn, #board-ship-btn, #reset-cam {
+                min-height: 44px;  /* 터치 타겟 최소 크기 */
+            }
+            .ship-card {
+                min-height: 80px;
+            }
+            .nav-item {
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+            }
+        }
+        
+        /* 세로 모드 경고 오버레이 */
+        #landscape-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 99999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #landscape-warning .rotate-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: rotate-hint 2s ease-in-out infinite;
+        }
+        @keyframes rotate-hint {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+        #landscape-warning .rotate-text {
+            font-size: 24px;
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+        #landscape-warning .rotate-sub {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        /* UI 겹침 방지 - 상단 바 */
+        #top-bar {
+            position: relative;
+            z-index: 100;
+            flex-wrap: nowrap;
+        }
+        #top-bar h1 {
+            flex-shrink: 0;
+            white-space: nowrap;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            letter-spacing: 2px;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        .control-group {
+            flex-shrink: 1;
+            min-width: 0;
+        }
+        #user-area {
+            flex-shrink: 0;
+            z-index: 101;
+            pointer-events: auto;  /* 클릭 가능 */
+        }
+        
+        /* 모바일에서 UI 겹침 방지 */
+        @media (max-width: 768px) {
+            #top-bar {
+                flex-wrap: wrap;
+                padding: 5px 8px;
+                gap: 5px;
+            }
+            #top-bar h1 {
+                order: 1;
+                flex: 0 0 auto;
+                font-size: 12px !important;
+            }
+            .control-group {
+                order: 3;
+                flex: 1 1 100%;
+                justify-content: center;
+            }
+            #user-area {
+                order: 2;
+                position: static !important;
+                margin-left: auto;
+                pointer-events: auto;  /* 클릭 가능 */
+            }
+            #user-coins {
+                padding: 3px 8px;
+                font-size: 11px;
+            }
+            #btn-login, #btn-logout, #btn-register {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #top-bar h1 {
+                font-size: 10px !important;
+            }
+            #user-coins {
+                padding: 2px 6px;
+                font-size: 10px;
+            }
+            .mode-btn {
+                padding: 4px 6px;
+                font-size: 8px;
+            }
+            #btn-login, #btn-logout, #btn-register {
+                padding: 3px 6px;
+                font-size: 9px;
+            }
+        }
+        
+        /* 정거장 선택 모달 */
+        #station-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        #station-modal.open { display: flex; }
+        #station-modal-content {
+            background: linear-gradient(135deg, rgba(0,30,60,0.98), rgba(0,50,80,0.95));
+            border: 2px solid #4fc3f7;
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            margin: auto;
+            box-shadow: 0 0 30px rgba(79,195,247,0.3);
+        }
+        #station-modal h2 {
+            color: #4fc3f7;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+            border-bottom: 1px solid rgba(79,195,247,0.3);
+            padding-bottom: 10px;
+        }
+        .station-category {
+            margin-bottom: 15px;
+        }
+        .station-category h3 {
+            color: #ffd700;
+            font-size: 12px;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .station-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .station-item {
+            background: rgba(0,60,100,0.5);
+            border: 1px solid rgba(79,195,247,0.3);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .station-item:hover {
+            background: rgba(0,100,150,0.5);
+            border-color: #4fc3f7;
+            transform: translateX(5px);
+        }
+        .station-info {
+            flex: 1;
+        }
+        .station-name {
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .station-desc {
+            color: #888;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+        .station-item.fuel-depot .station-name {
+            color: #ff6600;
+        }
+        .station-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .station-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .station-btn.go {
+            background: #4fc3f7;
+            color: #000;
+        }
+        .station-btn.go:hover { background: #81d4fa; }
+        .station-btn.dock {
+            background: #4caf50;
+            color: #fff;
+        }
+        .station-btn.dock:hover { background: #66bb6a; }
+        
+        /* 잠긴 정거장 스타일 */
+        .station-item.locked {
+            opacity: 0.6;
+            background: rgba(50, 50, 60, 0.5);
+            border-color: rgba(150, 100, 50, 0.3);
+        }
+        .station-item.locked:hover {
+            background: rgba(60, 50, 40, 0.5);
+            border-color: rgba(200, 150, 50, 0.5);
+            transform: none;
+        }
+        .station-item.locked .station-name {
+            color: #a88;
+        }
+        .station-btn.go.disabled {
+            background: rgba(100, 80, 50, 0.5);
+            color: #a88;
+            cursor: not-allowed;
+        }
+        .station-btn.go.disabled:hover {
+            background: rgba(100, 80, 50, 0.5);
+        }
+        .station-btn.dock.disabled {
+            background: rgba(100, 80, 50, 0.5);
+            color: #a88;
+            cursor: not-allowed;
+        }
+        .station-btn.dock.disabled:hover {
+            background: rgba(100, 80, 50, 0.5);
+        }
+        
+        #station-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #station-modal-content { position: relative; }
+        
+        /* 연료 충전 UI */
+        #refuel-panel {
+            display: none;
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,40,60,0.95);
+            border: 2px solid #ff6600;
+            border-radius: 10px;
+            padding: 15px 25px;
+            z-index: 9999;
+            text-align: center;
+        }
+        #refuel-panel.show { display: block; }
+        #refuel-panel h3 {
+            color: #ff6600;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        #refuel-bar {
+            width: 200px;
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        #refuel-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6600, #ffaa00);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #refuel-text {
+            color: #fff;
+            font-size: 12px;
+        }
+        
+        /* ========== 드래그 가능 UI 시스템 ========== */
+        .draggable-ui {
+            cursor: grab;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        .draggable-ui.drag-ready {
+            animation: dragReady 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8) !important;
+            border-color: #0ff !important;
+        }
+        .draggable-ui.dragging {
+            cursor: grabbing;
+            opacity: 0.85;
+            transform: scale(1.05);
+            z-index: 9999 !important;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 1) !important;
+        }
+        
+        /* ========== SSIL 미션 시스템 ========== */
+        #ssil-mission-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(10, 25, 50, 0.98), rgba(5, 15, 35, 0.98));
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 10001;
+            display: none;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+        }
+        #ssil-mission-panel.open { display: block; }
+        #ssil-mission-panel h2 {
+            text-align: center;
+            color: #0ff;
+            margin: 0 0 15px 0;
+            font-size: 1.3em;
+            text-shadow: 0 0 10px #0ff;
+        }
+        .ssil-logo {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .ssil-subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.7em;
+            margin-bottom: 20px;
+        }
+        .mission-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .mission-table th {
+            background: rgba(0, 255, 255, 0.2);
+            color: #0ff;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 0.75em;
+            border-bottom: 1px solid #0ff;
+        }
+        .mission-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.7em;
+        }
+        .mission-table tr.completed {
+            background: rgba(0, 255, 136, 0.15);
+        }
+        .mission-table tr.completed td {
+            color: #0f8;
+            text-decoration: line-through;
+        }
+        .mission-status {
+            width: 30px;
+            text-align: center;
+        }
+        .mission-reward {
+            color: #ffd700;
+            text-align: right;
+        }
+        .mission-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #f66;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        
+        /* 일일 미션 이메일 아이콘 */
+        #daily-mission-icon {
+            position: fixed;
+            top: 100px;
+            right: 10px;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border: 2px solid #f90;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            z-index: 1000;
+            animation: emailPulse 2s infinite;
+        }
+        #daily-mission-icon.has-mission { display: flex; }
+        #daily-mission-icon .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f00;
+            color: #fff;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @keyframes emailPulse {
+            0%, 100% { box-shadow: 0 0 5px #f90; }
+            50% { box-shadow: 0 0 20px #f90; }
+        }
+        
+        /* 일일 미션 모달 */
+        #daily-mission-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px 0;
+            z-index: 10002;
+        }
+        #daily-mission-modal.open { display: flex; }
+        .daily-mission-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #f90;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            margin: auto;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .daily-mission-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,153,0,0.3);
+        }
+        .daily-mission-header .icon { font-size: 2em; }
+        .daily-mission-header h3 {
+            margin: 0;
+            color: #f90;
+            font-size: 1.1em;
+        }
+        .daily-mission-header .date {
+            margin-left: auto;
+            font-size: 0.7em;
+            color: #888;
+        }
+        .daily-mission-body {
+            margin: 15px 0;
+            line-height: 1.6;
+            font-size: 0.85em;
+        }
+        .daily-mission-rewards {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+        .daily-reward-item {
+            text-align: center;
+        }
+        .daily-reward-item .value {
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+        .daily-reward-item .label {
+            font-size: 0.65em;
+            color: #888;
+        }
+        .daily-mission-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .daily-mission-btns button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8em;
+        }
+        .daily-btn-accept {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff;
+        }
+        .daily-btn-decline {
+            background: rgba(255,255,255,0.1);
+            color: #888;
+            border: 1px solid #444 !important;
+        }
+        
+        /* 미션 포인트 표시 */
+        #mission-points-display {
+            position: fixed;
+            top: 145px;
+            right: 10px;
+            background: linear-gradient(135deg, rgba(128, 0, 255, 0.3), rgba(75, 0, 130, 0.3));
+            border: 1px solid #a855f7;
+            border-radius: 20px;
+            padding: 5px 12px;
+            color: #a855f7;
+            font-size: 11px;
+            font-family: 'Orbitron', sans-serif;
+            display: none;
+            z-index: 999;
+        }
+        #mission-points-display.visible { display: block; }
+        
+        /* 미션 완료 알림 */
+        .mission-complete-toast {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.9), rgba(0, 200, 100, 0.9));
+            border: 2px solid #0f8;
+            border-radius: 15px;
+            padding: 20px 40px;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            z-index: 10003;
+            animation: missionToastIn 0.5s ease;
+        }
+        .mission-complete-toast h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+        .mission-complete-toast .reward {
+            color: #ffd700;
+            font-size: 1.5em;
+        }
+        @keyframes missionToastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes dragReady {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 255, 1); }
+        }
+        
+        /* UI 설정 버튼 */
+        #ui-settings-btn {
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 40, 80, 0.95);
+            border: 2px solid #0ff;
+            border-radius: 50%;
+            color: #0ff;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 999999 !important;
+            display: none;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            pointer-events: auto !important;
+        }
+        #ui-settings-btn:hover {
+            background: rgba(0, 80, 120, 0.95);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            transform: scale(1.1);
+        }
+        body.pilot-mode #ui-settings-btn {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ★★★ 조종석 모드 우측 버튼 컨테이너 (통일) ★★★ */
+        #pilot-right-btns {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 999999;
+        }
+        body.pilot-mode #pilot-right-btns {
+            display: flex !important;
+        }
+
+        /* ★★★ 통일된 조종석 버튼 스타일 ★★★ */
+        .pilot-unified-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 50, 80, 0.95), rgba(0, 30, 50, 0.95));
+            border: 2px solid #0ff;
+            color: #0ff;
+            font-size: 1.3em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        .pilot-unified-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 80, 120, 0.95), rgba(0, 50, 80, 0.95));
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            transform: scale(1.1);
+        }
+        .pilot-unified-btn.active {
+            background: linear-gradient(135deg, rgba(0, 150, 100, 0.95), rgba(0, 100, 80, 0.95));
+            border-color: #0f0;
+            color: #0f0;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+        }
+
+        /* ★ 개별 버튼이 컨테이너 안에 있을 때 위치 초기화 */
+        #pilot-right-btns #ui-settings-btn,
+        #pilot-right-btns #radio-toggle-btn,
+        #pilot-right-btns #ad-menu-toggle,
+        #pilot-right-btns #mission-float-btn {
+            position: static !important;
+            transform: none !important;
+            animation: none !important;
+        }
+
+        /* ★★★ 모바일 발사/역추진 버튼 ★★★ */
+        #mobile-combat-btns {
+            display: none;
+            position: fixed;
+            right: 15px;
+            bottom: 180px;
+            bottom: calc(180px + env(safe-area-inset-bottom));
+            flex-direction: column;
+            gap: 15px;
+            z-index: 9999999;
+        }
+        body.pilot-mode #mobile-combat-btns {
+            display: flex !important;
+        }
+        .mobile-combat-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            user-select: none;
+        }
+        .mobile-combat-btn.fire {
+            background: linear-gradient(145deg, #ff3300, #cc2200);
+            border: 3px solid #ff6600;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 100, 0, 0.6);
+        }
+        .mobile-combat-btn.fire:active, .mobile-combat-btn.fire.firing {
+            background: linear-gradient(145deg, #ff6600, #ff3300);
+            box-shadow: 0 0 35px rgba(255, 100, 0, 0.9);
+            transform: scale(0.95);
+        }
+        .mobile-combat-btn.brake {
+            background: linear-gradient(145deg, #0066cc, #004499);
+            border: 3px solid #00aaff;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.6);
+        }
+        .mobile-combat-btn.brake:active, .mobile-combat-btn.brake.braking {
+            background: linear-gradient(145deg, #00aaff, #0066cc);
+            box-shadow: 0 0 35px rgba(0, 150, 255, 0.9);
+            transform: scale(0.95);
+        }
+
+        /* ★★★ 조종 모드에서 기존 개별 버튼 숨기기 (통일된 버튼으로 대체) ★★★ */
+        body.pilot-mode #ad-rewards-panel,
+        body.pilot-mode #mission-float-btn {
+            display: none !important;
+        }
+        /* 조종 모드에서 라디오 패널의 토글 버튼 숨김 (통일 버튼 사용) */
+        body.pilot-mode #cockpit-radio.collapsed {
+            display: none !important;
+        }
+        body.pilot-mode #cockpit-radio:not(.collapsed) {
+            display: block !important;
+        }
+        body.pilot-mode #cockpit-radio #radio-toggle-btn {
+            display: none !important;
+        }
+
+        /* 조종 모드에서 통합 채팅 패널 표시 */
+        body.pilot-mode #unified-chat-panel {
+            display: block;
+        }
+        
+        /* UI 설정 패널 */
+        #ui-settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 20, 40, 0.95);
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 10001;
+            min-width: 320px;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: none;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #ui-settings-panel.open { display: block; }
+        #ui-settings-panel h3 {
+            color: #0ff;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        .ui-preset-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0,100,150,0.5);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .ui-preset-btn:hover { background: rgba(0,150,200,0.7); }
+        .ui-preset-btn.danger { border-color: #f55; color: #f55; }
+        .ui-preset-btn.danger:hover { background: rgba(255,50,50,0.3); }
+        #ui-settings-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        
+        /* UI 슬롯 시스템 */
+        .ui-slots-container {
+            margin: 15px 0;
+        }
+        .ui-slots-title {
+            font-size: 12px;
+            color: #0ff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .ui-slot {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 30, 60, 0.8);
+            border: 1px solid #345;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ui-slot:hover {
+            border-color: #0ff;
+            background: rgba(0, 50, 80, 0.8);
+        }
+        .ui-slot.empty {
+            opacity: 0.5;
+        }
+        .ui-slot-preview {
+            width: 80px;
+            height: 50px;
+            background: #000;
+            border: 1px solid #456;
+            border-radius: 4px;
+            margin-right: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .ui-slot-preview .preview-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 2px;
+            background: #0ff;
+        }
+        .ui-slot-info {
+            flex: 1;
+        }
+        .ui-slot-name {
+            font-size: 13px;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+        .ui-slot-date {
+            font-size: 10px;
+            color: #888;
+        }
+        .ui-slot-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .ui-slot-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid;
+            background: transparent;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .ui-slot-btn.load {
+            border-color: #0f0;
+            color: #0f0;
+        }
+        .ui-slot-btn.load:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+        .ui-slot-btn.save {
+            border-color: #0ff;
+            color: #0ff;
+        }
+        .ui-slot-btn.save:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        .ui-slot-btn.delete {
+            border-color: #f55;
+            color: #f55;
+        }
+        .ui-slot-btn.delete:hover {
+            background: rgba(255, 50, 50, 0.2);
+        }
+        
+        /* ========== UI 재배치 모드 ========== */
+        #ui-rearrange-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9998;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+        #ui-rearrange-overlay.active {
+            display: flex;
+        }
+        /* ★ 그리드 가이드 라인 (20px 스냅) */
+        #ui-rearrange-overlay.active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+        .rearrange-header {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.9), rgba(142, 68, 173, 0.9));
+            border: 2px solid #9b59b6;
+            border-radius: 25px;
+            padding: 10px 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            z-index: 10001;
+            pointer-events: auto;
+            box-shadow: 0 0 30px rgba(155, 89, 182, 0.5);
+        }
+        #ui-rearrange-done {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border: 2px solid #2ecc71;
+            border-radius: 25px;
+            padding: 15px 40px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            z-index: 10001;
+            pointer-events: auto;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+        }
+        #ui-rearrange-done:hover {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            transform: translateX(-50%) scale(1.05);
+        }
+        
+        /* 재배치 모드에서 UI 하이라이트 */
+        body.ui-rearrange-mode .rearrangeable-ui {
+            outline: 2px dashed #9b59b6 !important;
+            outline-offset: 3px;
+            cursor: move !important;
+            animation: rearrangeGlow 1.5s ease-in-out infinite;
+            pointer-events: auto !important;
+            touch-action: none !important;
+        }
+        body.ui-rearrange-mode .rearrangeable-ui:hover {
+            outline-color: #0ff !important;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5) !important;
+        }
+        body.ui-rearrange-mode .rearrangeable-ui.dragging {
+            outline-color: #f90 !important;
+            z-index: 10000 !important;
+            opacity: 0.9;
+        }
+        /* 재배치 모드에서 다른 터치 이벤트 비활성화 */
+        body.ui-rearrange-mode #touch-area-left,
+        body.ui-rearrange-mode #touch-area-right,
+        body.ui-rearrange-mode canvas {
+            pointer-events: none !important;
+        }
+        @keyframes rearrangeGlow {
+            0%, 100% { outline-color: #9b59b6; }
+            50% { outline-color: #bb8fce; }
+        }
+        
+        /* ========== 모바일 최적화 CSS ========== */
+        /* 터치 친화적 기본 설정 */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        /* 모바일 세로 모드 */
+        @media (max-width: 480px) {
+            #top-bar {
+                padding: 5px 8px !important;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            #top-bar h1 {
+                font-size: 12px !important;
+                width: 100%;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            .mode-btn {
+                padding: 6px 8px !important;
+                font-size: 10px !important;
+                min-width: 50px;
+            }
+            #nav-container {
+                width: 140px !important;
+                max-height: 50vh !important;
+            }
+            .nav-item {
+                padding: 10px 8px !important;
+                font-size: 11px !important;
+            }
+            #chat-toggle {
+                width: 44px !important;
+                height: 44px !important;
+                bottom: 15px !important;
+                left: 10px !important;
+            }
+            #chat-panel {
+                width: calc(100vw - 20px) !important;
+                height: 50vh !important;
+                left: 10px !important;
+                bottom: 70px !important;
+            }
+            #msg-box {
+                font-size: 12px !important;
+                bottom: 60px !important;
+            }
+            #reset-cam {
+                padding: 8px 16px !important;
+                font-size: 11px !important;
+            }
+            /* 광고 버튼 */
+            #ad-rewards-panel {
+                top: auto !important;
+                bottom: 15px !important;
+                right: 10px !important;
+            }
+            #ad-menu-toggle {
+                width: 44px !important;
+                height: 44px !important;
+            }
+            /* 사운드 패널 */
+            #sound-slide {
+                bottom: 70px !important;
+            }
+        }
+        
+        /* 모바일 가로 모드 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #top-bar {
+                padding: 3px 10px !important;
+            }
+            #top-bar h1 {
+                font-size: 11px !important;
+            }
+            .mode-btn {
+                padding: 4px 8px !important;
+                font-size: 9px !important;
+            }
+            #nav-container {
+                max-height: 70vh !important;
+            }
+            #chat-panel {
+                height: 80vh !important;
+            }
+        }
+        
+        /* 조종석 UI 모바일 최적화 */
+        @media (max-width: 768px) {
+            #pilot-console {
+                padding: 8px !important;
+                gap: 6px !important;
+            }
+            .pilot-console-btn {
+                padding: 10px 12px !important;
+                font-size: 11px !important;
+                min-height: 44px;
+            }
+            #pilot-fuel, #pilot-speed {
+                width: 55px !important;
+            }
+            #pilot-bottom {
+                gap: 8px !important;
+                padding: 5px !important;
+            }
+            #pilot-main-speed {
+                font-size: 1.8em !important;
+            }
+            #touch-area-left {
+                width: 140px !important;
+                height: 140px !important;
+                bottom: 100px !important;
+                left: 10px !important;
+            }
+            /* ETA 박스 */
+            #pilot-eta-box {
+                font-size: 0.8em !important;
+                padding: 6px 10px !important;
+            }
+            /* 경고 패널 */
+            #pilot-warning-panel {
+                font-size: 10px !important;
+            }
+            .pilot-warning {
+                padding: 4px 8px !important;
+            }
+            /* 타겟 선택 */
+            #pilot-target-select select {
+                font-size: 11px !important;
+                padding: 6px !important;
+            }
+        }
+        
+        /* 태블릿 */
+        @media (min-width: 481px) and (max-width: 1024px) {
+            #top-bar {
+                padding: 8px 15px;
+            }
+            .mode-btn {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+            #nav-container {
+                width: 180px;
+            }
+            .nav-item {
+                padding: 10px;
+            }
+        }
+        
+        /* 터치 스크린 전용 */
+        @media (hover: none) and (pointer: coarse) {
+            .mode-btn, .pilot-console-btn, .pilot-ctrl-btn, 
+            #board-ship-btn, #reset-cam, #chat-toggle,
+            .nav-item, .station-btn, .catalog-card {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            /* 버튼 활성화 피드백 */
+            .mode-btn:active, .pilot-console-btn:active {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            /* 스크롤바 숨기기 */
+            ::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+        }
+        
+        /* ========== 모바일 하단 탭 바 시스템 ========== */
+        #mobile-tab-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(0, 15, 30, 0.95);
+            border-top: 2px solid #0ff;
+            z-index: 10002;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+            backdrop-filter: blur(10px);
+        }
+        
+        .mobile-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #888;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .mobile-tab-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+        
+        .mobile-tab.active {
+            color: #0ff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .mobile-tab:active {
+            transform: scale(0.95);
+        }
+        
+        /* 모바일 탭 패널 */
+        #mobile-tab-panel {
+            display: none;
+            position: fixed;
+            bottom: 50px;
+            bottom: calc(50px + env(safe-area-inset-bottom));
+            left: 0;
+            right: 0;
+            background: rgba(0, 20, 40, 0.95);
+            border-top: 1px solid #0ff;
+            z-index: 10001;
+            max-height: 200px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        #mobile-tab-panel.open {
+            display: block;
+        }
+        
+        .mobile-panel-content {
+            display: none;
+            padding: 15px;
+        }
+        
+        .mobile-panel-content.active {
+            display: block;
+        }
+        
+        /* 모바일 조종 패널 */
+        #mobile-control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .mobile-gauge-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .mobile-gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 30, 50, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            padding: 8px;
+            min-width: 50px;
+        }
+        
+        .mobile-gauge-label {
+            font-size: 8px;
+            color: #0ff;
+            margin-bottom: 5px;
+        }
+        
+        .mobile-gauge-bar {
+            width: 30px;
+            height: 60px;
+            background: #111;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mobile-gauge-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            border-radius: 4px;
+            transition: height 0.2s;
+        }
+        
+        .mobile-gauge-fill.thr {
+            background: linear-gradient(0deg, #0066ff, #00ffff);
+        }
+        
+        .mobile-gauge-fill.fuel {
+            background: linear-gradient(0deg, #ff3300, #ffff00, #00ff00);
+        }
+        
+        .mobile-gauge-value {
+            font-size: 11px;
+            color: #fff;
+            margin-top: 5px;
+        }
+        
+        .mobile-speed-display {
+            text-align: center;
+            padding: 10px 20px;
+        }
+        
+        .mobile-speed-value {
+            font-size: 36px;
+            color: #0ff;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        
+        .mobile-speed-unit {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .mobile-speed-secondary {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        .mobile-direction-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .mobile-dir-btn {
+            width: 50px;
+            height: 40px;
+            background: rgba(0, 40, 60, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            color: #0ff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .mobile-dir-btn:active {
+            background: rgba(0, 255, 255, 0.3);
+        }
+        
+        .mobile-btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .mobile-action-btn {
+            padding: 10px 15px;
+            background: rgba(0, 40, 60, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            color: #0ff;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .mobile-action-btn:active {
+            background: rgba(0, 255, 255, 0.3);
+        }
+        
+        .mobile-action-btn.autopilot {
+            border-color: #0f8;
+            color: #0f8;
+        }
+        
+        .mobile-action-btn.autopilot.engaged {
+            background: rgba(0, 255, 136, 0.3);
+        }
+
+        /* ★ 발사 버튼 */
+        #mobile-fire-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 180px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff3300, #cc2200);
+            border: 3px solid #ff6600;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 9999999;  /* ★ 최상위로 */
+            box-shadow: 0 0 15px rgba(255, 100, 0, 0.5);
+            display: none;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #mobile-fire-btn:active, #mobile-fire-btn.firing {
+            background: linear-gradient(145deg, #ff6600, #ff3300);
+            box-shadow: 0 0 30px rgba(255, 100, 0, 0.9);
+            transform: scale(0.95);
+        }
+
+        body.pilot-mode #mobile-fire-btn {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ★ 모바일에서 발사 버튼 강제 표시 */
+        @media (max-width: 1024px) {
+            body.pilot-mode #mobile-fire-btn {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                right: 20px !important;
+                bottom: 200px !important;  /* ★ 하단 콘솔 위로 */
+                width: 80px !important;
+                height: 80px !important;
+                z-index: 9999999 !important;
+            }
+        }
+
+        /* ★ 투사체/빔 피격 플래시 */
+        #weapon-hit-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,100,0,0.4), transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 2000;
+            transition: opacity 0.1s;
+        }
+
+        #weapon-hit-overlay.active {
+            opacity: 1;
+        }
+
+        /* 모바일 상태 패널 */
+        #mobile-status-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .mobile-status-item {
+            background: rgba(0, 30, 50, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .mobile-status-label {
+            font-size: 9px;
+            color: #0ff;
+            margin-bottom: 5px;
+        }
+        
+        .mobile-status-value {
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        /* 모바일 라디오 패널 */
+        #mobile-radio-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .mobile-radio-station {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 30, 50, 0.9);
+            border: 1px solid #456;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+        }
+        
+        .mobile-radio-station:active,
+        .mobile-radio-station.active {
+            border-color: #0f0;
+            background: rgba(0, 100, 50, 0.5);
+        }
+        
+        .mobile-radio-name {
+            font-size: 13px;
+            color: #fff;
+        }
+        
+        .mobile-radio-status {
+            font-size: 10px;
+            color: #888;
+        }
+        
+        .mobile-radio-volume {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 30, 50, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+        }
+        
+        .mobile-radio-volume input {
+            flex: 1;
+        }
+        
+        /* 모바일 채팅 패널 */
+        #mobile-chat-panel {
+            display: flex;
+            flex-direction: column;
+            height: 180px;
+        }
+        
+        .mobile-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .mobile-chat-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .mobile-chat-input-row input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 50, 80, 0.8);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .mobile-chat-input-row button {
+            padding: 10px 20px;
+            background: #0ff;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* 모바일 ARIA 패널 */
+        #mobile-aria-panel {
+            display: flex;
+            flex-direction: column;
+            height: 180px;
+        }
+        
+        .mobile-aria-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .mobile-aria-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .mobile-aria-info {
+            flex: 1;
+        }
+        
+        .mobile-aria-name {
+            font-size: 14px;
+            color: #0ff;
+            font-weight: bold;
+        }
+        
+        .mobile-aria-status {
+            font-size: 10px;
+            color: #0f0;
+        }
+        
+        .mobile-aria-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        
+        .mobile-aria-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .mobile-aria-input-row input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 50, 80, 0.8);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .mobile-aria-input-row button {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* ★★★ 모바일 전용 UI 완전 제거 - 데스크톱 UI 사용 ★★★ */
+        #mobile-tab-bar,
+        #mobile-tab-panel,
+        #mobile-mini-hud {
+            display: none !important;
+        }
+
+        /* ★ 조종석 모드에서 2D HUD 숨기기 (3D 유리 HUD로 대체) */
+        body.pilot-mode #pilot-right,
+        body.pilot-mode #pilot-radar,
+        body.pilot-mode #pilot-target-info,
+        body.pilot-mode #pilot-autopilot-info,
+        body.pilot-mode #pilot-coords-panel,
+        body.pilot-mode #mobile-mini-hud,
+        body.pilot-mode #touch-area-left,
+        body.pilot-mode #pilot-joystick,
+        body.pilot-mode #pilot-left-console,
+        body.pilot-mode #pilot-main-speed {
+            display: none !important;
+        }
+
+        /* ★ 조종석 모드에서도 목표 선택 드롭다운은 표시 */
+        body.pilot-mode #pilot-target-select {
+            display: block !important;
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            left: auto !important;
+            transform: none !important;
+            z-index: 1000;
+        }
+
+        /* ★ 조종석 모드에서 유지할 UI */
+        body.pilot-mode #cockpit-radio,
+        body.pilot-mode #ui-settings-btn,
+        body.pilot-mode #global-header-btns,
+        body.pilot-mode #unified-chat-panel,
+        body.pilot-mode #pilot-right-console,
+        body.pilot-mode #pilot-center-console,
+        body.pilot-mode #pilot-btn-row {
+            display: flex !important;
+        }
+
+        /* ★ 조종석 모드에서 하단 버튼 레이아웃 조정 */
+        body.pilot-mode #pilot-bottom {
+            justify-content: center;
+        }
+        body.pilot-mode #pilot-center-console {
+            flex: 0 0 auto;
+        }
+
+        /* 모바일에서도 데스크톱 UI 표시 (크기 조정) */
+        @media (max-width: 768px) {
+            body.pilot-mode #pilot-bottom {
+                transform: scale(0.85);
+                transform-origin: center bottom;
+            }
+
+            /* 2D HUD 숨김 (모바일에서도) */
+            body.pilot-mode #pilot-right,
+            body.pilot-mode #pilot-radar,
+            body.pilot-mode #pilot-target-info,
+            body.pilot-mode #pilot-autopilot-info {
+                display: none !important;
+            }
+            
+            /* 미니 HUD - 상단 */
+            #mobile-mini-hud {
+                display: flex;
+                position: fixed;
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 20, 40, 0.9);
+                border: 1px solid #0ff;
+                border-radius: 20px;
+                padding: 5px 15px;
+                gap: 15px;
+                z-index: 300;
+                align-items: center;
+            }
+            
+            .mini-hud-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 12px;
+            }
+            
+            .mini-hud-icon {
+                font-size: 14px;
+            }
+            
+            .mini-hud-value {
+                color: #0ff;
+                font-weight: bold;
+            }
+            
+            .mini-hud-bar {
+                width: 50px;
+                height: 6px;
+                background: #222;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            
+            .mini-hud-bar-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #f00, #ff0, #0f0);
+                transition: width 0.3s;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            #mobile-tab-bar,
+            #mobile-tab-panel,
+            #mobile-mini-hud {
+                display: none !important;
+            }
+        }
+
+        /* ★★★ 시네마틱 인트로 스타일 ★★★ */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        #intro-overlay.fade-out {
+            animation: intro-fadeout 1.5s ease-in-out forwards;
+        }
+        @keyframes intro-fadeout {
+            0% { opacity: 1; }
+            100% { opacity: 0; pointer-events: none; }
+        }
+        #intro-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+        
+        /* 레터박스 (시네마틱 바) */
+        .letterbox {
+            position: absolute;
+            left: 0; width: 100%;
+            height: 12%;
+            background: #000;
+            z-index: 10;
+            transform: scaleY(0);
+        }
+        .letterbox-top { top: 0; transform-origin: top; }
+        .letterbox-bottom { bottom: 0; transform-origin: bottom; }
+        .letterbox.active {
+            animation: letterbox-in 1s ease-out forwards;
+        }
+        @keyframes letterbox-in {
+            0% { transform: scaleY(0); }
+            100% { transform: scaleY(1); }
+        }
+        
+        /* 렌즈 플레어 */
+        #lens-flare {
+            position: absolute;
+            top: 30%; left: 50%;
+            width: 300px; height: 300px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(ellipse, rgba(255,200,100,0.3) 0%, transparent 60%);
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+        #lens-flare.active {
+            animation: flare-pulse 3s ease-in-out infinite;
+        }
+        @keyframes flare-pulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        /* 메인 컨텐츠 */
+        #intro-content {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+        
+        /* 스튜디오 로고 */
+        #studio-logo {
+            opacity: 0;
+            transform: scale(0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        #studio-logo.visible {
+            animation: studio-in 2s ease-out forwards;
+        }
+        #studio-logo.fadeout {
+            animation: studio-out 1s ease-in forwards;
+        }
+        @keyframes studio-in {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes studio-out {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.1); }
+        }
+        .studio-icon {
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            animation: icon-rotate 10s linear infinite;
+        }
+        @keyframes icon-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .studio-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 8px;
+        }
+        
+        /* 메인 타이틀 */
+        #main-title {
+            opacity: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #main-title.visible {
+            display: flex;
+            animation: title-in 1.5s ease-out forwards;
+        }
+        @keyframes title-in {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .title-line {
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,255,255,0.8), transparent);
+        }
+        .title-line.expand {
+            animation: line-expand 1.5s ease-out forwards;
+        }
+        @keyframes line-expand {
+            0% { width: 0; }
+            100% { width: 400px; }
+        }
+        .title-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(28px, 8vw, 56px);
+            font-weight: 900;
+            color: transparent;
+            letter-spacing: 6px;
+            display: flex;
+            gap: 2px;
+        }
+        .title-text .char {
+            opacity: 0;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0,255,255,0.5);
+        }
+        .title-text .char.visible {
+            animation: char-in 0.5s ease-out forwards;
+        }
+        .title-text .char.dot {
+            color: #00ffff;
+            margin: 0 8px;
+        }
+        @keyframes char-in {
+            0% { opacity: 0; transform: translateY(-20px) scale(1.5); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        .title-tagline {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(10px, 2.5vw, 16px);
+            color: rgba(0,255,255,0.6);
+            letter-spacing: 10px;
+            opacity: 0;
+        }
+        .title-tagline.visible {
+            animation: tagline-in 1s ease-out 0.5s forwards;
+        }
+        @keyframes tagline-in {
+            0% { opacity: 0; letter-spacing: 20px; }
+            100% { opacity: 1; letter-spacing: 10px; }
+        }
+        
+        /* 원형 로더 */
+        #intro-loader {
+            display: none;
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        #intro-loader.visible {
+            display: block;
+            animation: loader-in 0.5s ease-out forwards;
+        }
+        @keyframes loader-in {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .loader-ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .loader-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 2;
+        }
+        .loader-progress {
+            fill: none;
+            stroke: url(#loader-gradient);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.3s ease-out;
+            filter: drop-shadow(0 0 6px rgba(0,255,255,0.8));
+        }
+        .loader-percent {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: #fff;
+        }
+        
+        /* 시작 버튼 */
+        #intro-start {
+            display: none;
+        }
+        #intro-start.visible {
+            display: block;
+            animation: start-in 1s ease-out forwards;
+        }
+        @keyframes start-in {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        #intro-start-btn {
+            position: relative;
+            background: transparent;
+            border: none;
+            padding: 20px 50px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        #intro-start-btn .btn-border {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: 1px solid rgba(0,255,255,0.4);
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        #intro-start-btn:hover .btn-border {
+            border-color: rgba(0,255,255,0.8);
+            box-shadow: 0 0 20px rgba(0,255,255,0.3), inset 0 0 20px rgba(0,255,255,0.1);
+        }
+        #intro-start-btn .btn-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 4px;
+            transition: all 0.3s;
+        }
+        #intro-start-btn:hover .btn-text {
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0,255,255,0.5);
+        }
+        
+        /* 스킵 */
+        #intro-skip {
+            position: absolute;
+            bottom: 14%;
+            right: 40px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+            cursor: pointer;
+            z-index: 30;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #intro-skip:hover {
+            color: rgba(255,255,255,0.7);
+        }
+        .skip-arrow {
+            transition: transform 0.3s;
+        }
+        #intro-skip:hover .skip-arrow {
+            transform: translateX(3px);
+        }
+        
+        /* 하단 텍스트 */
+        #intro-bottom-text {
+            position: absolute;
+            bottom: 14%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 10px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 2px;
+            z-index: 30;
+        }
+        
+        /* ★★★ 가로모드 회전 안내 ★★★ */
+        #rotate-screen-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%);
+            z-index: 9999999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .rotate-content {
+            text-align: center;
+            animation: rotate-float 3s ease-in-out infinite;
+        }
+        @keyframes rotate-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .rotate-icon {
+            font-size: 80px;
+            animation: rotate-phone 2s ease-in-out infinite;
+            display: inline-block;
+        }
+        @keyframes rotate-phone {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+        .rotate-arrow {
+            font-size: 40px;
+            color: #00ffff;
+            margin: 20px 0;
+            animation: rotate-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes rotate-pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        .rotate-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: #fff;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .rotate-subtext {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+        }
+        
+        /* ★★★ 고정 헤더 버튼 스타일 ★★★ */
+        #global-header-btns {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 100000;
+            display: none;  /* ★ 기본 숨김 (메인 메뉴에서) */
+            gap: 10px;
+        }
+        /* ★ 게임 진입 후에만 표시 */
+        body.game-started #global-header-btns {
+            display: flex;
+        }
+        .global-header-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(10, 20, 40, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .global-header-btn:hover {
+            background: rgba(0, 150, 200, 0.4);
+            border-color: #00ffff;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+        }
+        .global-header-btn .btn-icon {
+            line-height: 1;
+        }
+        /* 조종 모드에서는 숨김 */
+        body.pilot-mode #global-header-btns {
+            display: none;
+        }
+        
+        /* 게임 모드 진입 시 세로모드면 안내 표시 */
+        @media screen and (orientation: portrait) {
+            body.game-mode #rotate-screen-overlay {
+                display: flex !important;
+            }
+        }
+        @media screen and (orientation: landscape) {
+            body.game-mode #rotate-screen-overlay {
+                display: none !important;
+            }
+        }
+    </style>
     <!-- Supabase SDK (로컬 파일) -->
     <script src="supabase.min.js"></script>
     <script type="importmap">
