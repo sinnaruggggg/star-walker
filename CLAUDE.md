@@ -1,0 +1,50 @@
+# Solar Explorer - Claude 세션 가이드
+
+## 프로젝트 구조 (2026-01-26 분리 완료)
+
+```
+index.html          - 3,524줄 (HTML + 셰이더)
+css/main.css        - 5,156줄 (모든 CSS)
+js/main.js          - 20,119줄 (메인 게임 로직, ES Module)
+js/multiplayer.js   - 2,235줄 (멀티플레이어 + 오디오)
+js/systems.js       - 2,518줄 (광고, 보상 시스템)
+js/mission.js       - 274줄 (미션 시스템)
+js/cockpit-buttons.js - 60줄 (조종석 버튼 초기화)
+```
+
+## 배포
+
+- URL: https://star-strider-seven.vercel.app/
+- 명령어: `vercel --prod --yes`
+
+## 주요 파일 설명
+
+### js/main.js (ES Module)
+- Three.js 임포트 및 초기화
+- 우주선, 행성, 카메라 제어
+- 조종석 렌더링
+
+### js/multiplayer.js
+- Supabase Realtime 연동
+- 다른 플레이어 동기화
+- SpaceAudio 시스템
+
+### js/systems.js
+- 광고 보상 시스템
+- Google 로그인
+- 인증 UI
+
+### js/mission.js
+- 미션 데이터 (다국어)
+- 미션 진행 로직
+
+## 수정 시 주의사항
+
+1. **js/main.js**: ES Module이므로 `import/export` 구문 유지
+2. **로드 순서**: index.html에서 스크립트 순서 중요
+3. **전역 변수**: 파일 간 공유되는 전역 변수 주의
+4. **셰이더**: index.html에 인라인으로 유지 (ID로 참조)
+
+## 백업 브랜치
+
+- `backup-before-split`: 분리 작업 전 상태
