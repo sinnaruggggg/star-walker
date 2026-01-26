@@ -8877,7 +8877,7 @@
             cockpitGroup = new THREE.Group();
             cockpitGroup.name = 'cockpitGroup';  // ★ 이름 추가
             cockpitGroup.scale.set(0.4, 0.4, 0.4);  // 우주선 크기에 맞게 
-            cockpitGroup.position.set(0, 0, -0.2);  // 우주선 전방 (콘 안쪽)
+            cockpitGroup.position.set(0, 0, 0.1);  // 우주선 안쪽으로 이동
             
             // ★ 조종석이 항상 천체 위에 렌더링되도록 설정
             cockpitGroup.renderOrder = 999;

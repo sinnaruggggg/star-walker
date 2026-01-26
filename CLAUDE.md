@@ -28,8 +28,10 @@ js/cockpit-buttons.js - 60줄 (조종석 버튼 초기화)
 
 ## 배포
 
-- URL: https://star-strider-seven.vercel.app/
-- 명령어: `vercel --prod --yes`
+- URL: https://star-strider-seven.vercel.app
+- **배포 방법: `git push origin main` (자동 배포)**
+- ⚠️ `vercel --prod --yes` 사용 금지 (잘못된 프로젝트에 배포됨)
+- Vercel 프로젝트명: `star-strider` (star-strider-seven 아님!)
 
 ## 주요 파일 설명
 
