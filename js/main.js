@@ -9092,7 +9092,7 @@
             cockpitGroup.add(glassHUD.leftBottomPanel.mesh);
 
             // ★ 우측 상단 패널 (좌표, 목표) - 20% 더 멀리
-            glassHUD.rightPanel = createGlassHUDPanel(1.2, 0.2, -1.45, 1.4, 1.8, 768, 1024, 0.04);
+            glassHUD.rightPanel = createGlassHUDPanel(1.2, 0.05, -1.45, 1.4, 1.8, 768, 1024, 0.04);  // ★ y: 0.2→0.05 내림
             glassHUD.rightPanel.mesh.rotation.y = -0.34;
             cockpitGroup.add(glassHUD.rightPanel.mesh);
 
@@ -9377,10 +9377,12 @@
                     ctx.font = 'bold 30px Orbitron, sans-serif';
                     ctx.fillText(shipTargetBody.name || 'Unknown', W/2, PAD + 270);
 
-                    // 거리
-                    const dist = playerShip.mesh.position.distanceTo(shipTargetBody.mesh.position);
+                    // 거리 (실제 AU로 변환)
+                    const rawDist = playerShip.mesh.position.distanceTo(shipTargetBody.mesh.position);
+                    const dist = rawDist / (CONFIG.distScale || 1);  // ★ 실제 AU로 변환
                     let distText;
-                    if (dist < 0.1) distText = `${(dist * 149597.87).toFixed(0)} km`;
+                    if (dist < 0.001) distText = `${(dist * 149597870).toFixed(0)} km`;
+                    else if (dist < 0.1) distText = `${(dist * 149597.87).toFixed(0)} km`;
                     else if (dist < 10) distText = `${dist.toFixed(3)} AU`;
                     else distText = `${dist.toFixed(1)} AU`;
                     ctx.font = '22px Orbitron, sans-serif';
@@ -16522,7 +16524,7 @@
                 if (d < range && d > 1) {
                     rp.applyQuaternion(qi);
                     const x = (rp.x / range) * 40;
-                    const z = (-rp.z / range) * 40;
+                    const z = (rp.z / range) * 40;  // ★ 부호 수정 (상하 반전 해결)
                     const bl = document.createElement('div');
                     bl.className = 'radar-blip';
                     bl.style.left = `calc(50% + ${x}px)`;
