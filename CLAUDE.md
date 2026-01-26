@@ -1,5 +1,19 @@
 # Solar Explorer - Claude 세션 가이드
 
+## ⚠️ 절대 건드리지 말 것
+
+### Google 로그인 redirectTo (js/multiplayer.js)
+```javascript
+// ★★★ 절대 변경 금지 ★★★
+const siteUrl = 'https://star-strider-seven.vercel.app';
+redirectTo: siteUrl
+```
+- **절대로** `window.location.origin` 사용 금지
+- 이 값 바꾸면 500 에러 발생
+- 이미 여러 번 이 문제로 시간 낭비함
+
+---
+
 ## 프로젝트 구조 (2026-01-26 분리 완료)
 
 ```
@@ -48,3 +62,30 @@ js/cockpit-buttons.js - 60줄 (조종석 버튼 초기화)
 ## 백업 브랜치
 
 - `backup-before-split`: 분리 작업 전 상태
+
+## Google OAuth 설정
+
+### Supabase 프로젝트
+- URL: `https://sfirzuqngdbpwvdoyero.supabase.co`
+- Callback URI: `https://sfirzuqngdbpwvdoyero.supabase.co/auth/v1/callback`
+
+### Google Cloud Console 설정 필요
+1. **OAuth 2.0 클라이언트 ID** 생성
+2. **승인된 리디렉션 URI**에 추가:
+   ```
+   https://sfirzuqngdbpwvdoyero.supabase.co/auth/v1/callback
+   ```
+3. Client ID와 Client Secret을 **Supabase 대시보드** → Authentication → Providers → Google에 입력
+
+### Site URL 설정
+- Supabase Authentication → URL Configuration → Site URL:
+  ```
+  https://star-strider-seven.vercel.app
+  ```
+
+### 코드 주의사항 (500 에러 원인)
+- `googleLogin()` 함수의 `redirectTo`는 **반드시** Site URL과 정확히 일치해야 함
+- 파일: `js/multiplayer.js` 라인 1506
+- **잘못된 예**: `window.location.origin + window.location.pathname` (경로가 붙으면 안됨)
+- **올바른 예**: `'https://star-strider-seven.vercel.app'` (슬래시 없이)
+- 이 값이 틀리면 Supabase 콜백에서 500 에러 발생함

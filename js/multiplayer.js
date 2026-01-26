@@ -658,59 +658,92 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// ★★★ Google 로그인 사용자 프로필 확인/생성 ★★★
+async function ensureProfileExists(user) {
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile) {
+        // 프로필이 없으면 생성
+        const nickname = user.user_metadata?.full_name ||
+                        user.email?.split('@')[0] ||
+                        'Pilot_' + user.id.substring(0,6);
+
+        const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({
+            id: user.id,
+            username: user.email,
+            nickname: nickname,
+            email: user.email,
+            coins: 1000,
+            exp: 0,
+            avatar_url: user.user_metadata?.avatar_url || null
+        }).select().single();
+
+        if (insertError) {
+            console.error('프로필 생성 실패:', insertError);
+            return null;
+        }
+        console.log('✅ 새 프로필 생성:', nickname);
+        return newProfile;
+    }
+    return profile;
+}
+
 // 로컬스토리지에서 로그인 정보 복원
 function loadSavedLogin() {
     if (!supabase) return Promise.resolve(false);
-    
-    return supabase.auth.getSession().then(function(result) {
+
+    // ★★★ OAuth 콜백 처리 (URL hash 정리) ★★★
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+        // Supabase가 자동으로 세션 처리, URL 정리
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    return supabase.auth.getSession().then(async function(result) {
         var session = result.data.session;
         if (session && session.user) {
-            // 프로필 정보 가져오기
-            return supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single()
-                .then(function(profileResult) {
-                    var profile = profileResult.data;
-                    if (profile) {
-                        mpUser = {
-                            id: session.user.id,
-                            username: profile.username,
-                            nickname: profile.nickname,
-                            email: profile.email,
-                            coins: profile.coins,
-                            exp: profile.exp || 0,
-                            currentShip: profile.current_ship,
-                            unlockedShips: profile.unlocked_ships,
-                            avatar_url: profile.avatar_url
-                        };
-                        mpUserId = session.user.id;
-                        mpSessionToken = generateSessionToken();  // ★★★ 중복 접속 감지용 ★★★
-                        mpNickname = profile.nickname;
+            // ★★★ 프로필이 없으면 생성 (Google 로그인 등) ★★★
+            var profile = await ensureProfileExists(session.user);
+            if (profile) {
+                mpUser = {
+                    id: session.user.id,
+                    username: profile.username,
+                    nickname: profile.nickname,
+                    email: profile.email,
+                    coins: profile.coins,
+                    exp: profile.exp || 0,
+                    currentShip: profile.current_ship,
+                    unlockedShips: profile.unlocked_ships,
+                    avatar_url: profile.avatar_url
+                };
+                mpUserId = session.user.id;
+                mpSessionToken = generateSessionToken();  // ★★★ 중복 접속 감지용 ★★★
+                mpNickname = profile.nickname;
 
-                        // window 객체에도 설정
-                        window.mpUser = mpUser;
-                        window.mpUserId = mpUserId;
-                        window.mpNickname = mpNickname;
-                        window.currentUser = profile.username;
-                        
-                        // UI 업데이트
-                        if (typeof updateUserUI === 'function') {
-                            updateUserUI();
-                        }
-                        
-                        // ★★★ 메인 메뉴 로그인 버튼 숨기기 ★★★
-                        const loginMainBtn = document.getElementById('btn-login-main');
-                        if (loginMainBtn) {
-                            loginMainBtn.style.display = 'none';
-                        }
-                        
-                        console.log('✅ 자동 로그인:', profile.nickname);
-                        return true;
-                    }
-                    return false;
-                });
+                // window 객체에도 설정
+                window.mpUser = mpUser;
+                window.mpUserId = mpUserId;
+                window.mpNickname = mpNickname;
+                window.currentUser = profile.username;
+
+                // UI 업데이트
+                if (typeof updateUserUI === 'function') {
+                    updateUserUI();
+                }
+
+                // ★★★ 메인 메뉴 로그인 버튼 숨기기 ★★★
+                const loginMainBtn = document.getElementById('btn-login-main');
+                if (loginMainBtn) {
+                    loginMainBtn.style.display = 'none';
+                }
+
+                console.log('✅ 자동 로그인:', profile.nickname);
+                return true;
+            }
+            return false;
         }
         return false;
     }).catch(function(e) {
@@ -931,6 +964,25 @@ function createAuthUI() {
             .auth-close-btn:hover {
                 background: rgba(0,255,255,0.2);
             }
+            .auth-divider {
+                margin: 20px 0;
+                text-align: center;
+                color: #68a;
+                font-size: 12px;
+            }
+            .auth-btn-google {
+                background: #fff;
+                color: #333;
+                border: 1px solid #ddd;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            .auth-btn-google:hover {
+                background: #f5f5f5;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            }
         </style>
         <div id="auth-overlay">
             <div id="auth-box" style="position:relative;">
@@ -967,6 +1019,14 @@ function createAuthUI() {
                 </div>
                 
                 <button id="auth-submit-btn" class="auth-btn auth-btn-primary" onclick="submitAuth()">${_t('login')}</button>
+
+                <div class="auth-divider">─── OR ───</div>
+                <button class="auth-btn auth-btn-google" onclick="googleLogin()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                         style="width:18px; height:18px;">
+                    Continue with Google
+                </button>
+
                 <button class="auth-btn auth-btn-guest" onclick="guestLogin()">${_t('guestStart')}</button>
             </div>
         </div>
@@ -1431,6 +1491,38 @@ function processLogin(user, username, nickname) {
         window.pendingVerification = null;
     }
 }
+
+// ★★★ Google 로그인 ★★★
+async function googleLogin() {
+    const errorEl = document.getElementById('auth-error');
+
+    if (!supabase) {
+        if (errorEl) errorEl.textContent = 'Server connection failed...';
+        return;
+    }
+
+    try {
+        // ★ redirectTo를 Site URL과 정확히 일치시킴
+        const siteUrl = 'https://star-strider-seven.vercel.app';
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: siteUrl
+            }
+        });
+
+        if (error) {
+            console.error('Google OAuth error:', error);
+            if (errorEl) errorEl.textContent = 'Google login failed: ' + error.message;
+        }
+        // 성공 시 Google 로그인 페이지로 리디렉션됨
+    } catch (e) {
+        console.error('Google login exception:', e);
+        if (errorEl) errorEl.textContent = 'Google login error: ' + e.message;
+    }
+}
+window.googleLogin = googleLogin;
 
 function guestLogin() {
     // ★★★ UUID 형식으로 생성 (테이블이 uuid 타입) ★★★

@@ -2903,7 +2903,7 @@
             active: false,
             phase: 'idle',  // 'idle', 'undocking', 'complete'
             startTime: 0,
-            duration: 4000,  // ★ 4초 연출
+            duration: 8000,  // ★ 8초 연출 (속도 절반으로 감소)
             startPos: null,
             targetDist: 2,   // ★ 정거장에서 이탈 거리 (더 줄임)
             stationPos: null,
@@ -12857,6 +12857,33 @@
         }
         
         function actualBoardShip(isReboard = false) {
+            // ★★★ 탑승 시 페이드인 효과 ★★★
+            let fadeOverlay = document.getElementById('board-fade-overlay');
+            if (!fadeOverlay) {
+                fadeOverlay = document.createElement('div');
+                fadeOverlay.id = 'board-fade-overlay';
+                fadeOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: #000;
+                    z-index: 99999;
+                    pointer-events: none;
+                    opacity: 1;
+                    transition: opacity 1.5s ease-out;
+                `;
+                document.body.appendChild(fadeOverlay);
+            } else {
+                fadeOverlay.style.opacity = '1';
+                fadeOverlay.style.display = 'block';
+            }
+            // 약간의 딜레이 후 페이드아웃 시작
+            setTimeout(() => {
+                fadeOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    fadeOverlay.style.display = 'none';
+                }, 1500);
+            }, 300);
+
             // ===== 실제 거리 모드 강제 =====
             CONFIG.distScale = 50;
             if (window.gameMode === 'multi') {
@@ -14420,10 +14447,15 @@
             if (autopilot.engaged) updateShipAutopilot(dt);
             
             // 방향 조종 (자동항법 아닐 때, 1인칭 조종석 뷰에서만)
-            // ★★★ 선회 속도: 관리자 페이지 turnSpeed × 감도 계수 ★★★
+            // ★★★ 선회 속도: 관리자 페이지 turnSpeed × 감도 계수 × 모드 배율 ★★★
             if (!autopilot.engaged && isCockpitView) {
+                // 모드별 선회 배율 적용 (싱글/멀티 모두 0.5로 동일)
+                let turnMult = 1.0;
+                if (window.gameMode && window.MODE_CONFIG && window.MODE_CONFIG[window.gameMode]) {
+                    turnMult = window.MODE_CONFIG[window.gameMode].turnMultiplier || 1.0;
+                }
                 // turnSpeed 값이 클수록 빠르게 회전 (감도 60 = 적당한 반응성)
-                const turnRate = SHIP_CONFIG.turnSpeed * dt * 60;
+                const turnRate = SHIP_CONFIG.turnSpeed * dt * 60 * turnMult;
                 playerShip.euler.y += shipInputs.yaw * turnRate;
                 playerShip.euler.x += shipInputs.pitch * turnRate;
                 playerShip.euler.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, playerShip.euler.x));
@@ -17954,6 +17986,7 @@
         const MODE_CONFIG = {
             single: {
                 fuelMultiplier: 1.0,
+                turnMultiplier: 0.5,      // ★ 싱글모드 선회 속도 절반 (멀티와 동일하게)
                 timeSpeedFixed: false,
                 canCreateBodies: true,
                 canDisembark: true,
@@ -17961,6 +17994,7 @@
             },
             multi: {
                 fuelMultiplier: 0.5,      // ★ 연료 2배 적게 소모 (0.2 → 0.5)
+                turnMultiplier: 0.5,      // ★ 멀티모드 선회 속도
                 timeSpeedFixed: true,
                 canCreateBodies: false,
                 canDisembark: false,
