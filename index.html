@@ -2513,6 +2513,7 @@
                 <label>해상도 배율</label>
                 <input type="range" id="setting-pixel-ratio" min="0.25" max="2" step="0.25" value="1">
                 <span id="setting-pixel-ratio-value">1x</span>
+                <button class="setting-help-btn" data-help="pixel-ratio">?</button>
             </div>
 
             <div class="setting-item">
@@ -2523,6 +2524,7 @@
                     <option value="medium" selected>중간</option>
                     <option value="high">높음</option>
                 </select>
+                <button class="setting-help-btn" data-help="shadows">?</button>
             </div>
 
             <div class="setting-item">
@@ -2531,6 +2533,7 @@
                     <option value="off">끔</option>
                     <option value="on" selected>켬</option>
                 </select>
+                <button class="setting-help-btn" data-help="antialias">?</button>
             </div>
 
             <div class="setting-item">
@@ -2539,6 +2542,7 @@
                     <option value="off">끔</option>
                     <option value="on" selected>켬</option>
                 </select>
+                <button class="setting-help-btn" data-help="orbits">?</button>
             </div>
 
             <div class="setting-item">
@@ -2548,12 +2552,14 @@
                     <option value="medium" selected>보통 (5000)</option>
                     <option value="high">많음 (10000)</option>
                 </select>
+                <button class="setting-help-btn" data-help="stars">?</button>
             </div>
 
             <div class="setting-item">
                 <label>최대 줌 거리</label>
                 <input type="range" id="setting-render-distance" min="1000" max="50000" step="1000" value="10000">
                 <span id="setting-render-distance-value">10000</span>
+                <button class="setting-help-btn" data-help="render-distance">?</button>
             </div>
         </div>
 
@@ -2568,12 +2574,14 @@
                     <option value="normal" selected>보통 (100ms)</option>
                     <option value="slow">느림 (200ms)</option>
                 </select>
+                <button class="setting-help-btn" data-help="mp-sync">?</button>
             </div>
 
             <div class="setting-item">
                 <label>보간 속도</label>
                 <input type="range" id="setting-mp-interpolation" min="2" max="15" step="1" value="8">
                 <span id="setting-mp-interpolation-value">8</span>
+                <button class="setting-help-btn" data-help="mp-interpolation">?</button>
             </div>
         </div>
 
@@ -2760,6 +2768,120 @@
             const settings = loadSettings();
             setTimeout(() => applySettingsToGame(settings), 1000);
         });
+    })();
+    </script>
+
+    <!-- ★★★ 설정 도움말 툴팁 시스템 ★★★ -->
+    <div class="setting-tooltip-overlay" id="setting-tooltip-overlay"></div>
+    <script>
+    (function() {
+        // 도움말 데이터
+        const HELP_DATA = {
+            'pixel-ratio': {
+                title: '해상도 배율',
+                content: '렌더링 해상도를 조절합니다.\n\n• 낮음 (0.5x): 성능 ↑, 화질 ↓\n• 보통 (1x): 균형 잡힌 설정\n• 높음 (2x): 화질 ↑, 성능 ↓\n\n저사양 기기에서는 낮은 값을 추천합니다.'
+            },
+            'shadows': {
+                title: '그림자',
+                content: '행성과 우주선의 그림자 품질입니다.\n\n• 끔: 그림자 없음 (성능 최적)\n• 낮음: 기본 그림자\n• 중간: 부드러운 그림자\n• 높음: 고품질 그림자 (성능 ↓)\n\n모바일에서는 "낮음" 추천.'
+            },
+            'antialias': {
+                title: '안티앨리어싱',
+                content: '3D 객체의 가장자리를 부드럽게 합니다.\n\n• 켬: 계단 현상 감소, 부드러운 화면\n• 끔: 약간의 성능 향상\n\n대부분의 경우 "켬" 추천.'
+            },
+            'orbits': {
+                title: '궤도선 표시',
+                content: '행성의 공전 궤도를 표시합니다.\n\n• 켬: 궤도 원 표시\n• 끔: 궤도 숨김\n\n탐색 시에는 켜두는 것이 좋습니다.'
+            },
+            'stars': {
+                title: '별 배경',
+                content: '배경에 표시되는 별의 개수입니다.\n\n• 적음 (1000): 성능 최적화\n• 보통 (5000): 적당한 밀도\n• 많음 (10000): 풍부한 우주 배경\n\n저사양 기기에서는 "적음" 추천.'
+            },
+            'render-distance': {
+                title: '최대 줌 거리',
+                content: '카메라가 얼마나 멀리 줌아웃할 수 있는지 설정합니다.\n\n• 낮음: 가까운 범위만 볼 수 있음\n• 높음: 태양계 전체를 볼 수 있음\n\n성능에는 큰 영향이 없습니다.'
+            },
+            'mp-sync': {
+                title: '위치 동기화',
+                content: '다른 플레이어 위치를 얼마나 자주 받을지 설정합니다.\n\n• 빠름 (50ms): 부드럽지만 데이터 사용 ↑\n• 보통 (100ms): 균형 잡힌 설정\n• 느림 (200ms): 데이터 절약\n\n와이파이 환경에서는 "빠름" 추천.'
+            },
+            'mp-interpolation': {
+                title: '보간 속도',
+                content: '다른 플레이어의 움직임을 얼마나 부드럽게 보간할지 설정합니다.\n\n• 낮음 (2-5): 정확하지만 끊김\n• 보통 (6-10): 균형 잡힌 설정\n• 높음 (11-15): 매우 부드럽지만 지연\n\n"8" 정도가 적당합니다.'
+            }
+        };
+
+        let currentTooltip = null;
+        const overlay = document.getElementById('setting-tooltip-overlay');
+
+        // 툴팁 숨기기
+        function hideTooltip() {
+            if (currentTooltip) {
+                currentTooltip.remove();
+                currentTooltip = null;
+            }
+            overlay.classList.remove('active');
+        }
+
+        // 툴팁 표시
+        function showTooltip(helpKey, btnRect) {
+            hideTooltip();
+
+            const data = HELP_DATA[helpKey];
+            if (!data) return;
+
+            overlay.classList.add('active');
+
+            // 툴팁 생성
+            const tooltip = document.createElement('div');
+            tooltip.className = 'setting-tooltip';
+            tooltip.innerHTML = `
+                <div class="setting-tooltip-title">${data.title}</div>
+                <div class="setting-tooltip-content">${data.content.replace(/\n/g, '<br>')}</div>
+                <div class="setting-tooltip-arrow left"></div>
+            `;
+            document.body.appendChild(tooltip);
+            currentTooltip = tooltip;
+
+            // 위치 계산
+            const tooltipRect = tooltip.getBoundingClientRect();
+            let left = btnRect.left - tooltipRect.width - 15;
+            let top = btnRect.top + btnRect.height / 2 - tooltipRect.height / 2;
+
+            // 화면 밖으로 나가면 조정
+            if (left < 10) {
+                left = btnRect.right + 15;
+                tooltip.querySelector('.setting-tooltip-arrow').className = 'setting-tooltip-arrow';
+                tooltip.querySelector('.setting-tooltip-arrow').style.cssText =
+                    'left: -8px; top: 50%; transform: translateY(-50%); border-width: 8px 8px 8px 0; border-color: transparent #0ff transparent transparent;';
+            }
+            if (top < 10) top = 10;
+            if (top + tooltipRect.height > window.innerHeight - 10) {
+                top = window.innerHeight - tooltipRect.height - 10;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+
+        // 오버레이 클릭 시 닫기
+        overlay.addEventListener('click', hideTooltip);
+        overlay.addEventListener('touchstart', hideTooltip);
+
+        // 도움말 버튼 클릭 이벤트 (이벤트 위임)
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('setting-help-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const helpKey = e.target.dataset.help;
+                const rect = e.target.getBoundingClientRect();
+                showTooltip(helpKey, rect);
+            }
+        });
+
+        // 전역 함수로 내보내기 (다른 설정 패널에서도 사용 가능)
+        window.showSettingHelp = showTooltip;
+        window.hideSettingHelp = hideTooltip;
     })();
     </script>
 

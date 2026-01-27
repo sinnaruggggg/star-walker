@@ -3791,24 +3791,39 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(10, 20, 40, 0.95);
+            background: rgba(10, 20, 40, 0.97);
             border: 2px solid #0ff;
             border-radius: 15px;
-            padding: 20px;
+            padding: 16px;
             z-index: 10001;
-            min-width: 320px;
-            max-width: 90vw;
+            width: 340px;
+            max-width: 95vw;
             max-height: 85vh;
             overflow-y: auto;
             display: none;
             color: white;
             font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
         }
         #ui-settings-panel.open { display: block; }
         #ui-settings-panel h3 {
             color: #0ff;
-            margin: 0 0 15px 0;
+            margin: 0 0 12px 0;
             text-align: center;
+            font-size: 16px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        /* 스크롤바 스타일 */
+        #ui-settings-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        #ui-settings-panel::-webkit-scrollbar-track {
+            background: rgba(0, 30, 60, 0.5);
+            border-radius: 3px;
+        }
+        #ui-settings-panel::-webkit-scrollbar-thumb {
+            background: #0ff;
+            border-radius: 3px;
         }
         .ui-preset-btn {
             width: 100%;
@@ -3840,34 +3855,36 @@
             background: rgba(0, 40, 80, 0.4);
             border: 1px solid rgba(0, 255, 255, 0.3);
             border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
         }
         .settings-section-title {
             color: #0ff;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             padding-bottom: 5px;
             border-bottom: 1px solid rgba(0, 255, 255, 0.2);
         }
         .setting-item {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
             align-items: center;
-            justify-content: space-between;
-            padding: 6px 0;
-            gap: 10px;
+            padding: 5px 0;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .setting-item:last-child {
+            border-bottom: none;
         }
         .setting-item label {
             color: #8cf;
-            font-size: 12px;
-            flex: 1;
+            font-size: 11px;
             white-space: nowrap;
         }
         .setting-item input[type="range"] {
-            flex: 1.5;
-            max-width: 100px;
-            height: 6px;
+            width: 80px;
+            height: 5px;
             -webkit-appearance: none;
             background: rgba(0, 100, 150, 0.5);
             border-radius: 3px;
@@ -3875,21 +3892,21 @@
         }
         .setting-item input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             background: #0ff;
             border-radius: 50%;
             cursor: pointer;
         }
         .setting-item select {
             background: rgba(0, 40, 80, 0.8);
-            border: 1px solid #0ff;
-            border-radius: 5px;
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 4px;
             color: #fff;
-            padding: 4px 8px;
-            font-size: 11px;
+            padding: 3px 6px;
+            font-size: 10px;
             cursor: pointer;
-            min-width: 90px;
+            min-width: 80px;
         }
         .setting-item select:focus {
             outline: none;
@@ -3897,9 +3914,97 @@
         }
         .setting-item span {
             color: #0ff;
-            font-size: 11px;
-            min-width: 35px;
+            font-size: 10px;
+            min-width: 30px;
             text-align: right;
+        }
+
+        /* ★★★ 설정 도움말 버튼 및 툴팁 ★★★ */
+        .setting-help-btn {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            background: rgba(0, 150, 200, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 50%;
+            color: #0ff;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 6px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .setting-help-btn:hover {
+            background: rgba(0, 200, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* 도움말 팝업 오버레이 */
+        .setting-tooltip-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10010;
+            display: none;
+        }
+        .setting-tooltip-overlay.active {
+            display: block;
+        }
+
+        /* 도움말 팝업 */
+        .setting-tooltip {
+            position: fixed;
+            background: rgba(5, 15, 35, 0.98);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 12px 16px;
+            max-width: 280px;
+            z-index: 10011;
+            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
+            animation: tooltipFadeIn 0.2s ease;
+        }
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .setting-tooltip-title {
+            color: #0ff;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .setting-tooltip-content {
+            color: #cef;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .setting-tooltip-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .setting-tooltip-arrow.left {
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 8px 0 8px 8px;
+            border-color: transparent transparent transparent #0ff;
+        }
+        .setting-tooltip-arrow.bottom {
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0 8px;
+            border-color: #0ff transparent transparent transparent;
         }
 
         /* UI 슬롯 시스템 */
@@ -4178,6 +4283,49 @@
             }
             #chat-panel {
                 height: 80vh !important;
+            }
+            /* ★★★ 설정 패널 모바일 최적화 ★★★ */
+            #ui-settings-panel {
+                max-height: calc(100dvh - 20px) !important;
+                width: 95vw !important;
+                max-width: 400px !important;
+                padding: 10px !important;
+            }
+            #ui-settings-panel h3 {
+                font-size: 13px !important;
+                margin-bottom: 8px !important;
+            }
+            .settings-section {
+                padding: 8px !important;
+                margin-bottom: 8px !important;
+            }
+            .settings-section-title {
+                font-size: 11px !important;
+                margin-bottom: 6px !important;
+            }
+            .setting-item {
+                padding: 4px 0 !important;
+                gap: 6px !important;
+            }
+            .setting-item label {
+                font-size: 10px !important;
+            }
+            .setting-item select {
+                font-size: 9px !important;
+                padding: 2px 4px !important;
+                min-width: 70px !important;
+            }
+            .setting-item input[type="range"] {
+                width: 60px !important;
+            }
+            .setting-help-btn {
+                width: 16px !important;
+                height: 16px !important;
+                font-size: 10px !important;
+            }
+            .ui-preset-btn {
+                padding: 8px !important;
+                font-size: 11px !important;
             }
         }
         

@@ -18452,8 +18452,17 @@
                         MultiTutorial.checkAndStart();
                     }
                 }, 500);
+
+                // ★★★ 싱글모드에서도 로그인 세션 복원 ★★★
+                loadSavedLogin().then(function(loggedIn) {
+                    if (typeof updateUserUI === 'function') {
+                        updateUserUI();
+                        setTimeout(updateUserUI, 500);
+                    }
+                    console.log('싱글모드 세션 복원:', loggedIn ? '로그인됨' : '비로그인');
+                });
             }
-            
+
             // 멀티플레이어 채팅 패널 - 전체 UI 숨김/표시
             const mpUI = document.getElementById('multiplayer-ui');
             if (mpUI) {
