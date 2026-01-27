@@ -7469,66 +7469,54 @@
             createNebulae();
         }
         
-        // ★★★ 배경 별 스카이박스 (카메라를 따라다님) ★★★
-        let skyboxStars = null;
-
+        // 우리 은하 바깥 배경 별들
         function createBackgroundStars() {
-            const starCount = 3000;  // 성능을 위해 줄임
+            const starCount = 8000;
             const positions = new Float32Array(starCount * 3);
             const colors = new Float32Array(starCount * 3);
             const c = new THREE.Color();
-
+            
             for (let i = 0; i < starCount; i++) {
-                // 구형으로 사방에 배치 (고정 반지름 - 스카이박스)
+                // 구형으로 사방에 배치
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
-                const r = 1000;  // 고정 반지름 (카메라 따라다니므로 작은 값)
-
+                const r = 90000000 + Math.random() * 100000000;  // 9000만~19000만 (은하 바로 바깥) - 10배 확대
+                
                 positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
                 positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
                 positions[i * 3 + 2] = r * Math.cos(phi);
-
+                
                 // 다양한 별 색상
                 const colorType = Math.random();
                 if (colorType < 0.1) {
-                    c.setHSL(0.6, 0.5, 0.9);  // 파란별
+                    c.setHSL(0.6, 0.5, 0.8);  // 파란별
                 } else if (colorType < 0.2) {
-                    c.setHSL(0.05, 0.6, 0.9);  // 붉은별
+                    c.setHSL(0.05, 0.6, 0.8);  // 붉은별
                 } else {
-                    c.setHSL(0.15, 0.2, 0.8 + Math.random() * 0.2);  // 노란/흰색
+                    c.setHSL(0.15, 0.3, 0.7 + Math.random() * 0.3);  // 노란/흰색
                 }
                 colors[i * 3] = c.r;
                 colors[i * 3 + 1] = c.g;
                 colors[i * 3 + 2] = c.b;
             }
-
+            
             const geometry = new THREE.BufferGeometry();
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
+            
             const material = new THREE.PointsMaterial({
-                size: 3,  // 작은 크기
+                size: 50000,  // 10배 확대
                 vertexColors: true,
                 transparent: true,
                 opacity: 1.0,
                 blending: THREE.AdditiveBlending,
-                sizeAttenuation: false,  // 거리에 상관없이 일정 크기
-                depthWrite: false,
-                depthTest: false  // 항상 배경으로
+                sizeAttenuation: true,
+                depthWrite: false
             });
 
-            skyboxStars = new THREE.Points(geometry, material);
-            skyboxStars.renderOrder = -1000;  // 가장 먼저 렌더링 (배경)
-            scene.add(skyboxStars);
+            const stars = new THREE.Points(geometry, material);
+            scene.add(stars);
         }
-
-        // ★★★ 스카이박스 업데이트 (카메라 따라다님) ★★★
-        function updateSkyboxStars() {
-            if (skyboxStars && camera) {
-                skyboxStars.position.copy(camera.position);
-            }
-        }
-        window.updateSkyboxStars = updateSkyboxStars;
 
         // 태양계 주변 로컬 별들 (태양에서 수백~수천 광년 내 별들)
         // 태양계는 은하 안에 있으므로, 이 별들은 은하 원반의 일부
@@ -7990,7 +7978,6 @@
             galaxyGroup.userData.name = 'andromeda';
             galaxyGroup.frustumCulled = false;  // ★ 멀리서도 보이게
             scene.add(galaxyGroup);
-            window.andromedaGalaxy = galaxyGroup;  // ★ LOD 참조
 
             // ★ 안드로메다 은하 라벨 추가 (은하 위에 표시)
             const andromedaDiv = document.createElement('div');
@@ -8049,11 +8036,8 @@
                 sizeAttenuation: true
             });
             
-            const nearPoints = new THREE.Points(nearGeometry, nearMaterial);
-            scene.add(nearPoints);
-            if (!window.backgroundGalaxies) window.backgroundGalaxies = [];
-            window.backgroundGalaxies.push(nearPoints);  // ★ LOD 참조
-
+            scene.add(new THREE.Points(nearGeometry, nearMaterial));
+            
             // ===== 2. 중간 거리 은하들 =====
             const midGalaxyCount = 150;
             const midPositions = new Float32Array(midGalaxyCount * 3);
@@ -8099,12 +8083,9 @@
                 sizeAttenuation: true
             });
             
-            const midPoints = new THREE.Points(midGeometry, midMaterial);
-            scene.add(midPoints);
-            if (!window.backgroundGalaxies) window.backgroundGalaxies = [];
-            window.backgroundGalaxies.push(midPoints);  // ★ LOD 참조
+            scene.add(new THREE.Points(midGeometry, midMaterial));
         }
-
+        
         // 성운 생성 (뿌연 구름만) - 은하 내부에 위치
         function createNebulae() {
             // 성운 데이터 - 10배 확대
@@ -8140,8 +8121,6 @@
                 
                 nebulaGroup.userData.name = nebula.name;
                 scene.add(nebulaGroup);
-                if (!window.nebulaGroups) window.nebulaGroups = [];
-                window.nebulaGroups.push(nebulaGroup);  // ★ LOD 참조
             });
         }
 
@@ -16934,30 +16913,6 @@
             // ★★★ 멀티플레이어: 다른 플레이어 부드러운 보간 ★★★
             if (typeof mpInterpolateOtherPlayers === 'function') {
                 mpInterpolateOtherPlayers(rawDt);
-            }
-
-            // ★★★ 스카이박스 별 업데이트 (카메라 따라다님) ★★★
-            if (typeof updateSkyboxStars === 'function') {
-                updateSkyboxStars();
-            }
-
-            // ★★★ 은하 LOD: 줌아웃 시에만 표시 ★★★
-            if (window.galaxyPoints) {
-                const camDist = camera.position.length();
-                // 카메라가 태양계 밖으로 나가면 은하 표시 (거리 50000 이상)
-                const showGalaxy = camDist > 50000;
-                window.galaxyPoints.visible = showGalaxy;
-
-                // 은하 관련 다른 객체들도 함께 처리
-                if (window.andromedaGalaxy) window.andromedaGalaxy.visible = showGalaxy;
-                // 배경 은하들 (배열)
-                if (window.backgroundGalaxies && Array.isArray(window.backgroundGalaxies)) {
-                    window.backgroundGalaxies.forEach(g => g.visible = showGalaxy);
-                }
-                // 성운들 (배열)
-                if (window.nebulaGroups && Array.isArray(window.nebulaGroups)) {
-                    window.nebulaGroups.forEach(n => n.visible = showGalaxy);
-                }
             }
 
             // ★★★ 태양 그림자 조명 업데이트 ★★★
