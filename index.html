@@ -2551,9 +2551,9 @@
             </div>
 
             <div class="setting-item">
-                <label>렌더링 거리</label>
-                <input type="range" id="setting-render-distance" min="100" max="10000" step="100" value="5000">
-                <span id="setting-render-distance-value">5000</span>
+                <label>최대 줌 거리</label>
+                <input type="range" id="setting-render-distance" min="1000" max="50000" step="1000" value="10000">
+                <span id="setting-render-distance-value">10000</span>
             </div>
         </div>
 
@@ -2612,7 +2612,7 @@
             antialias: 'on',
             orbits: 'on',
             stars: 'medium',
-            renderDistance: 5000,
+            renderDistance: 10000,
             mpSync: 'normal',
             mpInterpolation: 8
         };
@@ -2732,10 +2732,9 @@
                 });
             }
 
-            // 4. 카메라 렌더링 거리
-            if (window.camera) {
-                window.camera.far = settings.renderDistance;
-                window.camera.updateProjectionMatrix();
+            // 4. 최대 줌 거리 (camera.far는 건드리지 않음 - 배경 별 렌더링 유지)
+            if (window.controls) {
+                window.controls.maxDistance = settings.renderDistance;
             }
 
             // 5. 멀티플레이어 동기화 속도
