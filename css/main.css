@@ -3620,6 +3620,8 @@
             border-radius: 25px;
             z-index: 999999;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            pointer-events: auto;
+            cursor: pointer;
         }
         body.pilot-mode #pilot-profile {
             display: flex !important;
@@ -3668,6 +3670,7 @@
             flex-direction: column;
             gap: 10px;
             z-index: 999999;
+            pointer-events: auto;
         }
         body.pilot-mode #pilot-right-btns {
             display: flex !important;
@@ -3831,7 +3834,74 @@
             font-size: 1.5em;
             cursor: pointer;
         }
-        
+
+        /* ★★★ 설정 섹션 스타일 ★★★ */
+        .settings-section {
+            background: rgba(0, 40, 80, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .settings-section-title {
+            color: #0ff;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            gap: 10px;
+        }
+        .setting-item label {
+            color: #8cf;
+            font-size: 12px;
+            flex: 1;
+            white-space: nowrap;
+        }
+        .setting-item input[type="range"] {
+            flex: 1.5;
+            max-width: 100px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(0, 100, 150, 0.5);
+            border-radius: 3px;
+            outline: none;
+        }
+        .setting-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #0ff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .setting-item select {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #0ff;
+            border-radius: 5px;
+            color: #fff;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            min-width: 90px;
+        }
+        .setting-item select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0ff;
+        }
+        .setting-item span {
+            color: #0ff;
+            font-size: 11px;
+            min-width: 35px;
+            text-align: right;
+        }
+
         /* UI 슬롯 시스템 */
         .ui-slots-container {
             margin: 15px 0;

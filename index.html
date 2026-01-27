@@ -2503,26 +2503,266 @@
     <!-- UI 설정 패널 -->
     <div id="ui-settings-panel">
         <button id="ui-settings-close" onclick="this.parentElement.classList.remove('open');">✕</button>
-        <h3 data-i18n="uiSettings">🎛️ UI 설정</h3>
-        
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:15px;">
-            <button class="ui-preset-btn" id="ui-rearrange-mode" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);" data-i18n="uiReposition" onclick="document.getElementById('ui-settings-panel').classList.remove('open'); if(window.uiRearrangeSystem) uiRearrangeSystem.start();">
-                🔧 UI 재배치 모드
-            </button>
-            <p style="font-size:10px;color:#888;text-align:center;margin:0;" data-i18n="uiDragToMove">
-                재배치 모드에서 UI를 드래그하여 이동
-            </p>
-        </div>
-        
-        <div class="ui-slots-container">
-            <div class="ui-slots-title" data-i18n="saveSlots">💾 저장 슬롯</div>
-            <div id="ui-slots-list">
-                <!-- 슬롯들이 여기에 동적으로 생성됩니다 -->
+        <h3 data-i18n="uiSettings">🎛️ 게임 설정</h3>
+
+        <!-- ★★★ 그래픽 설정 섹션 ★★★ -->
+        <div class="settings-section">
+            <div class="settings-section-title">🎨 그래픽</div>
+
+            <div class="setting-item">
+                <label>해상도 배율</label>
+                <input type="range" id="setting-pixel-ratio" min="0.25" max="2" step="0.25" value="1">
+                <span id="setting-pixel-ratio-value">1x</span>
+            </div>
+
+            <div class="setting-item">
+                <label>그림자</label>
+                <select id="setting-shadows">
+                    <option value="off">끔</option>
+                    <option value="low">낮음</option>
+                    <option value="medium" selected>중간</option>
+                    <option value="high">높음</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>안티앨리어싱</label>
+                <select id="setting-antialias">
+                    <option value="off">끔</option>
+                    <option value="on" selected>켬</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>궤도선 표시</label>
+                <select id="setting-orbits">
+                    <option value="off">끔</option>
+                    <option value="on" selected>켬</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>별 배경</label>
+                <select id="setting-stars">
+                    <option value="low">적음 (1000)</option>
+                    <option value="medium" selected>보통 (5000)</option>
+                    <option value="high">많음 (10000)</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>렌더링 거리</label>
+                <input type="range" id="setting-render-distance" min="100" max="10000" step="100" value="5000">
+                <span id="setting-render-distance-value">5000</span>
             </div>
         </div>
-        
-        <button class="ui-preset-btn danger" id="ui-reset-default" data-i18n="resetDefault" onclick="if(window.draggableUISystem) draggableUISystem.resetToDefault(); document.getElementById('ui-settings-panel').classList.remove('open');">🔄 기본값으로 리셋</button>
+
+        <!-- ★★★ 멀티플레이어 설정 ★★★ -->
+        <div class="settings-section">
+            <div class="settings-section-title">🌐 멀티플레이어</div>
+
+            <div class="setting-item">
+                <label>위치 동기화</label>
+                <select id="setting-mp-sync">
+                    <option value="fast">빠름 (50ms)</option>
+                    <option value="normal" selected>보통 (100ms)</option>
+                    <option value="slow">느림 (200ms)</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <label>보간 속도</label>
+                <input type="range" id="setting-mp-interpolation" min="2" max="15" step="1" value="8">
+                <span id="setting-mp-interpolation-value">8</span>
+            </div>
+        </div>
+
+        <!-- ★★★ UI 설정 섹션 ★★★ -->
+        <div class="settings-section">
+            <div class="settings-section-title">📐 UI 배치</div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="ui-preset-btn" id="ui-rearrange-mode" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);" data-i18n="uiReposition" onclick="document.getElementById('ui-settings-panel').classList.remove('open'); if(window.uiRearrangeSystem) uiRearrangeSystem.start();">
+                    🔧 UI 재배치 모드
+                </button>
+                <p style="font-size:10px;color:#888;text-align:center;margin:0;" data-i18n="uiDragToMove">
+                    재배치 모드에서 UI를 드래그하여 이동
+                </p>
+            </div>
+
+            <div class="ui-slots-container" style="margin-top:10px;">
+                <div class="ui-slots-title" data-i18n="saveSlots">💾 저장 슬롯</div>
+                <div id="ui-slots-list">
+                    <!-- 슬롯들이 여기에 동적으로 생성됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <button class="ui-preset-btn" id="settings-apply" style="background:linear-gradient(135deg,#27ae60,#2ecc71);margin-top:10px;" onclick="applyGameSettings();">✓ 설정 적용</button>
+        <button class="ui-preset-btn danger" id="ui-reset-default" data-i18n="resetDefault" onclick="resetAllSettings();">🔄 기본값으로 리셋</button>
     </div>
+
+    <!-- ★★★ 게임 설정 스크립트 ★★★ -->
+    <script>
+    (function() {
+        // 기본 설정값
+        const DEFAULT_SETTINGS = {
+            pixelRatio: 1,
+            shadows: 'medium',
+            antialias: 'on',
+            orbits: 'on',
+            stars: 'medium',
+            renderDistance: 5000,
+            mpSync: 'normal',
+            mpInterpolation: 8
+        };
+
+        // 설정 로드
+        function loadSettings() {
+            const saved = localStorage.getItem('game-settings');
+            return saved ? JSON.parse(saved) : { ...DEFAULT_SETTINGS };
+        }
+
+        // 설정 저장
+        function saveSettings(settings) {
+            localStorage.setItem('game-settings', JSON.stringify(settings));
+        }
+
+        // 슬라이더 값 표시 업데이트
+        function initSettingsUI() {
+            const settings = loadSettings();
+
+            // 해상도 배율
+            const prSlider = document.getElementById('setting-pixel-ratio');
+            const prValue = document.getElementById('setting-pixel-ratio-value');
+            if (prSlider && prValue) {
+                prSlider.value = settings.pixelRatio;
+                prValue.textContent = settings.pixelRatio + 'x';
+                prSlider.oninput = () => { prValue.textContent = prSlider.value + 'x'; };
+            }
+
+            // 렌더링 거리
+            const rdSlider = document.getElementById('setting-render-distance');
+            const rdValue = document.getElementById('setting-render-distance-value');
+            if (rdSlider && rdValue) {
+                rdSlider.value = settings.renderDistance;
+                rdValue.textContent = settings.renderDistance;
+                rdSlider.oninput = () => { rdValue.textContent = rdSlider.value; };
+            }
+
+            // 보간 속도
+            const ipSlider = document.getElementById('setting-mp-interpolation');
+            const ipValue = document.getElementById('setting-mp-interpolation-value');
+            if (ipSlider && ipValue) {
+                ipSlider.value = settings.mpInterpolation;
+                ipValue.textContent = settings.mpInterpolation;
+                ipSlider.oninput = () => { ipValue.textContent = ipSlider.value; };
+            }
+
+            // Select 요소들
+            const selects = ['shadows', 'antialias', 'orbits', 'stars', 'mpSync'];
+            selects.forEach(key => {
+                const el = document.getElementById('setting-' + key.replace(/([A-Z])/g, '-$1').toLowerCase());
+                if (el && settings[key]) el.value = settings[key];
+            });
+
+            // mp-sync 특별 처리
+            const mpSyncEl = document.getElementById('setting-mp-sync');
+            if (mpSyncEl && settings.mpSync) mpSyncEl.value = settings.mpSync;
+        }
+
+        // 설정 적용
+        window.applyGameSettings = function() {
+            const settings = {
+                pixelRatio: parseFloat(document.getElementById('setting-pixel-ratio')?.value || 1),
+                shadows: document.getElementById('setting-shadows')?.value || 'medium',
+                antialias: document.getElementById('setting-antialias')?.value || 'on',
+                orbits: document.getElementById('setting-orbits')?.value || 'on',
+                stars: document.getElementById('setting-stars')?.value || 'medium',
+                renderDistance: parseInt(document.getElementById('setting-render-distance')?.value || 5000),
+                mpSync: document.getElementById('setting-mp-sync')?.value || 'normal',
+                mpInterpolation: parseInt(document.getElementById('setting-mp-interpolation')?.value || 8)
+            };
+
+            saveSettings(settings);
+            applySettingsToGame(settings);
+
+            // 패널 닫기
+            document.getElementById('ui-settings-panel').classList.remove('open');
+            if (typeof showMsg === 'function') showMsg('설정이 적용되었습니다');
+        };
+
+        // 설정 리셋
+        window.resetAllSettings = function() {
+            saveSettings(DEFAULT_SETTINGS);
+            initSettingsUI();
+            applySettingsToGame(DEFAULT_SETTINGS);
+
+            // UI 배치도 리셋
+            if (window.draggableUISystem) draggableUISystem.resetToDefault();
+
+            document.getElementById('ui-settings-panel').classList.remove('open');
+            if (typeof showMsg === 'function') showMsg('설정이 초기화되었습니다');
+        };
+
+        // 실제 게임에 설정 적용
+        function applySettingsToGame(settings) {
+            // 1. 해상도 배율
+            if (window.renderer) {
+                window.renderer.setPixelRatio(settings.pixelRatio * window.devicePixelRatio);
+            }
+
+            // 2. 그림자
+            if (window.renderer) {
+                window.renderer.shadowMap.enabled = settings.shadows !== 'off';
+                if (settings.shadows === 'low') {
+                    window.renderer.shadowMap.type = THREE.BasicShadowMap;
+                } else if (settings.shadows === 'medium') {
+                    window.renderer.shadowMap.type = THREE.PCFShadowMap;
+                } else if (settings.shadows === 'high') {
+                    window.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                }
+            }
+
+            // 3. 궤도선 표시
+            if (typeof window.orbitLines !== 'undefined') {
+                const showOrbits = settings.orbits === 'on';
+                Object.values(window.orbitLines || {}).forEach(line => {
+                    if (line) line.visible = showOrbits;
+                });
+            }
+
+            // 4. 카메라 렌더링 거리
+            if (window.camera) {
+                window.camera.far = settings.renderDistance;
+                window.camera.updateProjectionMatrix();
+            }
+
+            // 5. 멀티플레이어 동기화 속도
+            if (typeof window.MP_UPDATE_INTERVAL !== 'undefined') {
+                const syncValues = { fast: 50, normal: 100, slow: 200 };
+                window.MP_UPDATE_INTERVAL_OVERRIDE = syncValues[settings.mpSync] || 100;
+            }
+
+            // 6. 멀티플레이어 보간 속도
+            if (typeof window.MP_INTERPOLATION_SPEED !== 'undefined') {
+                window.MP_INTERPOLATION_SPEED = settings.mpInterpolation;
+            }
+            // 직접 multiplayer.js 변수 설정
+            window.mpInterpolationSpeed = settings.mpInterpolation;
+
+            console.log('게임 설정 적용됨:', settings);
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            initSettingsUI();
+            // 저장된 설정 적용
+            const settings = loadSettings();
+            setTimeout(() => applySettingsToGame(settings), 1000);
+        });
+    })();
+    </script>
 
     <!-- UI 재배치 모드 오버레이 -->
     <div id="ui-rearrange-overlay">

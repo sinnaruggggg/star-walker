@@ -537,12 +537,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let supabase = null;
 
 // ★★★ 최적화된 멀티플레이어 설정 ★★★
-const MP_UPDATE_INTERVAL = 100;      // 100ms (10fps) - 위치 변경 시에만 전송
-const MP_SYNC_INTERVAL = 500;        // 500ms - Realtime 백업용 폴링
+const MP_UPDATE_INTERVAL = 50;       // 50ms (20fps) - 위치 변경 시에만 전송
+const MP_SYNC_INTERVAL = 200;        // 200ms - Realtime 백업용 폴링 (더 빠르게)
 const MP_CHAT_INTERVAL = 1500;       // 1.5초 - 채팅 폴링
-const MP_POSITION_THRESHOLD = 0.5;   // 이동 임계값 (이 이상 움직여야 전송)
-const MP_ROTATION_THRESHOLD = 0.01;  // 회전 임계값
+const MP_POSITION_THRESHOLD = 0.1;   // 이동 임계값 (더 민감하게)
+const MP_ROTATION_THRESHOLD = 0.005; // 회전 임계값 (더 민감하게)
 const MP_INACTIVE_TIMEOUT = 60000;   // 60초 후 비활성 판정
+const MP_INTERPOLATION_SPEED = 8;    // 보간 속도 (높을수록 빠르게 따라감)
 
 // 유저 정보
 let mpUser = null;
@@ -1893,16 +1894,14 @@ function updateOtherPlayers(players) {
             // 새 플레이어 생성
             createOtherPlayerShip(player);
         } else {
-            // ★★★ 백업 스타일: 직접 lerp (단순하고 확실) ★★★
+            // ★★★ 목표 위치/회전 저장 (프레임마다 보간) ★★★
             const ship = mpOtherPlayers[player.user_id];
-            ship.mesh.position.lerp(
-                new THREE.Vector3(
-                    parseFloat(player.pos_x),
-                    parseFloat(player.pos_y),
-                    parseFloat(player.pos_z)
-                ), 0.3
+            ship.targetPosition = new THREE.Vector3(
+                parseFloat(player.pos_x),
+                parseFloat(player.pos_y),
+                parseFloat(player.pos_z)
             );
-            ship.mesh.rotation.set(
+            ship.targetRotation = new THREE.Euler(
                 parseFloat(player.rot_x),
                 parseFloat(player.rot_y),
                 parseFloat(player.rot_z)
@@ -1920,9 +1919,26 @@ function updateOtherPlayers(players) {
     });
 }
 
-// ★★★ 백업 호환용 빈 함수 (animate에서 호출됨) ★★★
+// ★★★ 프레임마다 부드러운 보간 (animate에서 호출됨) ★★★
 function mpInterpolateOtherPlayers(deltaTime) {
-    // 위치 업데이트는 updateOtherPlayers에서 직접 처리
+    const dt = Math.min(deltaTime, 0.1); // 최대 100ms 제한
+    // 설정에서 보간 속도 사용 (기본값: MP_INTERPOLATION_SPEED)
+    const interpSpeed = window.mpInterpolationSpeed || MP_INTERPOLATION_SPEED;
+    const lerpFactor = 1 - Math.exp(-interpSpeed * dt);
+
+    Object.values(mpOtherPlayers).forEach(ship => {
+        if (!ship.mesh || !ship.targetPosition) return;
+
+        // 위치 부드럽게 보간
+        ship.mesh.position.lerp(ship.targetPosition, lerpFactor);
+
+        // 회전 부드럽게 보간 (각도별로)
+        if (ship.targetRotation) {
+            ship.mesh.rotation.x += (ship.targetRotation.x - ship.mesh.rotation.x) * lerpFactor;
+            ship.mesh.rotation.y += (ship.targetRotation.y - ship.mesh.rotation.y) * lerpFactor;
+            ship.mesh.rotation.z += (ship.targetRotation.z - ship.mesh.rotation.z) * lerpFactor;
+        }
+    });
 }
 window.mpInterpolateOtherPlayers = mpInterpolateOtherPlayers;
 
@@ -2049,7 +2065,25 @@ function createOtherPlayerShip(player) {
         shipGroup.add(label);
     }
 
-    mpOtherPlayers[player.user_id] = { mesh: shipGroup, label: label, _v2: true };
+    // ★★★ 초기 목표 위치 설정 (부드러운 보간용) ★★★
+    const initialPos = new THREE.Vector3(
+        parseFloat(player.pos_x) || 0,
+        parseFloat(player.pos_y) || 0,
+        parseFloat(player.pos_z) || 0
+    );
+    const initialRot = new THREE.Euler(
+        parseFloat(player.rot_x) || 0,
+        parseFloat(player.rot_y) || 0,
+        parseFloat(player.rot_z) || 0
+    );
+
+    mpOtherPlayers[player.user_id] = {
+        mesh: shipGroup,
+        label: label,
+        _v2: true,
+        targetPosition: initialPos,
+        targetRotation: initialRot
+    };
     console.log('✅ 다른 플레이어 생성 완료:', player.nickname, '위치:', shipGroup.position.x.toFixed(2), shipGroup.position.y.toFixed(2), shipGroup.position.z.toFixed(2));
 }
 
