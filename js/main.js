@@ -1750,6 +1750,7 @@
                         console.warn('코인 저장 실패:', e);
                     });
                 updateUserUI();
+                if (typeof updateCockpitProfile === 'function') updateCockpitProfile();
             }
         }
         
@@ -1767,6 +1768,7 @@
                             console.warn('코인 저장 실패:', e);
                         });
                     updateUserUI();
+                    if (typeof updateCockpitProfile === 'function') updateCockpitProfile();
                     return true;
                 }
             }
@@ -4742,8 +4744,52 @@
                 new THREE.LineBasicMaterial({color: trailColor, transparent:true, opacity:0.3})
             ); 
             trail.frustumCulled=false; scene.add(trail); 
-            body.trail=trail; body.trailPoints=points; body.trailIndex=0; body.trailTimer=0; 
+            body.trail=trail; body.trailPoints=points; body.trailIndex=0; body.trailTimer=0;
         }
+
+        // ★★★ 조종석 프로필 동기화 함수 ★★★
+        function updateCockpitProfile() {
+            const pilotName = document.getElementById('pilot-profile-name');
+            const pilotCoins = document.getElementById('pilot-profile-coins');
+            const pilotLevel = document.getElementById('pilot-profile-level');
+            const pilotAvatar = document.getElementById('pilot-profile-avatar');
+
+            if (window.mpUser) {
+                // 멀티모드 로그인 사용자
+                if (pilotName) pilotName.textContent = window.mpUser.nickname || window.mpUser.username || 'Pilot';
+                if (pilotCoins) pilotCoins.textContent = (window.mpUser.coins || 0).toLocaleString();
+
+                // 레벨 계산 (경험치 기반)
+                const exp = window.mpUser.exp || 0;
+                const level = Math.floor(Math.sqrt(exp / 100)) + 1;
+                if (pilotLevel) pilotLevel.textContent = level;
+
+                // 아바타
+                if (pilotAvatar) {
+                    if (window.mpUser.avatar_url) {
+                        pilotAvatar.innerHTML = `<img src="${window.mpUser.avatar_url}" alt="avatar">`;
+                    } else {
+                        pilotAvatar.innerHTML = '👤';
+                    }
+                }
+            } else if (window.mpNickname) {
+                // 게스트
+                if (pilotName) pilotName.textContent = window.mpNickname;
+                if (pilotCoins) pilotCoins.textContent = '0';
+                if (pilotLevel) pilotLevel.textContent = '1';
+                if (pilotAvatar) pilotAvatar.innerHTML = '👤';
+            } else {
+                // 싱글모드
+                if (pilotName) pilotName.textContent = 'Pilot';
+                if (pilotCoins) {
+                    const coins = parseInt(localStorage.getItem('starwalker-coins') || '0');
+                    pilotCoins.textContent = coins.toLocaleString();
+                }
+                if (pilotLevel) pilotLevel.textContent = window.userLevel || '1';
+                if (pilotAvatar) pilotAvatar.innerHTML = '👤';
+            }
+        }
+        window.updateCockpitProfile = updateCockpitProfile;  // 전역 접근 허용
 
         function showMsg(text) { 
             const el=document.getElementById('msg-box'); 
@@ -12914,6 +12960,10 @@
             window.isPilotMode = true;  // 전역 변수로도 설정
             if (typeof SpaceAudio !== 'undefined' && SpaceAudio.isPlaying) SpaceAudio.playCockpit();
             document.body.classList.add('pilot-mode');  // CSS용 클래스 추가
+
+            // ★ 조종석 프로필 동기화
+            updateCockpitProfile();
+
             isCockpitView = true;  // 1인칭 조종석 뷰 활성화
             // ★ 조종실 FOV 약간 확대 (60→70) - HUD 클리핑 완화
             if (camera) {

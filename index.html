@@ -2471,8 +2471,21 @@
         </div>
     </div>
 
+    <!-- ★★★ 조종석 모드 좌측 프로필 ★★★ -->
+    <div id="pilot-profile">
+        <div class="pilot-profile-avatar" id="pilot-profile-avatar">👤</div>
+        <div class="pilot-profile-info">
+            <div class="pilot-profile-name" id="pilot-profile-name">Pilot</div>
+            <div class="pilot-profile-stats">
+                <span>🪙 <span id="pilot-profile-coins">0</span></span>
+                <span>⭐ Lv.<span id="pilot-profile-level">1</span></span>
+            </div>
+        </div>
+    </div>
+
     <!-- ★★★ 조종석 모드 우측 통일 버튼 컨테이너 ★★★ -->
     <div id="pilot-right-btns">
+        <button id="pilot-home-btn" class="pilot-unified-btn" title="Home" onclick="if(typeof exitPilotMode==='function')exitPilotMode();">🏠</button>
         <button id="ui-settings-btn" class="pilot-unified-btn" title="UI Settings">⚙️</button>
         <button id="radio-btn-unified" class="pilot-unified-btn" title="Radio">📻</button>
         <button id="ad-btn-unified" class="pilot-unified-btn" title="Ad Rewards">📋</button>
