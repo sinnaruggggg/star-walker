@@ -10339,8 +10339,51 @@
         }
 
         // ===== 우주선 조종 시스템 함수들 =====
-        
-        // 강제 가로 모드 함수
+
+        // ★★★ 게임 모드 강제 가로 모드 (APK/모바일용) ★★★
+        function forceGameLandscape() {
+            // Screen Orientation API 시도
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(e => {
+                    console.log('가로모드 잠금 실패:', e.message);
+                    // 실패 시 경고 표시
+                    checkGameOrientationWarning();
+                });
+            } else {
+                // API 미지원 시 경고 표시
+                checkGameOrientationWarning();
+            }
+            // 즉시 방향 체크
+            checkGameOrientationWarning();
+        }
+
+        // ★★★ 게임 모드 방향 체크 및 경고 ★★★
+        function checkGameOrientationWarning() {
+            // 게임 모드가 아니면 무시
+            if (!window.gameMode) return;
+
+            const isPortrait = window.innerHeight > window.innerWidth;
+            let warning = document.getElementById('landscape-warning');
+
+            if (isPortrait) {
+                // 세로 모드 경고 표시
+                if (!warning) {
+                    warning = document.createElement('div');
+                    warning.id = 'landscape-warning';
+                    warning.innerHTML = `
+                        <div class="rotate-icon">📱↔️</div>
+                        <div class="rotate-text">${t('rotateScreen')}</div>
+                        <div class="rotate-sub">${t('rotateScreenSub')}</div>
+                    `;
+                    document.body.appendChild(warning);
+                }
+                warning.style.display = 'flex';
+            } else if (warning) {
+                warning.style.display = 'none';
+            }
+        }
+
+        // 강제 가로 모드 함수 (조종석용)
         function forceLayoutOrientation() {
             // Screen Orientation API 시도
             if (screen.orientation && screen.orientation.lock) {
@@ -10352,7 +10395,7 @@
                 showLandscapeWarning();
             }
         }
-        
+
         // 화면 방향 잠금 해제
         function unlockOrientation() {
             if (screen.orientation && screen.orientation.unlock) {
@@ -10360,7 +10403,7 @@
             }
             hideLandscapeWarning();
         }
-        
+
         // 세로 모드 경고 표시
         function showLandscapeWarning() {
             let warning = document.getElementById('landscape-warning');
@@ -10377,14 +10420,14 @@
             warning.style.display = 'flex';
             checkOrientationForWarning();
         }
-        
+
         // 세로 모드 경고 숨김
         function hideLandscapeWarning() {
             const warning = document.getElementById('landscape-warning');
             if (warning) warning.style.display = 'none';
         }
-        
-        // 방향 체크 및 경고 표시/숨김
+
+        // 방향 체크 및 경고 표시/숨김 (조종석용)
         function checkOrientationForWarning() {
             if (!isPilotMode) {
                 hideLandscapeWarning();
@@ -10392,16 +10435,32 @@
             }
             const warning = document.getElementById('landscape-warning');
             if (!warning) return;
-            
+
             const isPortrait = window.innerHeight > window.innerWidth;
             warning.style.display = isPortrait ? 'flex' : 'none';
         }
-        
-        // 방향 변경 감지
+
+        // ★★★ 방향 변경 감지 (게임 모드 + 조종석) ★★★
         window.addEventListener('resize', () => {
+            if (window.gameMode) {
+                checkGameOrientationWarning();
+            }
             if (isPilotMode) {
                 checkOrientationForWarning();
             }
+        });
+
+        // ★★★ orientationchange 이벤트도 감지 (APK용) ★★★
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (window.gameMode) {
+                    checkGameOrientationWarning();
+                    // 다시 가로 모드 잠금 시도
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(() => {});
+                    }
+                }
+            }, 100);
         });
         
         function createDockedShip(station) {
@@ -18172,31 +18231,30 @@
             gameMode = mode;
             window.gameMode = mode;
             const config = MODE_CONFIG[mode];
-            
+
             console.log('startGameMode 호출됨:', mode);
-            
+
             // ★★★ 전체화면 + 가로모드 강제 ★★★
             document.body.classList.add('game-mode');
             document.body.classList.add('game-started');  // ★ 상단 버튼 표시용
-            
-            // 전체화면 진입 후 가로모드 잠금
+
+            // ★★★ 강제 가로 모드 (APK/모바일용) ★★★
+            forceGameLandscape();
+
+            // 전체화면 진입 시도 (선택적)
             const elem = document.documentElement;
             const requestFS = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
-            
+
             if (requestFS) {
                 requestFS.call(elem).then(() => {
-                    // 전체화면 성공 시 가로모드 잠금
-                    if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock('landscape').catch(e => {
-                            console.log('가로모드 잠금:', e.message);
-                        });
-                    }
+                    // 전체화면 성공 시 다시 가로모드 잠금
+                    forceGameLandscape();
                 }).catch(e => {
                     console.log('전체화면 전환:', e.message);
                     // 전체화면 실패해도 게임은 진행
                 });
             }
-            
+
             // 오버레이 숨기기
             document.getElementById('mode-select-overlay').style.display = 'none';
 
