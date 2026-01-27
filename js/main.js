@@ -1728,7 +1728,163 @@
             }
         }
         window.addExp = addExp;
-        
+
+        // ★★★ 프로필 모달 함수들 ★★★
+        function openProfileModal() {
+            const modal = document.getElementById('profile-edit-modal');
+            if (!modal) return;
+
+            // 사용자 정보 채우기
+            if (window.mpUser) {
+                // 닉네임
+                const nicknameInput = document.getElementById('profile-nickname-input');
+                if (nicknameInput) {
+                    nicknameInput.value = window.mpUser.nickname || window.mpUser.username || '';
+                }
+
+                // 아바타
+                const modalAvatar = document.getElementById('modal-avatar');
+                if (modalAvatar) {
+                    if (window.mpUser.avatar_url) {
+                        modalAvatar.innerHTML = '<img src="' + window.mpUser.avatar_url + '" alt="avatar">';
+                    } else {
+                        modalAvatar.innerHTML = '👤';
+                    }
+                }
+
+                // 이메일
+                const emailEl = document.getElementById('modal-email');
+                if (emailEl) {
+                    emailEl.textContent = window.mpUser.email || '-';
+                }
+
+                // 가입일
+                const createdEl = document.getElementById('modal-created-at');
+                if (createdEl && window.mpUser.created_at) {
+                    const date = new Date(window.mpUser.created_at);
+                    createdEl.textContent = date.toLocaleDateString('ko-KR');
+                }
+
+                // 스탯
+                const coinsEl = document.getElementById('modal-coins');
+                if (coinsEl) coinsEl.textContent = (window.mpUser.coins || 0).toLocaleString();
+
+                const expEl = document.getElementById('modal-exp');
+                if (expEl) expEl.textContent = (window.mpUser.exp || 0).toLocaleString();
+
+                const levelEl = document.getElementById('modal-level');
+                if (levelEl) {
+                    const exp = window.mpUser.exp || 0;
+                    const level = Math.floor(Math.sqrt(exp / 100)) + 1;
+                    levelEl.textContent = level;
+                }
+            }
+
+            // 상태 초기화
+            const statusEl = document.getElementById('profile-save-status');
+            if (statusEl) {
+                statusEl.textContent = '';
+                statusEl.className = '';
+            }
+
+            modal.classList.add('active');
+        }
+        window.openProfileModal = openProfileModal;
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profile-edit-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+        window.closeProfileModal = closeProfileModal;
+
+        async function saveNickname() {
+            const nicknameInput = document.getElementById('profile-nickname-input');
+            const statusEl = document.getElementById('profile-save-status');
+            const saveBtn = document.getElementById('save-nickname-btn');
+
+            if (!nicknameInput || !window.mpUser || !window.supabaseClient) {
+                if (statusEl) {
+                    statusEl.textContent = '로그인이 필요합니다';
+                    statusEl.className = 'error';
+                }
+                return;
+            }
+
+            const newNickname = nicknameInput.value.trim();
+
+            // 유효성 검사
+            if (newNickname.length < 2 || newNickname.length > 20) {
+                if (statusEl) {
+                    statusEl.textContent = '닉네임은 2~20자여야 합니다';
+                    statusEl.className = 'error';
+                }
+                return;
+            }
+
+            // 특수문자 검사 (한글, 영문, 숫자, 언더스코어만 허용)
+            if (!/^[가-힣a-zA-Z0-9_]+$/.test(newNickname)) {
+                if (statusEl) {
+                    statusEl.textContent = '특수문자는 사용할 수 없습니다';
+                    statusEl.className = 'error';
+                }
+                return;
+            }
+
+            // 버튼 비활성화
+            if (saveBtn) saveBtn.disabled = true;
+            if (statusEl) {
+                statusEl.textContent = '저장 중...';
+                statusEl.className = '';
+            }
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('profiles')
+                    .update({ nickname: newNickname })
+                    .eq('id', window.mpUserId);
+
+                if (error) throw error;
+
+                // 로컬 데이터 업데이트
+                window.mpUser.nickname = newNickname;
+                window.mpNickname = newNickname;
+
+                // UI 업데이트
+                updateUserUI();
+                if (typeof updateCockpitProfile === 'function') updateCockpitProfile();
+
+                if (statusEl) {
+                    statusEl.textContent = '✓ 닉네임이 변경되었습니다';
+                    statusEl.className = 'success';
+                }
+
+                // 멀티플레이어 닉네임도 업데이트
+                if (typeof mpSendPositionUpdate === 'function') {
+                    // 다음 위치 업데이트 시 새 닉네임 전송됨
+                }
+
+                console.log('닉네임 변경됨:', newNickname);
+            } catch (e) {
+                console.error('닉네임 저장 실패:', e);
+                if (statusEl) {
+                    statusEl.textContent = '저장 실패: ' + (e.message || '알 수 없는 오류');
+                    statusEl.className = 'error';
+                }
+            } finally {
+                if (saveBtn) saveBtn.disabled = false;
+            }
+        }
+        window.saveNickname = saveNickname;
+
+        // 프로필 모달 오버레이 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'profile-edit-modal') {
+                closeProfileModal();
+            }
+        });
+
         function getUserCoins() {
             // Supabase 로그인 상태면 mpUser 사용
             if (window.mpUser && window.mpUser.coins !== undefined) {
@@ -20233,10 +20389,10 @@
                     profileDropdown.style.display = profileDropdown.style.display === 'none' ? 'block' : 'none';
                 });
                 
-                // 드롭다운 항목 클릭
+                // 드롭다운 항목 클릭 - 프로필 모달 열기
                 document.getElementById('dropdown-profile')?.addEventListener('click', () => {
                     profileDropdown.style.display = 'none';
-                    showMsg('👤 프로필 기능은 준비 중입니다');
+                    openProfileModal();
                 });
                 
                 // 미션 보드

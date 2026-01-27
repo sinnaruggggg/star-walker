@@ -1816,6 +1816,54 @@
                 <div class="dropdown-item" id="dropdown-settings" data-i18n="dropdownSettings">⚙️ Settings</div>
                 <div class="dropdown-item logout" id="dropdown-logout" data-i18n="dropdownLogout">🚪 Logout</div>
             </div>
+
+            <!-- ★★★ 프로필 편집 모달 ★★★ -->
+            <div id="profile-edit-modal" class="profile-modal-overlay">
+                <div class="profile-modal">
+                    <button class="profile-modal-close" onclick="closeProfileModal()">✕</button>
+                    <h3>👤 내 프로필</h3>
+
+                    <div class="profile-modal-avatar">
+                        <div id="modal-avatar">👤</div>
+                    </div>
+
+                    <div class="profile-modal-section">
+                        <label>닉네임</label>
+                        <div class="profile-input-group">
+                            <input type="text" id="profile-nickname-input" maxlength="20" placeholder="닉네임 입력">
+                            <button id="save-nickname-btn" onclick="saveNickname()">저장</button>
+                        </div>
+                        <div class="profile-input-hint">2~20자, 특수문자 제외</div>
+                    </div>
+
+                    <div class="profile-modal-section">
+                        <label>이메일</label>
+                        <div class="profile-readonly" id="modal-email">-</div>
+                    </div>
+
+                    <div class="profile-modal-section">
+                        <label>가입일</label>
+                        <div class="profile-readonly" id="modal-created-at">-</div>
+                    </div>
+
+                    <div class="profile-modal-stats">
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modal-coins">0</span>
+                            <span class="modal-stat-label">🪙 코인</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modal-level">1</span>
+                            <span class="modal-stat-label">⭐ 레벨</span>
+                        </div>
+                        <div class="modal-stat">
+                            <span class="modal-stat-value" id="modal-exp">0</span>
+                            <span class="modal-stat-label">✨ 경험치</span>
+                        </div>
+                    </div>
+
+                    <div id="profile-save-status"></div>
+                </div>
+            </div>
             
             <div id="user-coins" style="display:none;">🪙 <span id="coin-amount">0</span></div>
             <div id="user-info" style="display:none;">
@@ -1955,7 +2003,170 @@
         background: rgba(255, 50, 50, 0.3);
         color: #ff6666;
     }
-    
+
+    /* ★★★ 프로필 편집 모달 ★★★ */
+    .profile-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10002;
+    }
+    .profile-modal-overlay.active {
+        display: flex;
+    }
+    .profile-modal {
+        background: linear-gradient(135deg, rgba(10, 30, 60, 0.98) 0%, rgba(5, 15, 40, 0.98) 100%);
+        border: 2px solid #0ff;
+        border-radius: 15px;
+        padding: 20px;
+        width: 320px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+    }
+    .profile-modal h3 {
+        color: #0ff;
+        text-align: center;
+        margin: 0 0 15px 0;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 16px;
+    }
+    .profile-modal-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .profile-modal-close:hover {
+        opacity: 1;
+    }
+    .profile-modal-avatar {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    .profile-modal-avatar > div {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1a5276, #2980b9);
+        border: 3px solid #0ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 35px;
+        overflow: hidden;
+    }
+    .profile-modal-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .profile-modal-section {
+        margin-bottom: 12px;
+    }
+    .profile-modal-section label {
+        display: block;
+        color: #8cf;
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+    .profile-input-group {
+        display: flex;
+        gap: 8px;
+    }
+    .profile-input-group input {
+        flex: 1;
+        background: rgba(0, 40, 80, 0.6);
+        border: 1px solid rgba(0, 255, 255, 0.4);
+        border-radius: 6px;
+        padding: 8px 10px;
+        color: #fff;
+        font-size: 13px;
+        outline: none;
+    }
+    .profile-input-group input:focus {
+        border-color: #0ff;
+        box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+    }
+    .profile-input-group button {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        border: none;
+        border-radius: 6px;
+        padding: 8px 15px;
+        color: #fff;
+        font-size: 12px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .profile-input-group button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
+    .profile-input-group button:disabled {
+        background: #555;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .profile-input-hint {
+        color: #68a;
+        font-size: 10px;
+        margin-top: 4px;
+    }
+    .profile-readonly {
+        background: rgba(0, 20, 40, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        padding: 8px 10px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 12px;
+    }
+    .profile-modal-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0, 255, 255, 0.2);
+    }
+    .modal-stat {
+        text-align: center;
+    }
+    .modal-stat-value {
+        display: block;
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff;
+        font-family: 'Orbitron', sans-serif;
+    }
+    .modal-stat-label {
+        display: block;
+        font-size: 10px;
+        color: #8cf;
+        margin-top: 3px;
+    }
+    #profile-save-status {
+        text-align: center;
+        font-size: 12px;
+        margin-top: 10px;
+        min-height: 18px;
+    }
+    #profile-save-status.success { color: #2ecc71; }
+    #profile-save-status.error { color: #e74c3c; }
+
     /* 모바일 최적화 */
     @media (max-width: 768px) {
         #user-profile-panel {
