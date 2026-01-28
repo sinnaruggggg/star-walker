@@ -2100,34 +2100,71 @@ const MultiTutorial = {
     },
     
     featureGuidesShown: {},
-    
-    // 저장된 상태 불러오기
-    loadState() {
+
+    // 사용자별 스토리지 키 생성
+    getStorageKey() {
+        const userId = window.mpUserId || window.currentUser?.id || 'guest';
+        return `${this.STORAGE_KEY}_${userId}`;
+    },
+
+    // 저장된 상태 불러오기 (사용자별 + 서버)
+    async loadState() {
         try {
-            const saved = localStorage.getItem(this.STORAGE_KEY);
+            // 1. 로컬스토리지에서 먼저 확인
+            const saved = localStorage.getItem(this.getStorageKey());
             if (saved) {
                 const state = JSON.parse(saved);
                 this.featureGuidesShown = state.featureGuidesShown || {};
-                return state.completed;
+                if (state.completed) return true;
             }
-        } catch (e) {}
+
+            // 2. 로그인한 사용자면 서버에서도 확인
+            if (window.mpUser && typeof supabase !== 'undefined') {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('tutorial_completed')
+                    .eq('id', window.mpUser.id)
+                    .single();
+
+                if (data?.tutorial_completed) {
+                    // 서버에 완료 기록 있으면 로컬에도 저장
+                    this.saveState(true);
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.warn('튜토리얼 상태 로드 오류:', e);
+        }
         return false;
     },
-    
-    // 상태 저장
-    saveState(completed = false) {
+
+    // 상태 저장 (사용자별 + 서버)
+    async saveState(completed = false) {
         try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+            // 1. 로컬스토리지에 저장
+            localStorage.setItem(this.getStorageKey(), JSON.stringify({
                 completed,
                 featureGuidesShown: this.featureGuidesShown,
                 timestamp: Date.now()
             }));
-        } catch (e) {}
+
+            // 2. 로그인한 사용자면 서버에도 저장
+            if (completed && window.mpUser && typeof supabase !== 'undefined') {
+                await supabase
+                    .from('profiles')
+                    .update({ tutorial_completed: true })
+                    .eq('id', window.mpUser.id);
+                console.log('튜토리얼 완료 서버 저장됨');
+            }
+        } catch (e) {
+            console.warn('튜토리얼 상태 저장 오류:', e);
+        }
     },
-    
+
     // 튜토리얼 시작 체크
-    checkAndStart() {
-        if (!this.loadState()) {
+    async checkAndStart() {
+        const completed = await this.loadState();
+        if (!completed) {
             this.start();
         }
     },
@@ -2163,33 +2200,39 @@ const MultiTutorial = {
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background: rgba(0, 0, 0, 0.6);
+                    background: rgba(0, 0, 0, 0.4);
                     z-index: 99990;
                     display: flex;
-                    align-items: center;
-                    justify-content: center;
+                    align-items: flex-end;
+                    justify-content: flex-end;
+                    padding: 20px;
+                    box-sizing: border-box;
+                    pointer-events: none;
                 }
-                /* 튜토리얼 중 UI 요소들 위로 올리기 */
+                /* 튜토리얼 중 UI 요소들 클릭 가능하게 */
                 body.tutorial-active #top-bar,
                 body.tutorial-active #nav-container,
                 body.tutorial-active #btn-login,
                 body.tutorial-active .login-status {
                     position: relative;
                     z-index: 99995 !important;
+                    pointer-events: auto;
                 }
                 #tutorial-box {
                     background: linear-gradient(135deg, rgba(10, 15, 25, 0.98) 0%, rgba(15, 20, 35, 0.95) 100%);
                     border: 2px solid #00ffff;
-                    border-radius: 0;
-                    clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
-                    padding: 30px;
-                    max-width: 450px;
-                    width: 90%;
+                    border-radius: 8px;
+                    padding: 20px;
+                    max-width: 380px;
+                    width: 100%;
                     color: #fff;
                     font-family: 'Rajdhani', sans-serif;
-                    box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), inset 0 0 30px rgba(0, 255, 255, 0.05);
+                    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.05);
                     position: relative;
                     z-index: 100001;
+                    pointer-events: auto;
+                    max-height: calc(100vh - 100px);
+                    overflow-y: auto;
                 }
                 #tutorial-box::before {
                     content: '';
