@@ -1493,7 +1493,7 @@ function processLogin(user, username, nickname) {
     }
 }
 
-// ★★★ Google OAuth 로그인 ★★★
+// ★★★ Google 로그인 (Flutter 앱 / 웹 브라우저 분기) ★★★
 async function googleLogin() {
     const errorEl = document.getElementById('auth-error');
 
@@ -1502,6 +1502,23 @@ async function googleLogin() {
         return;
     }
 
+    // Flutter 앱인지 확인
+    if (window.isFlutterApp && window.flutter_inappwebview) {
+        console.log('Flutter 앱 감지됨 - 네이티브 Google Sign-In 사용');
+        if (errorEl) errorEl.textContent = 'Google 로그인 중...';
+
+        try {
+            // Flutter에 Google Sign-In 요청
+            window.flutter_inappwebview.callHandler('flutterGoogleSignIn');
+        } catch (e) {
+            console.error('Flutter 호출 실패:', e);
+            if (errorEl) errorEl.textContent = 'Google 로그인 요청 실패';
+        }
+        return;
+    }
+
+    // 일반 웹 브라우저 - 기존 OAuth 방식
+    console.log('웹 브라우저 - OAuth 리디렉션 사용');
     try {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -1514,13 +1531,127 @@ async function googleLogin() {
             console.error('Google OAuth error:', error);
             if (errorEl) errorEl.textContent = 'Google 로그인 실패: ' + error.message;
         }
-        // 성공 시 Google 로그인 페이지로 리디렉션됨
     } catch (e) {
         console.error('Google login exception:', e);
         if (errorEl) errorEl.textContent = 'Google 로그인 오류: ' + e.message;
     }
 }
 window.googleLogin = googleLogin;
+
+// ★★★ Flutter에서 Google Sign-In 결과 수신 ★★★
+window.addEventListener('flutterMessage', async function(event) {
+    const { type, data } = event.detail;
+
+    if (type === 'googleSignInResult') {
+        const errorEl = document.getElementById('auth-error');
+
+        if (data.error) {
+            console.error('Flutter Google Sign-In 실패:', data.error);
+            if (errorEl) {
+                if (data.error === 'cancelled') {
+                    errorEl.textContent = '';
+                } else {
+                    errorEl.textContent = 'Google 로그인 실패: ' + data.error;
+                }
+            }
+            return;
+        }
+
+        if (data.success && data.idToken) {
+            console.log('Flutter에서 ID Token 수신, Supabase 인증 시작...');
+            if (errorEl) errorEl.textContent = '로그인 처리 중...';
+
+            try {
+                // Supabase에 ID Token으로 로그인
+                const { data: authData, error } = await supabase.auth.signInWithIdToken({
+                    provider: 'google',
+                    token: data.idToken
+                });
+
+                if (error) {
+                    console.error('Supabase signInWithIdToken 실패:', error);
+                    if (errorEl) errorEl.textContent = 'Supabase 인증 실패: ' + error.message;
+                    return;
+                }
+
+                console.log('Google 로그인 성공:', authData.user?.email);
+
+                // 사용자 정보 설정
+                mpUser = authData.user;
+                mpUserId = authData.user.id;
+                mpSessionToken = generateSessionToken();
+                window.mpUser = mpUser;
+                window.mpUserId = mpUserId;
+                window.currentUser = mpUser;
+
+                // 로컬스토리지에 저장
+                localStorage.setItem('solar_user', JSON.stringify({
+                    id: mpUser.id,
+                    email: mpUser.email,
+                    nickname: mpUser.user_metadata?.full_name || mpUser.email?.split('@')[0]
+                }));
+
+                // 프로필 확인/생성
+                await ensureGoogleProfileExists(authData.user);
+
+                // UI 업데이트
+                document.getElementById('auth-overlay').style.display = 'none';
+
+                if (typeof updateUserUI === 'function') {
+                    updateUserUI();
+                }
+
+                // 멀티플레이어 UI 준비
+                if (!document.getElementById('multiplayer-ui')) {
+                    createMultiplayerUI();
+                }
+                const mpUI = document.getElementById('multiplayer-ui');
+                if (mpUI) mpUI.style.display = 'none';
+
+                console.log('Google 로그인 완료');
+
+            } catch (e) {
+                console.error('Supabase 인증 오류:', e);
+                if (errorEl) errorEl.textContent = 'Supabase 인증 오류: ' + e.message;
+            }
+        }
+    }
+});
+
+// Google 사용자 프로필 확인/생성
+async function ensureGoogleProfileExists(user) {
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (!profile) {
+            const nickname = user.user_metadata?.full_name ||
+                            user.email?.split('@')[0] ||
+                            'Pilot_' + user.id.substring(0, 6);
+
+            const { error } = await supabase.from('profiles').insert({
+                id: user.id,
+                username: user.email,
+                nickname: nickname,
+                email: user.email,
+                coins: 1000,
+                exp: 0,
+                avatar_url: user.user_metadata?.avatar_url || null
+            });
+
+            if (error) {
+                console.warn('프로필 생성 실패 (이미 존재할 수 있음):', error);
+            } else {
+                console.log('새 프로필 생성됨:', nickname);
+            }
+        }
+    } catch (e) {
+        console.warn('프로필 확인 오류:', e);
+    }
+}
 
 function guestLogin() {
     // ★★★ UUID 형식으로 생성 (테이블이 uuid 타입) ★★★
