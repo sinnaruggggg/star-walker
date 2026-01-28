@@ -2,10 +2,6 @@
 // Solar Explorer 멀티플레이어 코드
 // ============================================================
 
-// ★★★ Google One Tap 로그인용 Client ID ★★★
-// Supabase 대시보드의 Google Provider 설정에서 동일한 Client ID 사용
-const GOOGLE_CLIENT_ID = '551124772744-eq7te4gjrsu0rq3u39kkojrv24ncnt64.apps.googleusercontent.com';
-
 // ============ 우주 사운드 시스템 (자동 전환) ============
 const SpaceAudio = {
     ctx: null,
@@ -1497,9 +1493,7 @@ function processLogin(user, username, nickname) {
     }
 }
 
-// ★★★ Google One Tap 로그인 (WebView 호환) ★★★
-let googleOneTapInitialized = false;
-
+// ★★★ Google OAuth 로그인 ★★★
 async function googleLogin() {
     const errorEl = document.getElementById('auth-error');
 
@@ -1508,185 +1502,24 @@ async function googleLogin() {
         return;
     }
 
-    // Google Identity Services 로드 확인
-    if (typeof google === 'undefined' || !google.accounts) {
-        console.error('Google Identity Services not loaded');
-        if (errorEl) errorEl.textContent = 'Google 서비스 로딩 중... 잠시 후 다시 시도해주세요';
-        return;
-    }
-
     try {
-        // One Tap 초기화 (최초 1회만)
-        if (!googleOneTapInitialized) {
-            google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleGoogleCredentialResponse,
-                auto_select: false,
-                cancel_on_tap_outside: true,
-                context: 'signin',
-                ux_mode: 'popup',  // 팝업 모드로 WebView 내부 처리
-                itp_support: true
-            });
-            googleOneTapInitialized = true;
-        }
-
-        // One Tap 프롬프트 표시
-        google.accounts.id.prompt((notification) => {
-            console.log('One Tap notification:', notification);
-
-            if (notification.isNotDisplayed()) {
-                // One Tap이 표시되지 않으면 버튼 방식으로 폴백
-                console.log('One Tap not displayed, reason:', notification.getNotDisplayedReason());
-                showGoogleSignInButton();
-            } else if (notification.isSkippedMoment()) {
-                console.log('One Tap skipped, reason:', notification.getSkippedReason());
-                showGoogleSignInButton();
-            } else if (notification.isDismissedMoment()) {
-                console.log('One Tap dismissed, reason:', notification.getDismissedReason());
-            }
-        });
-
-    } catch (e) {
-        console.error('Google One Tap error:', e);
-        if (errorEl) errorEl.textContent = 'Google 로그인 오류: ' + e.message;
-    }
-}
-
-// Google 로그인 버튼 표시 (One Tap 실패 시 폴백)
-function showGoogleSignInButton() {
-    const errorEl = document.getElementById('auth-error');
-
-    // 기존 버튼 컨테이너 확인
-    let btnContainer = document.getElementById('google-signin-btn-container');
-    if (!btnContainer) {
-        // 구글 버튼 아래에 컨테이너 생성
-        const googleBtn = document.querySelector('.auth-btn-google');
-        if (googleBtn) {
-            btnContainer = document.createElement('div');
-            btnContainer.id = 'google-signin-btn-container';
-            btnContainer.style.cssText = 'margin-top: 10px; display: flex; justify-content: center;';
-            googleBtn.parentNode.insertBefore(btnContainer, googleBtn.nextSibling);
-        }
-    }
-
-    if (btnContainer) {
-        // Google 로그인 버튼 렌더링
-        google.accounts.id.renderButton(btnContainer, {
-            type: 'standard',
-            theme: 'outline',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'rectangular',
-            logo_alignment: 'left',
-            width: 280
-        });
-
-        if (errorEl) errorEl.textContent = '';
-    }
-}
-
-// Google 인증 응답 처리 (signInWithIdToken 사용)
-async function handleGoogleCredentialResponse(response) {
-    const errorEl = document.getElementById('auth-error');
-
-    console.log('Google credential received');
-
-    if (!response.credential) {
-        if (errorEl) errorEl.textContent = 'Google 인증 실패';
-        return;
-    }
-
-    try {
-        // Supabase에 ID 토큰으로 로그인
-        const { data, error } = await supabase.auth.signInWithIdToken({
+        const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
-            token: response.credential
+            options: {
+                redirectTo: 'https://star-strider-seven.vercel.app'
+            }
         });
 
         if (error) {
-            console.error('Supabase signInWithIdToken error:', error);
+            console.error('Google OAuth error:', error);
             if (errorEl) errorEl.textContent = 'Google 로그인 실패: ' + error.message;
-            return;
         }
-
-        console.log('Google One Tap 로그인 성공:', data.user?.email);
-
-        // ★ 사용자 정보 설정
-        mpUser = data.user;
-        mpUserId = data.user.id;
-        mpSessionToken = generateSessionToken();
-        window.mpUser = mpUser;
-        window.mpUserId = mpUserId;
-        window.currentUser = mpUser;
-
-        // ★ 로컬스토리지에 저장
-        localStorage.setItem('solar_user', JSON.stringify({
-            id: mpUser.id,
-            email: mpUser.email,
-            nickname: mpUser.user_metadata?.full_name || mpUser.email?.split('@')[0]
-        }));
-
-        // ★ 프로필 확인 및 생성
-        await ensureProfileExists(data.user);
-
-        // UI 업데이트
-        document.getElementById('auth-overlay').style.display = 'none';
-
-        if (typeof updateUserUI === 'function') {
-            updateUserUI();
-        }
-
-        // 멀티플레이어 UI 준비
-        if (!document.getElementById('multiplayer-ui')) {
-            createMultiplayerUI();
-        }
-        const mpUI = document.getElementById('multiplayer-ui');
-        if (mpUI) mpUI.style.display = 'none';
-
-        console.log('Google 로그인 완료 (게임 모드 선택 대기 중)');
-
+        // 성공 시 Google 로그인 페이지로 리디렉션됨
     } catch (e) {
-        console.error('handleGoogleCredentialResponse error:', e);
+        console.error('Google login exception:', e);
         if (errorEl) errorEl.textContent = 'Google 로그인 오류: ' + e.message;
     }
 }
-
-// Google 사용자 프로필 확인/생성
-async function ensureProfileExists(user) {
-    try {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-        if (!profile) {
-            // 프로필이 없으면 생성
-            const nickname = user.user_metadata?.full_name ||
-                            user.email?.split('@')[0] ||
-                            'Pilot_' + user.id.substring(0, 6);
-
-            const { error } = await supabase.from('profiles').insert({
-                id: user.id,
-                username: user.email,
-                nickname: nickname,
-                email: user.email,
-                coins: 1000,
-                exp: 0,
-                avatar_url: user.user_metadata?.avatar_url || null
-            });
-
-            if (error) {
-                console.warn('프로필 생성 실패 (이미 존재할 수 있음):', error);
-            } else {
-                console.log('새 프로필 생성됨:', nickname);
-            }
-        }
-    } catch (e) {
-        console.warn('프로필 확인 오류:', e);
-    }
-}
-
 window.googleLogin = googleLogin;
 
 function guestLogin() {
