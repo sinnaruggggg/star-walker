@@ -18520,18 +18520,111 @@
                     chatPanel.style.display = 'none';
                 }
                 
-                // ★★★ 멀티모드 튜토리얼 시작 ★★★
-                setTimeout(() => {
-                    if (typeof MultiTutorial !== 'undefined') {
-                        MultiTutorial.checkAndStart();
+                // ★★★ 멀티모드: 천체 목록/상단메뉴 숨김 ★★★
+                const navPanel = document.getElementById('nav-panel');
+                const navContainer = document.getElementById('nav-container');
+                const topBar = document.getElementById('top-bar');
+
+                if (navPanel) navPanel.style.display = 'none';
+                if (navContainer) navContainer.style.display = 'none';
+                if (topBar) topBar.style.display = 'none';
+                console.log('멀티모드: 천체 목록, 상단 메뉴 숨김');
+
+                // ★★★ 게임 상태 서버 저장/로드 함수 ★★★
+                window.loadGameStateFromServer = async function() {
+                    try {
+                        if (!window.mpUser || typeof supabase === 'undefined') {
+                            console.log('게임 상태 로드: 로그인 필요');
+                            return null;
+                        }
+
+                        const { data, error } = await supabase
+                            .from('profiles')
+                            .select('game_state')
+                            .eq('id', window.mpUser.id)
+                            .single();
+
+                        if (error) {
+                            console.warn('게임 상태 로드 실패:', error);
+                            return null;
+                        }
+
+                        if (data && data.game_state) {
+                            console.log('🎮 서버에서 게임 상태 로드:', data.game_state);
+                            return data.game_state;
+                        }
+
+                        return null;
+                    } catch (e) {
+                        console.error('게임 상태 로드 오류:', e);
+                        return null;
                     }
-                }, 500);
-                
+                };
+
+                window.saveGameStateToServer = async function(state) {
+                    try {
+                        if (!window.mpUser || typeof supabase === 'undefined') {
+                            console.log('게임 상태 저장: 로그인 필요');
+                            return false;
+                        }
+
+                        const { error } = await supabase
+                            .from('profiles')
+                            .update({ game_state: state })
+                            .eq('id', window.mpUser.id);
+
+                        if (error) {
+                            console.warn('게임 상태 저장 실패:', error);
+                            return false;
+                        }
+
+                        console.log('🎮 서버에 게임 상태 저장:', state);
+                        return true;
+                    } catch (e) {
+                        console.error('게임 상태 저장 오류:', e);
+                        return false;
+                    }
+                };
+
+                // ★★★ 멀티모드: 게임 상태 복원 ★★★
+                (async function restoreGameState() {
+                    try {
+                        const savedState = await loadGameStateFromServer();
+
+                        if (savedState && savedState.isPilotMode) {
+                            // 조종석 모드로 바로 진입
+                            console.log('🎮 저장된 상태: 조종석 모드 복원');
+                            setTimeout(() => {
+                                if (typeof enterPilotMode === 'function') {
+                                    enterPilotMode();
+                                }
+                            }, 1000);
+                            return; // 튜토리얼 스킵
+                        }
+
+                        // 저장된 상태가 없으면 튜토리얼 체크
+                        setTimeout(() => {
+                            if (typeof MultiTutorial !== 'undefined') {
+                                MultiTutorial.checkAndStart();
+                            }
+                        }, 500);
+
+                    } catch (e) {
+                        console.warn('게임 상태 복원 실패:', e);
+                        // 실패해도 튜토리얼 체크
+                        setTimeout(() => {
+                            if (typeof MultiTutorial !== 'undefined') {
+                                MultiTutorial.checkAndStart();
+                            }
+                        }, 500);
+                    }
+                })();
+
                 // 카메라 위치 조정 - 기존 유저는 우주선으로, 첫 가입자만 전체 뷰
                 setTimeout(() => {
                     // ★★★ 첫 방문 여부 확인 ★★★
                     const isFirstVisit = !localStorage.getItem('starwalker_visited');
-                    
+
                     if (isFirstVisit) {
                         // 첫 방문: 전체 뷰 + 튜토리얼
                         camera.position.set(0, 15000, 25000);
@@ -18682,7 +18775,81 @@
         
         // 전역으로 노출
         window.startGameMode = startGameMode;
-        
+
+        // ★★★ 메인 메뉴로 돌아가기 (홈 버튼) ★★★
+        function goToMainMenu() {
+            const currentLang = localStorage.getItem('solarLang') || 'ko';
+            const confirmMsg = currentLang === 'ko' ? '게임을 종료하고 메인 메뉴로 돌아가시겠습니까?' :
+                               currentLang === 'en' ? 'Exit game and return to main menu?' :
+                               currentLang === 'ja' ? 'ゲームを終了してメインメニューに戻りますか？' :
+                               'Exit game and return to main menu?';
+
+            if (!confirm(confirmMsg)) {
+                return; // 취소
+            }
+
+            // 1. 조종석 모드 종료
+            if (typeof exitPilotMode === 'function' && isPilotMode) {
+                exitPilotMode();
+            }
+
+            // 2. 멀티플레이어 연결 종료
+            if (window.gameMode === 'multi') {
+                if (typeof MultiplayerManager !== 'undefined' && MultiplayerManager.disconnect) {
+                    MultiplayerManager.disconnect();
+                }
+                // 게임 상태 초기화
+                if (window.saveGameStateToServer) {
+                    window.saveGameStateToServer({ isPilotMode: false });
+                }
+            }
+
+            // 3. 게임 모드 클래스 제거
+            document.body.classList.remove('game-mode');
+            document.body.classList.remove('game-started');
+
+            // 4. 메인 메뉴 오버레이 표시
+            const overlay = document.getElementById('mode-select-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+
+            // 5. 게임 UI 숨기기
+            const pilotHud = document.getElementById('pilot-hud');
+            if (pilotHud) pilotHud.style.display = 'none';
+
+            const pilotRightBtns = document.getElementById('pilot-right-btns');
+            if (pilotRightBtns) pilotRightBtns.style.display = 'none';
+
+            const mobileCombatBtns = document.getElementById('mobile-combat-btns');
+            if (mobileCombatBtns) mobileCombatBtns.style.display = 'none';
+
+            // 6. 멀티모드에서 숨겼던 UI 복원
+            const navPanel = document.getElementById('nav-panel');
+            const navContainer = document.getElementById('nav-container');
+            const topBar = document.getElementById('top-bar');
+            if (navPanel) navPanel.style.display = '';
+            if (navContainer) navContainer.style.display = '';
+            if (topBar) topBar.style.display = '';
+
+            // 7. BGM 변경 (메뉴 BGM)
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.stopBGM();
+            }
+
+            // 8. 게임 모드 초기화
+            window.gameMode = null;
+            gameMode = null;
+
+            // 9. 전체화면 해제 (선택적)
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+
+            console.log('🏠 메인 메뉴로 돌아감');
+        }
+        window.goToMainMenu = goToMainMenu;
+
         // ========== 드래그 가능 UI 시스템 ==========
         const draggableUISystem = {
             initialized: false,
@@ -20260,15 +20427,31 @@
         const originalEnterPilotMode = window.enterPilotMode;
         window.enterPilotMode = function() {
             if (originalEnterPilotMode) originalEnterPilotMode.apply(this, arguments);
-            
+
             // ★ 멀티모드 튜토리얼 가이드
             if (typeof MultiTutorial !== 'undefined') {
                 setTimeout(() => MultiTutorial.showFeatureGuide('pilot-mode'), 500);
             }
-            
+
             // 모바일에서 미니 HUD 표시
             if (window.innerWidth <= 768) {
                 document.getElementById('mobile-mini-hud').style.display = 'flex';
+            }
+
+            // ★ 멀티모드: 게임 상태 저장 (조종석 진입)
+            if (window.saveGameStateToServer && window.mpUser) {
+                window.saveGameStateToServer({ isPilotMode: true });
+            }
+        };
+
+        // 조종 모드 퇴장 시 상태 저장
+        const originalExitPilotMode = window.exitPilotMode;
+        window.exitPilotMode = function() {
+            if (originalExitPilotMode) originalExitPilotMode.apply(this, arguments);
+
+            // ★ 멀티모드: 게임 상태 저장 (조종석 퇴장)
+            if (window.saveGameStateToServer && window.mpUser) {
+                window.saveGameStateToServer({ isPilotMode: false });
             }
         };
         
