@@ -18586,9 +18586,27 @@
                     }
                 };
 
-                // ★★★ 멀티모드: 게임 상태 복원 ★★★
+                // ★★★ 멀티모드: 게임 상태 복원 (로그인 완료 대기) ★★★
                 (async function restoreGameState() {
+                    // mpUser가 설정될 때까지 대기 (최대 10초)
+                    let waitCount = 0;
+                    while (!window.mpUser && waitCount < 50) {
+                        await new Promise(r => setTimeout(r, 200));
+                        waitCount++;
+                    }
+
+                    if (!window.mpUser) {
+                        console.log('🎮 로그인 대기 시간 초과, 튜토리얼 체크');
+                        setTimeout(() => {
+                            if (typeof MultiTutorial !== 'undefined') {
+                                MultiTutorial.checkAndStart();
+                            }
+                        }, 500);
+                        return;
+                    }
+
                     try {
+                        console.log('🎮 로그인 확인됨, 게임 상태 로드 시도...');
                         const savedState = await loadGameStateFromServer();
 
                         if (savedState && savedState.isPilotMode) {
@@ -18598,7 +18616,7 @@
                                 if (typeof enterPilotMode === 'function') {
                                     enterPilotMode();
                                 }
-                            }, 1000);
+                            }, 500);
                             return; // 튜토리얼 스킵
                         }
 
