@@ -11329,10 +11329,18 @@
         
         function boardShip() {
             if (isPilotMode) return;
-            
+
+            // ★★★ 게임 상태 복원 시 바로 탑승 (모달 스킵) ★★★
+            if (window.skipShipSelectForRestore) {
+                window.skipShipSelectForRestore = false;
+                console.log('🎮 게임 상태 복원: 바로 탑승');
+                proceedToBoard(false);  // 바로 탑승
+                return;
+            }
+
             // ★ Supabase 로그인 상태 체크 (mpUser가 있으면 로그인됨)
             const isLoggedIn = window.mpUser || window.mpUserId;
-            
+
             // 멀티모드에서는 반드시 로그인 필요 (게스트 제외)
             if (window.gameMode === 'multi') {
                 if (!isLoggedIn) {
@@ -11344,10 +11352,10 @@
                     return;
                 }
             }
-            
+
             // 싱글모드는 로그인 없이도 플레이 가능
             // (로그인하면 데이터 저장됨)
-            
+
             // 충돌로 인한 하선 후 재탑승인 경우 메시지 표시
             if (window.lastExitReason === 'collision') {
                 const destroyedName = window.destroyedShipName || '우주선';
@@ -11359,14 +11367,14 @@
                 window.lastExitReason = null;
                 window.destroyedShipName = null;
             }
-            
+
             // 주차된 우주선 클릭 후 재탑승인 경우 (바로 탑승)
             if (focusedBody && focusedBody.isParkedShip && parkedShip) {
                 // 주차된 우주선으로 바로 재탑승
                 directReboard();
                 return;
             }
-            
+
             // ISS 정거장에서 탑승 - 우주선 선택 모달 표시
             openShipSelectModal();
         }
@@ -18586,37 +18594,52 @@
                     }
                 };
 
-                // ★★★ 멀티모드: 게임 상태 복원 (로그인 완료 대기) ★★★
+                // ★★★ 멀티모드: 자동 로그인 + 게임 상태 복원 ★★★
                 (async function restoreGameState() {
-                    // mpUser가 설정될 때까지 대기 (최대 10초)
+                    // 먼저 자동 로그인 시도
+                    if (!window.mpUser && typeof loadSavedLogin === 'function') {
+                        console.log('🔐 자동 로그인 시도...');
+                        try {
+                            await loadSavedLogin();
+                        } catch (e) {
+                            console.warn('자동 로그인 실패:', e);
+                        }
+                    }
+
+                    // mpUser가 설정될 때까지 추가 대기 (최대 5초)
                     let waitCount = 0;
-                    while (!window.mpUser && waitCount < 50) {
+                    while (!window.mpUser && waitCount < 25) {
                         await new Promise(r => setTimeout(r, 200));
                         waitCount++;
                     }
 
                     if (!window.mpUser) {
-                        console.log('🎮 로그인 대기 시간 초과, 튜토리얼 체크');
-                        setTimeout(() => {
-                            if (typeof MultiTutorial !== 'undefined') {
-                                MultiTutorial.checkAndStart();
-                            }
-                        }, 500);
+                        console.log('🎮 로그인 필요, 로그인 창 표시');
+                        // 로그인 창 표시
+                        const authOverlay = document.getElementById('auth-overlay');
+                        if (authOverlay) {
+                            authOverlay.style.display = 'flex';
+                        } else if (typeof createAuthUI === 'function') {
+                            createAuthUI();
+                        }
                         return;
                     }
+
+                    console.log('✅ 자동 로그인 완료:', window.mpUser.nickname || window.mpUser.email);
 
                     try {
                         console.log('🎮 로그인 확인됨, 게임 상태 로드 시도...');
                         const savedState = await loadGameStateFromServer();
 
                         if (savedState && savedState.isPilotMode) {
-                            // 조종석 모드로 바로 진입
+                            // 조종석 모드로 바로 진입 (우주선 선택 없이)
                             console.log('🎮 저장된 상태: 조종석 모드 복원');
+                            window.skipShipSelectForRestore = true;  // 플래그 설정
                             setTimeout(() => {
-                                if (typeof enterPilotMode === 'function') {
-                                    enterPilotMode();
+                                if (typeof boardShip === 'function') {
+                                    boardShip();
                                 }
-                            }, 500);
+                            }, 1000);
                             return; // 튜토리얼 스킵
                         }
 
