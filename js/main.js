@@ -20457,8 +20457,15 @@
             }
 
             // ★ 멀티모드: 게임 상태 저장 (조종석 진입)
+            console.log('🚀 조종석 진입 - 상태 저장 시도', {
+                hasFunc: !!window.saveGameStateToServer,
+                hasUser: !!window.mpUser,
+                gameMode: window.gameMode
+            });
             if (window.saveGameStateToServer && window.mpUser) {
-                window.saveGameStateToServer({ isPilotMode: true });
+                window.saveGameStateToServer({ isPilotMode: true }).then(result => {
+                    console.log('🚀 조종석 진입 상태 저장 결과:', result);
+                });
             }
         };
 
@@ -20468,8 +20475,15 @@
             if (originalExitPilotMode) originalExitPilotMode.apply(this, arguments);
 
             // ★ 멀티모드: 게임 상태 저장 (조종석 퇴장)
+            console.log('🏠 조종석 퇴장 - 상태 저장 시도', {
+                hasFunc: !!window.saveGameStateToServer,
+                hasUser: !!window.mpUser,
+                gameMode: window.gameMode
+            });
             if (window.saveGameStateToServer && window.mpUser) {
-                window.saveGameStateToServer({ isPilotMode: false });
+                window.saveGameStateToServer({ isPilotMode: false }).then(result => {
+                    console.log('🏠 조종석 퇴장 상태 저장 결과:', result);
+                });
             }
         };
         
