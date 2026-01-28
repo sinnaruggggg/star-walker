@@ -172,10 +172,67 @@
         <div class="voyager-footer">
             <div class="voyager-version">v1.0</div>
         </div>
+
+        <!-- ★★★ 에셋 다운로드 진행 표시 ★★★ -->
+        <div id="asset-download-status" style="display:none;">
+            <div class="download-icon">📦</div>
+            <div class="download-text">게임 데이터 다운로드 중...</div>
+            <div class="download-progress-bar">
+                <div class="download-progress-fill" id="download-progress-fill"></div>
+            </div>
+            <div class="download-info" id="download-info">0 / 0 파일</div>
+        </div>
     </div>
 </div>
 
 <style>
+/* ★★★ 에셋 다운로드 상태 표시 ★★★ */
+#asset-download-status {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 20, 40, 0.9);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 12px 20px;
+    text-align: center;
+    min-width: 200px;
+}
+#asset-download-status .download-icon {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+#asset-download-status .download-text {
+    color: #8cf;
+    font-size: 11px;
+    margin-bottom: 8px;
+}
+#asset-download-status .download-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 50, 100, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+}
+#asset-download-status .download-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0ff, #0f8);
+    transition: width 0.3s;
+}
+#asset-download-status .download-info {
+    color: #68a;
+    font-size: 10px;
+    margin-top: 5px;
+}
+#asset-download-status.complete {
+    border-color: #2ecc71;
+}
+#asset-download-status.complete .download-text {
+    color: #2ecc71;
+}
+
 /* ★★★ STAR·WALKER 메인 메뉴 스타일 ★★★ */
 #mode-select-overlay {
     position: fixed;
@@ -4088,20 +4145,100 @@
 
 <!-- Service Worker 등록 (PWA) -->
 <script>
+// ★★★ Service Worker 및 에셋 캐싱 시스템 ★★★
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('✅ Service Worker 등록 성공:', reg.scope))
-      .catch(err => console.log('❌ Service Worker 등록 실패:', err));
-  });
+    window.addEventListener('load', async () => {
+        try {
+            const reg = await navigator.serviceWorker.register('sw.js');
+            console.log('✅ Service Worker 등록 성공:', reg.scope);
+
+            // 첫 설치 또는 업데이트 시 다운로드 진행 표시
+            if (reg.installing || reg.waiting) {
+                showDownloadProgress(reg.installing || reg.waiting);
+            }
+
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (newWorker) {
+                    showDownloadProgress(newWorker);
+                }
+            });
+
+            // 이미 활성화된 경우 캐시 상태 확인
+            if (reg.active) {
+                checkCacheStatus();
+            }
+        } catch (err) {
+            console.log('❌ Service Worker 등록 실패:', err);
+        }
+    });
+}
+
+// 다운로드 진행 상황 표시
+function showDownloadProgress(worker) {
+    const statusDiv = document.getElementById('asset-download-status');
+    const progressFill = document.getElementById('download-progress-fill');
+    const downloadInfo = document.getElementById('download-info');
+    const downloadText = statusDiv?.querySelector('.download-text');
+
+    if (!statusDiv) return;
+
+    statusDiv.style.display = 'block';
+
+    worker.addEventListener('statechange', () => {
+        if (worker.state === 'installed') {
+            // 설치 완료
+            statusDiv.classList.add('complete');
+            if (downloadText) downloadText.textContent = '✓ 다운로드 완료!';
+            if (progressFill) progressFill.style.width = '100%';
+            if (downloadInfo) downloadInfo.textContent = '오프라인 플레이 가능';
+
+            // 3초 후 숨김
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        } else if (worker.state === 'activating') {
+            if (downloadText) downloadText.textContent = '캐시 활성화 중...';
+        }
+    });
+
+    // 진행 상황 시뮬레이션 (실제 진행률은 SW에서 알 수 없음)
+    let progress = 0;
+    const interval = setInterval(() => {
+        if (progress < 90) {
+            progress += Math.random() * 15;
+            if (progressFill) progressFill.style.width = Math.min(90, progress) + '%';
+        }
+        if (worker.state === 'installed' || worker.state === 'activated') {
+            clearInterval(interval);
+        }
+    }, 500);
+}
+
+// 캐시 상태 확인
+async function checkCacheStatus() {
+    if ('caches' in window) {
+        try {
+            const cache = await caches.open('solar-game-v1');
+            const keys = await cache.keys();
+            console.log('📦 캐시된 파일:', keys.length);
+
+            // 캐시가 비어있으면 다운로드 표시 안 함 (SW가 자동 처리)
+            if (keys.length === 0) {
+                console.log('첫 방문 - 에셋 캐싱 시작됨');
+            }
+        } catch (e) {
+            console.warn('캐시 확인 실패:', e);
+        }
+    }
 }
 
 // PWA 설치 프롬프트
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  console.log('📱 PWA 설치 가능');
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('📱 PWA 설치 가능');
 });
 </script>
 
