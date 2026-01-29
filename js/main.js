@@ -13184,6 +13184,12 @@
             if (typeof SpaceAudio !== 'undefined' && SpaceAudio.isPlaying) SpaceAudio.playCockpit();
             document.body.classList.add('pilot-mode');  // CSS용 클래스 추가
 
+            // ★★★ 멀티모드: 조종실 진입 상태 서버 저장 ★★★
+            if (window.gameMode === 'multi' && window.saveGameStateToServer && window.mpUser) {
+                window.saveGameStateToServer({ isPilotMode: true });
+                console.log('🚀 조종실 진입 상태 저장');
+            }
+
             // ★ 조종석 프로필 동기화
             updateCockpitProfile();
 
@@ -13388,7 +13394,13 @@
         
         function exitPilotMode() {
             if (!isPilotMode || !playerShip || !playerShip.mesh) return;
-            
+
+            // ★★★ 멀티모드: 조종실 퇴장 상태 서버 저장 ★★★
+            if (window.gameMode === 'multi' && window.saveGameStateToServer && window.mpUser) {
+                window.saveGameStateToServer({ isPilotMode: false });
+                console.log('🏠 조종실 퇴장 상태 저장');
+            }
+
             // 화면 방향 잠금 해제
             unlockOrientation();
             
